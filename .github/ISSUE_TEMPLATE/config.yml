@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation
+    url: https://himasrafeek.github.io/kestro-ui/
+    about: Guides, live examples and full props tables for every component.
+  - name: Report a security vulnerability
+    url: https://github.com/HimasRafeek/kestro-ui/security/advisories/new
+    about: Please report vulnerabilities privately.

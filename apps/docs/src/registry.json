@@ -1,0 +1,717 @@
+{
+  "categories": [
+    {
+      "id": "chat",
+      "title": "Chat",
+      "items": [
+        {
+          "slug": "agent-chat",
+          "name": "AgentChat",
+          "description": "A complete, batteries-included agent chat: thread, messages, reasoning, tools, approvals, sources, empty state, follow-ups and the prompt input. One component, works with any backend.",
+          "examples": [
+            "agent-chat"
+          ],
+          "api": [
+            "AgentChat"
+          ]
+        },
+        {
+          "slug": "message",
+          "name": "Message",
+          "description": "A single chat message for user, assistant or system roles, with avatar, name, timestamp and hover actions (copy, feedback, regenerate).",
+          "examples": [
+            "message"
+          ],
+          "api": [
+            "Message",
+            "MessageActions"
+          ]
+        },
+        {
+          "slug": "thread",
+          "name": "Thread",
+          "description": "Scrollable message list that sticks to the bottom while content streams in, with a floating scroll-to-bottom button.",
+          "examples": [
+            "thread"
+          ],
+          "api": [
+            "Thread"
+          ]
+        },
+        {
+          "slug": "markdown",
+          "name": "Markdown",
+          "description": "Zero-dependency, safe Markdown renderer for LLM output: tables, task lists, code, citations. StreamingMarkdown adds a smooth, frame-paced reveal for bursty token streams.",
+          "examples": [
+            "markdown",
+            "streaming-markdown"
+          ],
+          "api": [
+            "Markdown",
+            "StreamingMarkdown"
+          ]
+        },
+        {
+          "slug": "code-block",
+          "name": "CodeBlock",
+          "description": "Syntax-highlighted code with copy button, filename, line numbers and a streaming caret. Built-in tiny highlighter, no dependencies.",
+          "examples": [
+            "code-block"
+          ],
+          "api": [
+            "CodeBlock"
+          ]
+        },
+        {
+          "slug": "typing-indicator",
+          "name": "TypingIndicator",
+          "description": "Animated three-dot indicator for when the agent is preparing a response.",
+          "examples": [
+            "typing-indicator"
+          ],
+          "api": [
+            "TypingIndicator"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "input",
+      "title": "Input",
+      "items": [
+        {
+          "slug": "prompt-input",
+          "name": "PromptInput",
+          "description": "Auto-growing composer with attachments (button, drag & drop, paste), stop button while streaming, voice button and toolbar slots.",
+          "examples": [
+            "prompt-input"
+          ],
+          "api": [
+            "PromptInput"
+          ]
+        },
+        {
+          "slug": "model-selector",
+          "name": "ModelSelector",
+          "description": "Keyboard-accessible dropdown for choosing a model, agent, persona or mode.",
+          "examples": [
+            "model-selector"
+          ],
+          "api": [
+            "ModelSelector"
+          ]
+        },
+        {
+          "slug": "suggestions",
+          "name": "Suggestions",
+          "description": "Starter prompts and follow-ups as compact chips or descriptive cards.",
+          "examples": [
+            "suggestions"
+          ],
+          "api": [
+            "Suggestions"
+          ]
+        },
+        {
+          "slug": "empty-state",
+          "name": "EmptyState",
+          "description": "Welcome screen shown before the first message.",
+          "examples": [
+            "empty-state"
+          ],
+          "api": [
+            "EmptyState"
+          ]
+        },
+        {
+          "slug": "attachment",
+          "name": "Attachment",
+          "description": "File chips with type-aware icons, image previews, upload progress and errors.",
+          "examples": [
+            "attachment"
+          ],
+          "api": [
+            "Attachment",
+            "AttachmentList"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "transparency",
+      "title": "Agent transparency",
+      "items": [
+        {
+          "slug": "reasoning",
+          "name": "Reasoning",
+          "description": "Collapsible thinking block with live shimmer, last-line preview and automatic duration.",
+          "examples": [
+            "reasoning"
+          ],
+          "api": [
+            "Reasoning"
+          ]
+        },
+        {
+          "slug": "tool-call",
+          "name": "ToolCall",
+          "description": "Shows a tool invocation with arguments, result, status and duration. Pass children to render custom results (generative UI).",
+          "examples": [
+            "tool-call",
+            "tool-call-custom"
+          ],
+          "api": [
+            "ToolCall",
+            "ToolCallGroup",
+            "ToolStatusBadge"
+          ]
+        },
+        {
+          "slug": "tool-call-row",
+          "name": "ToolCallRow",
+          "description": "Compact, single-line tool status for dense lists and dashboards, with progress, duration and retry.",
+          "examples": [
+            "tool-call-row"
+          ],
+          "api": [
+            "ToolCallRow"
+          ]
+        },
+        {
+          "slug": "sources",
+          "name": "Sources",
+          "description": "Citations: collapsible source list, source cards, chips and inline numbered citations with hover previews.",
+          "examples": [
+            "sources"
+          ],
+          "api": [
+            "Sources",
+            "SourceCard",
+            "SourceChip",
+            "InlineCitation"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hitl",
+      "title": "Human in the loop",
+      "items": [
+        {
+          "slug": "tool-approval",
+          "name": "ToolApproval",
+          "description": "Ask the user before the agent acts: payments, emails, bookings, deletions, shell commands. Supports details, previews, risk levels and 'remember' choice.",
+          "examples": [
+            "tool-approval",
+            "tool-approval-command"
+          ],
+          "api": [
+            "ToolApproval"
+          ]
+        },
+        {
+          "slug": "agent-question",
+          "name": "AgentQuestion",
+          "description": "The agent asks the user a structured question: single or multiple choice, with optional free text.",
+          "examples": [
+            "agent-question"
+          ],
+          "api": [
+            "AgentQuestion"
+          ]
+        },
+        {
+          "slug": "handoff-banner",
+          "name": "HandoffBanner",
+          "description": "Escalate a conversation from the AI to a human specialist.",
+          "examples": [
+            "handoff-banner"
+          ],
+          "api": [
+            "HandoffBanner"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tasks",
+      "title": "Tasks",
+      "items": [
+        {
+          "slug": "task-creator",
+          "name": "TaskCreator",
+          "description": "Hand an agent a job: what to do, which agent, when it runs (now, scheduled or repeating), what it may do without asking, and a spend limit.",
+          "examples": [
+            "task-creator"
+          ],
+          "api": [
+            "TaskCreator"
+          ]
+        },
+        {
+          "slug": "task-board",
+          "name": "TaskBoard",
+          "description": "Kanban board of agent tasks \u2014 Queued, Running, Needs you, Done \u2014 with drag and drop and live progress.",
+          "examples": [
+            "task-board"
+          ],
+          "api": [
+            "TaskBoard",
+            "TaskCard"
+          ]
+        },
+        {
+          "slug": "task-list",
+          "name": "TaskList",
+          "description": "Dense table of agent tasks with status, agent, progress, schedule and row actions.",
+          "examples": [
+            "task-list"
+          ],
+          "api": [
+            "TaskList",
+            "TaskStatusBadge"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "workflows",
+      "title": "Workflows",
+      "items": [
+        {
+          "slug": "task-plan",
+          "name": "TaskPlan",
+          "description": "Vertical timeline of an agent's plan with live step states and rich step content (e.g. approvals).",
+          "examples": [
+            "task-plan"
+          ],
+          "api": [
+            "TaskPlan"
+          ]
+        },
+        {
+          "slug": "run-card",
+          "name": "RunCard",
+          "description": "One agent run at a glance: title, run id, status chip and a step timeline that can hold tool calls and approvals.",
+          "examples": [
+            "run-card"
+          ],
+          "api": [
+            "RunCard"
+          ]
+        },
+        {
+          "slug": "agent-header",
+          "name": "AgentHeader",
+          "description": "Agent identity with live state badge and actions.",
+          "examples": [
+            "agent-header"
+          ],
+          "api": [
+            "AgentHeader"
+          ]
+        },
+        {
+          "slug": "usage-meter",
+          "name": "UsageMeter",
+          "description": "Token, credit or context-window usage as a card, bar or compact ring.",
+          "examples": [
+            "usage-meter"
+          ],
+          "api": [
+            "UsageMeter"
+          ]
+        },
+        {
+          "slug": "segmented-meter",
+          "name": "SegmentedMeter",
+          "description": "Block-style meter for context windows, quotas and budgets.",
+          "examples": [
+            "segmented-meter"
+          ],
+          "api": [
+            "SegmentedMeter"
+          ]
+        },
+        {
+          "slug": "activity-feed",
+          "name": "ActivityFeed",
+          "description": "Chronological log of what the agent did.",
+          "examples": [
+            "activity-feed"
+          ],
+          "api": [
+            "ActivityFeed"
+          ]
+        },
+        {
+          "slug": "artifact",
+          "name": "Artifact",
+          "description": "Panel for generated documents, code, itineraries or reports with tabs, copy and download.",
+          "examples": [
+            "artifact"
+          ],
+          "api": [
+            "Artifact"
+          ]
+        },
+        {
+          "slug": "conversation-list",
+          "name": "ConversationList",
+          "description": "Sidebar of threads grouped by date, with search, new chat, running and unread states.",
+          "examples": [
+            "conversation-list"
+          ],
+          "api": [
+            "ConversationList"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "multi-agent",
+      "title": "Multi-agent",
+      "items": [
+        {
+          "slug": "agent-graph",
+          "name": "AgentGraph",
+          "description": "Animated tree of agents: who delegated to whom, who is working, and where work is flowing. Lays itself out and scales to fit.",
+          "examples": [
+            "agent-graph"
+          ],
+          "api": [
+            "AgentGraph"
+          ]
+        },
+        {
+          "slug": "agent-hub",
+          "name": "AgentHub",
+          "description": "Hub-and-spoke view of an orchestrator reaching out to the agents it coordinates, with swaying connections and live work packets.",
+          "examples": [
+            "agent-hub"
+          ],
+          "api": [
+            "AgentHub"
+          ]
+        },
+        {
+          "slug": "trace-tree",
+          "name": "TraceTree",
+          "description": "Nested trace of agent, LLM, tool and retrieval spans with a live waterfall timeline. Running spans grow in real time.",
+          "examples": [
+            "trace-tree"
+          ],
+          "api": [
+            "TraceTree"
+          ]
+        },
+        {
+          "slug": "agent-avatar",
+          "name": "AgentAvatar",
+          "description": "Avatar with live status (online, working, waiting, error, offline) and gradient agent tile.",
+          "examples": [
+            "agent-avatar"
+          ],
+          "api": [
+            "AgentAvatar"
+          ]
+        },
+        {
+          "slug": "agent-roster",
+          "name": "AgentRoster",
+          "description": "A team of agents with roles, states and what each one is doing right now.",
+          "examples": [
+            "agent-roster"
+          ],
+          "api": [
+            "AgentRoster"
+          ]
+        },
+        {
+          "slug": "agent-handoff",
+          "name": "AgentHandoff",
+          "description": "Inline divider showing control passing from one agent to another.",
+          "examples": [
+            "agent-handoff"
+          ],
+          "api": [
+            "AgentHandoff"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "media",
+      "title": "Images",
+      "items": [
+        {
+          "slug": "image-gallery",
+          "name": "ImageGallery",
+          "description": "Grid for one or many images in a message, with a shared lightbox and an optional 'Ask about this image' action that references the image in the composer.",
+          "examples": [
+            "image-gallery"
+          ],
+          "api": [
+            "ImageGallery"
+          ]
+        },
+        {
+          "slug": "lightbox",
+          "name": "Lightbox",
+          "description": "Full-screen image viewer: zoom with wheel, pinch, double-click or buttons, drag to pan, arrow keys to browse, captions and download. ImagePreview opens it from a single thumbnail.",
+          "examples": [
+            "lightbox"
+          ],
+          "api": [
+            "Lightbox",
+            "ImagePreview"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "voice",
+      "title": "Voice",
+      "items": [
+        {
+          "slug": "voice-panel",
+          "name": "VoicePanel",
+          "description": "A full voice-call surface with animated orb, status, transcript and call controls. Includes VoiceOrb and VoiceWave.",
+          "examples": [
+            "voice-panel"
+          ],
+          "api": [
+            "VoicePanel",
+            "VoiceOrb",
+            "VoiceWave"
+          ]
+        },
+        {
+          "slug": "voice-dial",
+          "name": "VoiceDial",
+          "description": "Instrument-style dial for voice agents: ticked bezel, level disc and speaking ripples.",
+          "examples": [
+            "voice-dial"
+          ],
+          "api": [
+            "VoiceDial"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hud",
+      "title": "HUD",
+      "items": [
+        {
+          "slug": "agent-core",
+          "name": "AgentCore",
+          "description": "Arc-reactor style presence for an AI agent. Reacts to state, live loudness and a real audio spectrum from the microphone or TTS output.",
+          "examples": [
+            "agent-core"
+          ],
+          "api": [
+            "AgentCore"
+          ]
+        },
+        {
+          "slug": "attitude-indicator",
+          "name": "AttitudeIndicator",
+          "description": "An aviation attitude indicator as agent presence: the horizon steadies when idle, rolls while thinking and responds to audio. The bezel pointer shows any 0\u2013100 value.",
+          "examples": [
+            "attitude-indicator"
+          ],
+          "api": [
+            "AttitudeIndicator"
+          ]
+        },
+        {
+          "slug": "hud-panel",
+          "name": "HudPanel",
+          "description": "Sci-fi framed panel with corner brackets, scanlines and glow, plus an ambient HudBackground grid.",
+          "examples": [
+            "hud-panel"
+          ],
+          "api": [
+            "HudPanel",
+            "HudBackground"
+          ]
+        },
+        {
+          "slug": "radial-gauge",
+          "name": "RadialGauge",
+          "description": "Animated 270\u00b0 gauge for telemetry like confidence, CPU or context window.",
+          "examples": [
+            "radial-gauge"
+          ],
+          "api": [
+            "RadialGauge"
+          ]
+        },
+        {
+          "slug": "hud-stat",
+          "name": "HudStat",
+          "description": "Telemetry readout with big mono value, delta and live sparkline.",
+          "examples": [
+            "hud-stat"
+          ],
+          "api": [
+            "HudStat",
+            "Sparkline"
+          ]
+        },
+        {
+          "slug": "telemetry-chart",
+          "name": "TelemetryChart",
+          "description": "Big readout plus a gridded line chart for latency, throughput, success rate or cost.",
+          "examples": [
+            "telemetry-chart"
+          ],
+          "api": [
+            "TelemetryChart"
+          ]
+        },
+        {
+          "slug": "waveform",
+          "name": "Waveform",
+          "description": "Audio bars from live levels or synthesized from loudness.",
+          "examples": [
+            "waveform"
+          ],
+          "api": [
+            "Waveform"
+          ]
+        },
+        {
+          "slug": "command-console",
+          "name": "CommandConsole",
+          "description": "Terminal-style command line with history, typed streaming output and line kinds.",
+          "examples": [
+            "command-console"
+          ],
+          "api": [
+            "CommandConsole"
+          ]
+        },
+        {
+          "slug": "event-log",
+          "name": "EventLog",
+          "description": "Structured event stream (event name + key=value fields) for agent runs and audit trails.",
+          "examples": [
+            "event-log"
+          ],
+          "api": [
+            "EventLog"
+          ]
+        },
+        {
+          "slug": "boot-sequence",
+          "name": "BootSequence",
+          "description": "Animated startup checklist for 'agent waking up' moments.",
+          "examples": [
+            "boot-sequence"
+          ],
+          "api": [
+            "BootSequence"
+          ]
+        },
+        {
+          "slug": "data-ticker",
+          "name": "DataTicker",
+          "description": "Continuously scrolling status strip.",
+          "examples": [
+            "data-ticker"
+          ],
+          "api": [
+            "DataTicker"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "embed",
+      "title": "Embed",
+      "items": [
+        {
+          "slug": "chat-widget",
+          "name": "ChatWidget",
+          "description": "Floating launcher + chat panel to put an agent on any website.",
+          "examples": [
+            "chat-widget"
+          ],
+          "api": [
+            "ChatWidget"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "primitives",
+      "title": "Primitives",
+      "items": [
+        {
+          "slug": "button",
+          "name": "Button",
+          "description": "Buttons and icon buttons with variants, sizes and loading state.",
+          "examples": [
+            "button"
+          ],
+          "api": [
+            "Button",
+            "IconButton"
+          ]
+        },
+        {
+          "slug": "controls",
+          "name": "Switch",
+          "description": "Switch and SegmentedControl \u2014 the toggles used by settings, permissions and task forms.",
+          "examples": [
+            "controls"
+          ],
+          "api": [
+            "Switch",
+            "SegmentedControl"
+          ]
+        },
+        {
+          "slug": "badge",
+          "name": "Badge",
+          "description": "Badges, status dots, spinner, shimmer text, keyboard keys and tooltips.",
+          "examples": [
+            "badge"
+          ],
+          "api": [
+            "Badge",
+            "StatusDot",
+            "Spinner",
+            "ShimmerText",
+            "Kbd",
+            "Tooltip"
+          ]
+        }
+      ]
+    }
+  ],
+  "guides": [
+    {
+      "slug": "introduction",
+      "title": "Introduction"
+    },
+    {
+      "slug": "installation",
+      "title": "Installation"
+    },
+    {
+      "slug": "backends",
+      "title": "Connect your agent"
+    },
+    {
+      "slug": "theming",
+      "title": "Theming"
+    },
+    {
+      "slug": "ai",
+      "title": "Using with AI assistants"
+    }
+  ]
+}

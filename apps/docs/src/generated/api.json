@@ -1,0 +1,3280 @@
+{
+  "Badge": {
+    "extendsNative": true,
+    "props": [
+      {
+        "name": "tone",
+        "type": "\"neutral\" | \"accent\" | \"success\" | \"warning\" | \"danger\" | \"info\"",
+        "required": false,
+        "default": "\"neutral\""
+      },
+      {
+        "name": "dot",
+        "type": "false | true",
+        "required": false
+      },
+      {
+        "name": "pulse",
+        "type": "false | true",
+        "required": false
+      }
+    ]
+  },
+  "StatusDot": {
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "tone",
+        "type": "\"neutral\" | \"accent\" | \"success\" | \"warning\" | \"danger\" | \"info\"",
+        "required": false,
+        "default": "\"success\""
+      },
+      {
+        "name": "pulse",
+        "type": "false | true",
+        "required": false
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "Spinner": {
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "Tooltip": {
+    "description": "Lightweight CSS-only tooltip (hover & focus).",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "content",
+        "type": "ReactNode",
+        "required": true
+      },
+      {
+        "name": "children",
+        "type": "ReactNode",
+        "required": true
+      },
+      {
+        "name": "side",
+        "type": "\"top\" | \"bottom\"",
+        "required": false,
+        "default": "\"top\""
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "Kbd": {
+    "extendsNative": true,
+    "props": []
+  },
+  "Card": {
+    "extendsNative": true,
+    "props": []
+  },
+  "ShimmerText": {
+    "description": "Animated gradient text for live \"Thinking…\" / \"Searching…\" labels.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "children",
+        "type": "ReactNode",
+        "required": true
+      },
+      {
+        "name": "active",
+        "type": "false | true",
+        "required": false,
+        "default": "true"
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "Collapse": {
+    "description": "Height-animated container (CSS grid trick, no measuring).",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "open",
+        "type": "false | true",
+        "required": true
+      },
+      {
+        "name": "children",
+        "type": "ReactNode",
+        "required": true
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "Button": {
+    "extendsNative": true,
+    "props": [
+      {
+        "name": "variant",
+        "type": "\"accent\" | \"danger\" | \"primary\" | \"secondary\" | \"outline\" | \"ghost\"",
+        "required": false,
+        "default": "\"primary\""
+      },
+      {
+        "name": "size",
+        "type": "\"xs\" | \"sm\" | \"md\" | \"lg\" | \"icon\" | \"icon-sm\" | \"icon-xs\"",
+        "required": false,
+        "default": "\"md\""
+      },
+      {
+        "name": "loading",
+        "type": "false | true",
+        "required": false
+      }
+    ]
+  },
+  "IconButton": {
+    "extendsNative": true,
+    "props": [
+      {
+        "name": "label",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "size",
+        "type": "\"xs\" | \"sm\" | \"md\"",
+        "required": false,
+        "default": "\"sm\""
+      },
+      {
+        "name": "tooltip",
+        "type": "false | true",
+        "required": false,
+        "default": "true"
+      },
+      {
+        "name": "variant",
+        "type": "\"accent\" | \"danger\" | \"primary\" | \"secondary\" | \"outline\" | \"ghost\"",
+        "required": false,
+        "default": "\"ghost\""
+      },
+      {
+        "name": "loading",
+        "type": "false | true",
+        "required": false
+      }
+    ]
+  },
+  "AgentAvatar": {
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "name",
+        "type": "string",
+        "required": false,
+        "description": "Used for initials & accessible label."
+      },
+      {
+        "name": "src",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "icon",
+        "type": "ReactNode",
+        "required": false,
+        "description": "Custom icon; defaults to a sparkle (gradient) or a monogram of `name` (monogram)."
+      },
+      {
+        "name": "initials",
+        "type": "false | true",
+        "required": false,
+        "description": "Show initials instead of the icon (e.g. for human users)."
+      },
+      {
+        "name": "state",
+        "type": "\"idle\" | \"online\" | \"thinking\" | \"working\" | \"waiting\" | \"error\" | \"offline\"",
+        "required": false
+      },
+      {
+        "name": "size",
+        "type": "\"xs\" | \"sm\" | \"md\" | \"lg\"",
+        "required": false,
+        "default": "\"sm\""
+      },
+      {
+        "name": "variant",
+        "type": "\"agent\" | \"user\"",
+        "required": false,
+        "default": "\"agent\"",
+        "description": "\"agent\" renders the accent gradient, \"user\" a neutral tile."
+      },
+      {
+        "name": "appearance",
+        "type": "\"gradient\" | \"monogram\"",
+        "required": false,
+        "default": "\"gradient\"",
+        "description": "Agent tile style. \"gradient\" (default) is the accent gradient tile;\r\n\"monogram\" is a flat letter tile tinted by `color`."
+      },
+      {
+        "name": "color",
+        "type": "\"accent\" | \"auto\" | \"ink\" | (string & {})",
+        "required": false,
+        "default": "\"auto\"",
+        "description": "Monogram tile color: a CSS color, \"accent\", \"ink\", or \"auto\" (a muted\r\ncolor picked from the name so each agent is recognisable). Default \"auto\"."
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "CodeBlock": {
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "code",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "language",
+        "type": "string",
+        "required": false,
+        "default": "\"\""
+      },
+      {
+        "name": "filename",
+        "type": "string",
+        "required": false,
+        "description": "Shown in the header instead of the language."
+      },
+      {
+        "name": "showLineNumbers",
+        "type": "false | true",
+        "required": false,
+        "default": "false"
+      },
+      {
+        "name": "hideHeader",
+        "type": "false | true",
+        "required": false,
+        "default": "false",
+        "description": "Hide the header bar (copy button floats on hover instead)."
+      },
+      {
+        "name": "maxHeight",
+        "type": "string | number",
+        "required": false,
+        "description": "Max height before scrolling, e.g. 320 or \"20rem\"."
+      },
+      {
+        "name": "streaming",
+        "type": "false | true",
+        "required": false,
+        "description": "Show a blinking caret at the end (while streaming)."
+      },
+      {
+        "name": "actions",
+        "type": "ReactNode",
+        "required": false,
+        "description": "Extra actions rendered in the header."
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "StreamingMarkdown": {
+    "description": "Markdown + smooth token reveal + caret. Use this for live LLM output.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "streaming",
+        "type": "false | true",
+        "required": false,
+        "default": "false",
+        "description": "True while tokens are still arriving."
+      },
+      {
+        "name": "smooth",
+        "type": "boolean | SmoothTextOptions",
+        "required": false,
+        "default": "true",
+        "description": "Smooth out bursty chunks with a frame-paced reveal. Default true."
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "children",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "sources",
+        "type": "Source[]",
+        "required": false,
+        "description": "Sources used to resolve `[1]`-style inline citations."
+      },
+      {
+        "name": "renderCode",
+        "type": "((code: string, language: string, streaming: boolean) => ReactNode)",
+        "required": false,
+        "description": "Override code block rendering (e.g. plug in Shiki)."
+      }
+    ]
+  },
+  "StreamingCaret": {
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "Markdown": {
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "children",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "streaming",
+        "type": "false | true",
+        "required": false,
+        "default": "false",
+        "description": "Show a blinking caret at the end of the content."
+      },
+      {
+        "name": "sources",
+        "type": "Source[]",
+        "required": false,
+        "description": "Sources used to resolve `[1]`-style inline citations."
+      },
+      {
+        "name": "renderCode",
+        "type": "((code: string, language: string, streaming: boolean) => ReactNode)",
+        "required": false,
+        "description": "Override code block rendering (e.g. plug in Shiki)."
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "SourceIcon": {
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "source",
+        "type": "Source",
+        "required": true
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "Sources": {
+    "description": "Collapsible \"Used N sources\" block with favicon stack.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "sources",
+        "type": "Source[]",
+        "required": true
+      },
+      {
+        "name": "defaultOpen",
+        "type": "false | true",
+        "required": false,
+        "default": "false"
+      },
+      {
+        "name": "label",
+        "type": "((count: number) => ReactNode)",
+        "required": false,
+        "description": "Label override, receives the count."
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "SourceCard": {
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "source",
+        "type": "Source",
+        "required": true
+      },
+      {
+        "name": "index",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "SourceChip": {
+    "description": "Pill-shaped source link: \"[1] Title ↗\"",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "source",
+        "type": "Source",
+        "required": true
+      },
+      {
+        "name": "index",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "InlineCitation": {
+    "description": "Inline numbered citation with a hover card preview.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "index",
+        "type": "number",
+        "required": true
+      },
+      {
+        "name": "source",
+        "type": "Source",
+        "required": false
+      }
+    ]
+  },
+  "Reasoning": {
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "content",
+        "type": "string",
+        "required": false,
+        "description": "The reasoning text (markdown) — or pass `children`."
+      },
+      {
+        "name": "children",
+        "type": "ReactNode",
+        "required": false
+      },
+      {
+        "name": "streaming",
+        "type": "false | true",
+        "required": false,
+        "default": "false",
+        "description": "True while the model is still thinking."
+      },
+      {
+        "name": "duration",
+        "type": "number",
+        "required": false,
+        "description": "Seconds spent thinking. Measured automatically if omitted."
+      },
+      {
+        "name": "summary",
+        "type": "ReactNode",
+        "required": false,
+        "description": "Optional one-line summary shown under the title."
+      },
+      {
+        "name": "variant",
+        "type": "\"card\" | \"inline\"",
+        "required": false,
+        "default": "\"card\"",
+        "description": "\"card\" (bordered) or \"inline\" (minimal, flows with the message)."
+      },
+      {
+        "name": "open",
+        "type": "false | true",
+        "required": false
+      },
+      {
+        "name": "defaultOpen",
+        "type": "false | true",
+        "required": false,
+        "default": "false"
+      },
+      {
+        "name": "onOpenChange",
+        "type": "((open: boolean) => void)",
+        "required": false
+      },
+      {
+        "name": "labels",
+        "type": "{ thinking?: ReactNode; thought?: ((seconds: number) => ReactNode) | undefined; }",
+        "required": false,
+        "description": "Label overrides."
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "ToolStatusBadge": {
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "status",
+        "type": "\"success\" | \"error\" | \"pending\" | \"running\" | \"denied\"",
+        "required": true
+      }
+    ]
+  },
+  "ToolCall": {
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "name",
+        "type": "string",
+        "required": true,
+        "description": "Tool identifier, e.g. \"web_search\"."
+      },
+      {
+        "name": "title",
+        "type": "ReactNode",
+        "required": false,
+        "description": "Friendly title shown instead of the raw name (e.g. \"Searching the web\")."
+      },
+      {
+        "name": "icon",
+        "type": "ReactNode",
+        "required": false
+      },
+      {
+        "name": "status",
+        "type": "\"success\" | \"error\" | \"pending\" | \"running\" | \"denied\"",
+        "required": false,
+        "default": "\"success\""
+      },
+      {
+        "name": "input",
+        "type": "unknown",
+        "required": false
+      },
+      {
+        "name": "output",
+        "type": "unknown",
+        "required": false
+      },
+      {
+        "name": "error",
+        "type": "ReactNode",
+        "required": false
+      },
+      {
+        "name": "durationMs",
+        "type": "number",
+        "required": false,
+        "description": "Duration in milliseconds."
+      },
+      {
+        "name": "children",
+        "type": "ReactNode",
+        "required": false,
+        "description": "Custom output renderer — overrides the default JSON/text output view."
+      },
+      {
+        "name": "open",
+        "type": "false | true",
+        "required": false
+      },
+      {
+        "name": "defaultOpen",
+        "type": "false | true",
+        "required": false,
+        "default": "false"
+      },
+      {
+        "name": "onOpenChange",
+        "type": "((open: boolean) => void)",
+        "required": false
+      },
+      {
+        "name": "onRetry",
+        "type": "(() => void)",
+        "required": false
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "ToolCallGroup": {
+    "description": "Stack of tool calls with a subtle connecting header, e.g. \"Used 3 tools\".",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "children",
+        "type": "ReactNode",
+        "required": true
+      },
+      {
+        "name": "label",
+        "type": "ReactNode",
+        "required": false
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "ToolApproval": {
+    "description": "Human-in-the-loop confirmation for any agent action.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "title",
+        "type": "ReactNode",
+        "required": true,
+        "description": "e.g. \"Send this email to 3 recipients?\", \"Book flight for $412?\", \"Run shell command?\""
+      },
+      {
+        "name": "description",
+        "type": "ReactNode",
+        "required": false
+      },
+      {
+        "name": "icon",
+        "type": "ReactNode",
+        "required": false
+      },
+      {
+        "name": "risk",
+        "type": "\"low\" | \"medium\" | \"high\"",
+        "required": false,
+        "default": "\"medium\""
+      },
+      {
+        "name": "details",
+        "type": "ApprovalDetail[]",
+        "required": false,
+        "description": "Key/value rows describing exactly what will happen (amount, recipient, date…)."
+      },
+      {
+        "name": "command",
+        "type": "string",
+        "required": false,
+        "description": "Optional command / code preview (rendered as a code block)."
+      },
+      {
+        "name": "commandLanguage",
+        "type": "string",
+        "required": false,
+        "default": "\"bash\""
+      },
+      {
+        "name": "children",
+        "type": "ReactNode",
+        "required": false,
+        "description": "Any custom preview (email draft, diff, product card…)."
+      },
+      {
+        "name": "status",
+        "type": "\"pending\" | \"denied\" | \"approved\"",
+        "required": false,
+        "default": "\"pending\""
+      },
+      {
+        "name": "onApprove",
+        "type": "((opts: { remember: boolean; }) => void)",
+        "required": false
+      },
+      {
+        "name": "onDeny",
+        "type": "(() => void)",
+        "required": false
+      },
+      {
+        "name": "rememberLabel",
+        "type": "ReactNode",
+        "required": false,
+        "default": "\"Don't ask again for this action\"",
+        "description": "Label for the \"remember\" checkbox. Pass `false` to hide it."
+      },
+      {
+        "name": "approveLabel",
+        "type": "ReactNode",
+        "required": false,
+        "default": "\"Approve\""
+      },
+      {
+        "name": "denyLabel",
+        "type": "ReactNode",
+        "required": false,
+        "default": "\"Deny\""
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "AgentQuestion": {
+    "description": "The agent asks the user a structured question (choice or free text).",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "question",
+        "type": "ReactNode",
+        "required": true
+      },
+      {
+        "name": "description",
+        "type": "ReactNode",
+        "required": false
+      },
+      {
+        "name": "options",
+        "type": "QuestionOption[]",
+        "required": false,
+        "default": "[]"
+      },
+      {
+        "name": "multiple",
+        "type": "false | true",
+        "required": false,
+        "default": "false",
+        "description": "Allow selecting several options."
+      },
+      {
+        "name": "allowCustom",
+        "type": "false | true",
+        "required": false,
+        "default": "false",
+        "description": "Show a free-text field (\"Other…\")."
+      },
+      {
+        "name": "customPlaceholder",
+        "type": "string",
+        "required": false,
+        "default": "\"Type your answer…\""
+      },
+      {
+        "name": "submitLabel",
+        "type": "ReactNode",
+        "required": false,
+        "default": "\"Continue\""
+      },
+      {
+        "name": "answered",
+        "type": "false | true",
+        "required": false,
+        "default": "false",
+        "description": "Once answered the card locks and shows the answer."
+      },
+      {
+        "name": "onSubmit",
+        "type": "((answer: { optionIds: string[]; text?: string | undefined; }) => void)",
+        "required": false
+      },
+      {
+        "name": "onSkip",
+        "type": "(() => void)",
+        "required": false
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "Message": {
+    "extendsNative": true,
+    "props": [
+      {
+        "name": "from",
+        "type": "\"user\" | \"assistant\" | \"system\"",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "ReactNode",
+        "required": false,
+        "description": "Display name (shown above assistant messages)."
+      },
+      {
+        "name": "avatar",
+        "type": "ReactNode | AgentAvatarProps",
+        "required": false,
+        "description": "Avatar node, avatar props, or `false` to hide."
+      },
+      {
+        "name": "timestamp",
+        "type": "ReactNode",
+        "required": false
+      },
+      {
+        "name": "actions",
+        "type": "ReactNode",
+        "required": false,
+        "description": "Rendered under the message (e.g. <MessageActions/>)."
+      },
+      {
+        "name": "variant",
+        "type": "\"bubble\" | \"flat\"",
+        "required": false,
+        "default": "\"bubble\"",
+        "description": "\"bubble\": user messages in a bubble on the right (default)\n\"flat\":   everything left-aligned with avatars (document style)"
+      }
+    ]
+  },
+  "MessageActions": {
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "copyText",
+        "type": "string",
+        "required": false,
+        "description": "Text copied by the copy button. Omit to hide it."
+      },
+      {
+        "name": "onRegenerate",
+        "type": "(() => void)",
+        "required": false
+      },
+      {
+        "name": "onEdit",
+        "type": "(() => void)",
+        "required": false
+      },
+      {
+        "name": "feedback",
+        "type": "\"up\" | \"down\"",
+        "required": false
+      },
+      {
+        "name": "onFeedback",
+        "type": "((value: Feedback) => void)",
+        "required": false
+      },
+      {
+        "name": "alwaysVisible",
+        "type": "false | true",
+        "required": false,
+        "default": "false",
+        "description": "Keep visible instead of revealing on hover."
+      },
+      {
+        "name": "children",
+        "type": "ReactNode",
+        "required": false
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "TypingIndicator": {
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "label",
+        "type": "ReactNode",
+        "required": false
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "Thread": {
+    "description": "Scrollable message list that sticks to the bottom while content streams.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "children",
+        "type": "ReactNode",
+        "required": true
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false,
+        "description": "Classes for the scroll container."
+      },
+      {
+        "name": "contentClassName",
+        "type": "string",
+        "required": false,
+        "description": "Classes for the centered content column."
+      },
+      {
+        "name": "hideScrollButton",
+        "type": "false | true",
+        "required": false,
+        "description": "Hide the floating \"scroll to bottom\" button."
+      }
+    ]
+  },
+  "Attachment": {
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "attachment",
+        "type": "AttachmentData",
+        "required": true
+      },
+      {
+        "name": "onRemove",
+        "type": "((id: string) => void)",
+        "required": false
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "AttachmentList": {
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "attachments",
+        "type": "AttachmentData[]",
+        "required": true
+      },
+      {
+        "name": "onRemove",
+        "type": "((id: string) => void)",
+        "required": false
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "ModelSelector": {
+    "description": "Dropdown for picking a model, agent, persona or mode.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "models",
+        "type": "ModelOption[]",
+        "required": true
+      },
+      {
+        "name": "value",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "defaultValue",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "onValueChange",
+        "type": "((id: string) => void)",
+        "required": false
+      },
+      {
+        "name": "side",
+        "type": "\"top\" | \"bottom\"",
+        "required": false,
+        "default": "\"top\"",
+        "description": "Which side the menu opens on. Defaults to \"top\" (good inside a prompt input)."
+      },
+      {
+        "name": "align",
+        "type": "\"start\" | \"end\"",
+        "required": false,
+        "default": "\"start\""
+      },
+      {
+        "name": "label",
+        "type": "ReactNode",
+        "required": false,
+        "description": "Header label inside the menu."
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "PromptInput": {
+    "extendsNative": true,
+    "props": [
+      {
+        "name": "value",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "defaultValue",
+        "type": "string",
+        "required": false,
+        "default": "\"\""
+      },
+      {
+        "name": "onValueChange",
+        "type": "((value: string) => void)",
+        "required": false
+      },
+      {
+        "name": "onSubmit",
+        "type": "((message: PromptSubmission) => void)",
+        "required": false
+      },
+      {
+        "name": "status",
+        "type": "\"error\" | \"streaming\" | \"ready\" | \"submitted\"",
+        "required": false,
+        "default": "\"ready\"",
+        "description": "\"streaming\"/\"submitted\" turns the send button into a stop button."
+      },
+      {
+        "name": "onStop",
+        "type": "(() => void)",
+        "required": false
+      },
+      {
+        "name": "placeholder",
+        "type": "string",
+        "required": false,
+        "default": "\"Ask anything…\""
+      },
+      {
+        "name": "disabled",
+        "type": "false | true",
+        "required": false
+      },
+      {
+        "name": "autoFocus",
+        "type": "false | true",
+        "required": false
+      },
+      {
+        "name": "maxRows",
+        "type": "number",
+        "required": false,
+        "default": "8"
+      },
+      {
+        "name": "allowAttachments",
+        "type": "false | true",
+        "required": false,
+        "default": "true",
+        "description": "Enable file attachments (button, drag & drop, paste)."
+      },
+      {
+        "name": "accept",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "attachments",
+        "type": "AttachmentData[]",
+        "required": false,
+        "description": "Controlled attachments. If omitted, attachments are managed internally."
+      },
+      {
+        "name": "onAttach",
+        "type": "((files: File[]) => void)",
+        "required": false
+      },
+      {
+        "name": "onRemoveAttachment",
+        "type": "((id: string) => void)",
+        "required": false
+      },
+      {
+        "name": "references",
+        "type": "PromptReference[]",
+        "required": false,
+        "description": "Context chips shown above the input (e.g. a referenced image)."
+      },
+      {
+        "name": "onRemoveReference",
+        "type": "((id: string) => void)",
+        "required": false
+      },
+      {
+        "name": "onVoice",
+        "type": "(() => void)",
+        "required": false,
+        "description": "Show a microphone button."
+      },
+      {
+        "name": "voiceActive",
+        "type": "false | true",
+        "required": false
+      },
+      {
+        "name": "toolbar",
+        "type": "ReactNode",
+        "required": false,
+        "description": "Extra controls on the left of the toolbar (e.g. <ModelSelector/>)."
+      },
+      {
+        "name": "actions",
+        "type": "ReactNode",
+        "required": false,
+        "description": "Extra controls on the right of the toolbar, before send."
+      },
+      {
+        "name": "hint",
+        "type": "ReactNode",
+        "required": false,
+        "description": "Footer hint. `false` hides it."
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "Suggestions": {
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "suggestions",
+        "type": "Suggestion[]",
+        "required": true
+      },
+      {
+        "name": "onSelect",
+        "type": "((value: string) => void)",
+        "required": false
+      },
+      {
+        "name": "variant",
+        "type": "\"chips\" | \"cards\"",
+        "required": false,
+        "default": "\"chips\"",
+        "description": "\"chips\" (compact pills) or \"cards\" (grid with descriptions)."
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "EmptyState": {
+    "description": "Welcome screen shown before the first message.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "icon",
+        "type": "ReactNode",
+        "required": false
+      },
+      {
+        "name": "title",
+        "type": "ReactNode",
+        "required": false,
+        "default": "\"How can I help you today?\""
+      },
+      {
+        "name": "description",
+        "type": "ReactNode",
+        "required": false
+      },
+      {
+        "name": "children",
+        "type": "ReactNode",
+        "required": false
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "TaskPlan": {
+    "description": "Vertical timeline of an agent's plan / workflow steps.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "steps",
+        "type": "PlanStep[]",
+        "required": true
+      },
+      {
+        "name": "title",
+        "type": "ReactNode",
+        "required": false
+      },
+      {
+        "name": "showProgress",
+        "type": "false | true",
+        "required": false,
+        "default": "true",
+        "description": "Show \"3 of 6\" + progress bar in the header."
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "AgentHeader": {
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "name",
+        "type": "ReactNode",
+        "required": true
+      },
+      {
+        "name": "description",
+        "type": "ReactNode",
+        "required": false
+      },
+      {
+        "name": "state",
+        "type": "\"idle\" | \"online\" | \"thinking\" | \"working\" | \"waiting\" | \"error\" | \"offline\"",
+        "required": false,
+        "default": "\"online\""
+      },
+      {
+        "name": "stateLabel",
+        "type": "ReactNode",
+        "required": false,
+        "description": "Override the state label."
+      },
+      {
+        "name": "avatar",
+        "type": "AgentAvatarProps",
+        "required": false
+      },
+      {
+        "name": "actions",
+        "type": "ReactNode",
+        "required": false
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "UsageMeter": {
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "used",
+        "type": "number",
+        "required": true,
+        "description": "Tokens (or credits) used."
+      },
+      {
+        "name": "limit",
+        "type": "number",
+        "required": true
+      },
+      {
+        "name": "input",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "output",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "cached",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "cost",
+        "type": "number",
+        "required": false,
+        "description": "Cost in currency units, e.g. 0.046."
+      },
+      {
+        "name": "currency",
+        "type": "string",
+        "required": false,
+        "default": "\"$\""
+      },
+      {
+        "name": "unit",
+        "type": "string",
+        "required": false,
+        "default": "\"tokens\""
+      },
+      {
+        "name": "title",
+        "type": "ReactNode",
+        "required": false,
+        "default": "\"Usage\""
+      },
+      {
+        "name": "variant",
+        "type": "\"card\" | \"bar\" | \"ring\"",
+        "required": false,
+        "default": "\"card\"",
+        "description": "\"card\" with breakdown, \"bar\" inline, or \"ring\" compact."
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "ActivityFeed": {
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "items",
+        "type": "ActivityItem[]",
+        "required": true
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "AgentHandoff": {
+    "description": "Inline divider showing control passing from one agent to another.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "from",
+        "type": "AgentRef",
+        "required": true
+      },
+      {
+        "name": "to",
+        "type": "AgentRef",
+        "required": true
+      },
+      {
+        "name": "reason",
+        "type": "ReactNode",
+        "required": false
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "AgentRoster": {
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "agents",
+        "type": "RosterAgent[]",
+        "required": true
+      },
+      {
+        "name": "activeId",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "onSelect",
+        "type": "((id: string) => void)",
+        "required": false
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "HandoffBanner": {
+    "description": "Banner for escalating a conversation from AI to a human (support use-cases).",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "status",
+        "type": "\"requested\" | \"connecting\" | \"connected\" | \"ended\"",
+        "required": true
+      },
+      {
+        "name": "agentName",
+        "type": "string",
+        "required": false,
+        "description": "Human agent name once connected."
+      },
+      {
+        "name": "agentAvatar",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "eta",
+        "type": "ReactNode",
+        "required": false,
+        "description": "e.g. \"~2 min\""
+      },
+      {
+        "name": "onCancel",
+        "type": "(() => void)",
+        "required": false
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "Artifact": {
+    "description": "Side panel / card for generated documents, code, charts, itineraries, etc.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "title",
+        "type": "ReactNode",
+        "required": true
+      },
+      {
+        "name": "subtitle",
+        "type": "ReactNode",
+        "required": false
+      },
+      {
+        "name": "icon",
+        "type": "ReactNode",
+        "required": false
+      },
+      {
+        "name": "tabs",
+        "type": "ArtifactTab[]",
+        "required": false
+      },
+      {
+        "name": "defaultTab",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "copyText",
+        "type": "string",
+        "required": false,
+        "description": "Text for the built-in copy button."
+      },
+      {
+        "name": "onDownload",
+        "type": "(() => void)",
+        "required": false
+      },
+      {
+        "name": "onClose",
+        "type": "(() => void)",
+        "required": false
+      },
+      {
+        "name": "actions",
+        "type": "ReactNode",
+        "required": false
+      },
+      {
+        "name": "footer",
+        "type": "ReactNode",
+        "required": false
+      },
+      {
+        "name": "children",
+        "type": "ReactNode",
+        "required": false,
+        "description": "Body when not using tabs."
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "ConversationList": {
+    "description": "Sidebar with threads grouped by date, search and \"New chat\".",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "items",
+        "type": "ConversationItem[]",
+        "required": true
+      },
+      {
+        "name": "activeId",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "onSelect",
+        "type": "((id: string) => void)",
+        "required": false
+      },
+      {
+        "name": "onNew",
+        "type": "(() => void)",
+        "required": false
+      },
+      {
+        "name": "onDelete",
+        "type": "((id: string) => void)",
+        "required": false
+      },
+      {
+        "name": "newLabel",
+        "type": "ReactNode",
+        "required": false,
+        "default": "\"New chat\""
+      },
+      {
+        "name": "searchable",
+        "type": "false | true",
+        "required": false,
+        "default": "true"
+      },
+      {
+        "name": "header",
+        "type": "ReactNode",
+        "required": false
+      },
+      {
+        "name": "footer",
+        "type": "ReactNode",
+        "required": false
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "VoiceOrb": {
+    "description": "Animated orb that visualizes a voice agent's state.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "state",
+        "type": "\"idle\" | \"thinking\" | \"connecting\" | \"listening\" | \"speaking\"",
+        "required": false,
+        "default": "\"idle\""
+      },
+      {
+        "name": "level",
+        "type": "number",
+        "required": false,
+        "default": "0",
+        "description": "Live audio amplitude 0–1 (mic level while listening, output level while speaking)."
+      },
+      {
+        "name": "size",
+        "type": "number",
+        "required": false,
+        "default": "168",
+        "description": "Diameter in px."
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "VoiceDial": {
+    "description": "Instrument-style dial for a voice agent: ticked bezel, level disc and speaking ripples.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "state",
+        "type": "\"idle\" | \"thinking\" | \"connecting\" | \"listening\" | \"speaking\"",
+        "required": false,
+        "default": "\"idle\""
+      },
+      {
+        "name": "level",
+        "type": "number",
+        "required": false,
+        "default": "0",
+        "description": "Live audio amplitude 0–1 (mic level while listening, output level while speaking)."
+      },
+      {
+        "name": "size",
+        "type": "number",
+        "required": false,
+        "default": "168",
+        "description": "Diameter in px."
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "VoiceWave": {
+    "description": "Small animated equalizer bars — use for \"speaking\" indicators.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "bars",
+        "type": "number",
+        "required": false,
+        "default": "5"
+      },
+      {
+        "name": "active",
+        "type": "false | true",
+        "required": false,
+        "default": "true"
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "VoicePanel": {
+    "description": "A complete voice-call surface: orb, status, transcript and call controls.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "state",
+        "type": "\"idle\" | \"thinking\" | \"connecting\" | \"listening\" | \"speaking\"",
+        "required": true
+      },
+      {
+        "name": "level",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "name",
+        "type": "ReactNode",
+        "required": false,
+        "description": "Agent name shown above the status."
+      },
+      {
+        "name": "transcript",
+        "type": "ReactNode",
+        "required": false,
+        "description": "Live transcript line (what the user or agent is saying)."
+      },
+      {
+        "name": "muted",
+        "type": "false | true",
+        "required": false
+      },
+      {
+        "name": "onToggleMute",
+        "type": "(() => void)",
+        "required": false
+      },
+      {
+        "name": "onEnd",
+        "type": "(() => void)",
+        "required": false
+      },
+      {
+        "name": "elapsed",
+        "type": "number",
+        "required": false,
+        "description": "Call duration in seconds."
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "ChatWidget": {
+    "description": "Floating launcher + chat panel for embedding an agent on any website.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "title",
+        "type": "ReactNode",
+        "required": false,
+        "default": "\"Assistant\""
+      },
+      {
+        "name": "subtitle",
+        "type": "ReactNode",
+        "required": false,
+        "default": "\"Typically replies instantly\""
+      },
+      {
+        "name": "avatar",
+        "type": "AgentAvatarProps",
+        "required": false
+      },
+      {
+        "name": "open",
+        "type": "false | true",
+        "required": false
+      },
+      {
+        "name": "defaultOpen",
+        "type": "false | true",
+        "required": false,
+        "default": "false"
+      },
+      {
+        "name": "onOpenChange",
+        "type": "((open: boolean) => void)",
+        "required": false
+      },
+      {
+        "name": "position",
+        "type": "\"bottom-right\" | \"bottom-left\"",
+        "required": false,
+        "default": "\"bottom-right\""
+      },
+      {
+        "name": "greeting",
+        "type": "ReactNode",
+        "required": false,
+        "description": "Teaser bubble shown next to the launcher while closed."
+      },
+      {
+        "name": "launcherIcon",
+        "type": "ReactNode",
+        "required": false
+      },
+      {
+        "name": "contained",
+        "type": "false | true",
+        "required": false,
+        "default": "false",
+        "description": "Render inline (position: absolute within parent) instead of fixed to the viewport."
+      },
+      {
+        "name": "width",
+        "type": "number",
+        "required": false,
+        "default": "400"
+      },
+      {
+        "name": "height",
+        "type": "number",
+        "required": false,
+        "default": "640"
+      },
+      {
+        "name": "children",
+        "type": "ReactNode",
+        "required": true,
+        "description": "Panel body — typically <AgentChat compact />"
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "MessageParts": {
+    "description": "Renders every part of a message: text, reasoning, tools, approvals, sources, files.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "message",
+        "type": "ChatMessage",
+        "required": true
+      },
+      {
+        "name": "streaming",
+        "type": "false | true",
+        "required": false,
+        "default": "false",
+        "description": "The message is currently being streamed."
+      },
+      {
+        "name": "renderTool",
+        "type": "((part: ToolPart, ctx: { name: string; status: ToolStatus; }) => ReactNode)",
+        "required": false,
+        "description": "Return a node to custom-render a tool (generative UI); return undefined for the default card."
+      },
+      {
+        "name": "renderData",
+        "type": "((part: DataPart) => ReactNode)",
+        "required": false,
+        "description": "Render custom `data-*` parts."
+      },
+      {
+        "name": "onToolApproval",
+        "type": "((decision: { id: string; approved: boolean; part: ToolPart; }) => void)",
+        "required": false
+      },
+      {
+        "name": "toolTitles",
+        "type": "Record<string, string>",
+        "required": false,
+        "description": "Friendly titles per tool name, e.g. { web_search: \"Searching the web\" }"
+      },
+      {
+        "name": "renderCode",
+        "type": "((code: string, language: string, streaming: boolean) => ReactNode)",
+        "required": false
+      },
+      {
+        "name": "onImageReference",
+        "type": "((image: ImageItem) => void)",
+        "required": false,
+        "description": "Adds \"Ask about this image\" to the lightbox of image attachments."
+      }
+    ]
+  },
+  "AgentChat": {
+    "description": "Batteries-included chat surface: thread, messages, reasoning, tools,\r\napprovals, sources, empty state, follow-ups and the prompt input.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "messages",
+        "type": "ChatMessage[]",
+        "required": true
+      },
+      {
+        "name": "status",
+        "type": "\"error\" | \"streaming\" | \"ready\" | \"submitted\"",
+        "required": false,
+        "default": "\"ready\""
+      },
+      {
+        "name": "onSend",
+        "type": "((text: string, submission: PromptSubmission) => void)",
+        "required": false
+      },
+      {
+        "name": "onStop",
+        "type": "(() => void)",
+        "required": false
+      },
+      {
+        "name": "onRegenerate",
+        "type": "((messageId: string) => void)",
+        "required": false
+      },
+      {
+        "name": "onFeedback",
+        "type": "((messageId: string, value: Feedback) => void)",
+        "required": false
+      },
+      {
+        "name": "agent",
+        "type": "AgentInfo",
+        "required": false
+      },
+      {
+        "name": "header",
+        "type": "ReactNode",
+        "required": false,
+        "description": "`true` renders a default header from `agent`; or pass your own node."
+      },
+      {
+        "name": "welcome",
+        "type": "{ title?: ReactNode; description?: ReactNode; icon?: ReactNode; }",
+        "required": false,
+        "description": "Empty-state title/description."
+      },
+      {
+        "name": "suggestions",
+        "type": "Suggestion[]",
+        "required": false,
+        "description": "Starter prompts shown in the empty state."
+      },
+      {
+        "name": "followUps",
+        "type": "Suggestion[]",
+        "required": false,
+        "description": "Follow-up chips shown above the input after the last answer."
+      },
+      {
+        "name": "models",
+        "type": "ModelOption[]",
+        "required": false
+      },
+      {
+        "name": "model",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "onModelChange",
+        "type": "((id: string) => void)",
+        "required": false
+      },
+      {
+        "name": "placeholder",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "allowAttachments",
+        "type": "false | true",
+        "required": false,
+        "default": "true"
+      },
+      {
+        "name": "onVoice",
+        "type": "(() => void)",
+        "required": false
+      },
+      {
+        "name": "toolbar",
+        "type": "ReactNode",
+        "required": false,
+        "description": "Extra controls in the prompt toolbar."
+      },
+      {
+        "name": "error",
+        "type": "ReactNode",
+        "required": false,
+        "description": "Error message shown at the end of the thread."
+      },
+      {
+        "name": "onRetry",
+        "type": "(() => void)",
+        "required": false
+      },
+      {
+        "name": "compact",
+        "type": "false | true",
+        "required": false,
+        "default": "false",
+        "description": "Tighter spacing for widgets & side panels."
+      },
+      {
+        "name": "autoFocus",
+        "type": "false | true",
+        "required": false,
+        "description": "Focus the input on mount. Defaults to `true` unless `compact`."
+      },
+      {
+        "name": "variant",
+        "type": "\"bubble\" | \"flat\"",
+        "required": false,
+        "default": "\"bubble\"",
+        "description": "Message layout."
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "renderCode",
+        "type": "((code: string, language: string, streaming: boolean) => ReactNode)",
+        "required": false
+      },
+      {
+        "name": "renderTool",
+        "type": "((part: ToolPart, ctx: { name: string; status: ToolStatus; }) => ReactNode)",
+        "required": false,
+        "description": "Return a node to custom-render a tool (generative UI); return undefined for the default card."
+      },
+      {
+        "name": "renderData",
+        "type": "((part: DataPart) => ReactNode)",
+        "required": false,
+        "description": "Render custom `data-*` parts."
+      },
+      {
+        "name": "onToolApproval",
+        "type": "((decision: { id: string; approved: boolean; part: ToolPart; }) => void)",
+        "required": false
+      },
+      {
+        "name": "toolTitles",
+        "type": "Record<string, string>",
+        "required": false,
+        "description": "Friendly titles per tool name, e.g. { web_search: \"Searching the web\" }"
+      }
+    ]
+  },
+  "AgentCore": {
+    "description": "Arc-reactor style \"presence\" for an AI agent — reacts to state and audio.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "state",
+        "type": "\"idle\" | \"thinking\" | \"working\" | \"error\" | \"offline\" | \"listening\" | \"speaking\"",
+        "required": false,
+        "default": "\"idle\""
+      },
+      {
+        "name": "level",
+        "type": "number",
+        "required": false,
+        "default": "0",
+        "description": "Live loudness 0–1."
+      },
+      {
+        "name": "spectrum",
+        "type": "number[]",
+        "required": false,
+        "description": "Optional frequency bins 0–1 (from useAudioAnalyser). Synthesized from `level` when omitted."
+      },
+      {
+        "name": "size",
+        "type": "number",
+        "required": false,
+        "default": "300",
+        "description": "Diameter in px. Default 300."
+      },
+      {
+        "name": "label",
+        "type": "ReactNode",
+        "required": false,
+        "description": "Center content (e.g. agent name)."
+      },
+      {
+        "name": "sublabel",
+        "type": "ReactNode",
+        "required": false
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "HudPanel": {
+    "description": "Sci-fi framed panel with corner brackets — the building block of HUD layouts.",
+    "extendsNative": true,
+    "props": [
+      {
+        "name": "title",
+        "type": "ReactNode",
+        "required": false
+      },
+      {
+        "name": "code",
+        "type": "ReactNode",
+        "required": false,
+        "description": "Small code shown on the right of the header, e.g. \"SYS-01\"."
+      },
+      {
+        "name": "status",
+        "type": "ReactNode",
+        "required": false,
+        "description": "Right-side header slot (status, actions)."
+      },
+      {
+        "name": "scanlines",
+        "type": "false | true",
+        "required": false,
+        "description": "Subtle CRT scanlines + moving scan bar."
+      },
+      {
+        "name": "glow",
+        "type": "false | true",
+        "required": false,
+        "description": "Accent glow around the border."
+      },
+      {
+        "name": "bodyClassName",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "RadialGauge": {
+    "description": "270° arc gauge for telemetry: CPU, confidence, context window, latency…",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "value",
+        "type": "number",
+        "required": true
+      },
+      {
+        "name": "max",
+        "type": "number",
+        "required": false,
+        "default": "100"
+      },
+      {
+        "name": "label",
+        "type": "ReactNode",
+        "required": false
+      },
+      {
+        "name": "unit",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "size",
+        "type": "number",
+        "required": false,
+        "default": "132"
+      },
+      {
+        "name": "tone",
+        "type": "\"accent\" | \"success\" | \"warning\" | \"danger\" | \"info\" | \"auto\"",
+        "required": false,
+        "default": "\"accent\"",
+        "description": "Fixed tone, or thresholds chosen automatically when \"auto\"."
+      },
+      {
+        "name": "format",
+        "type": "((value: number) => ReactNode)",
+        "required": false,
+        "description": "Format the center value."
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "Sparkline": {
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "data",
+        "type": "number[]",
+        "required": true
+      },
+      {
+        "name": "width",
+        "type": "number",
+        "required": false,
+        "default": "120"
+      },
+      {
+        "name": "height",
+        "type": "number",
+        "required": false,
+        "default": "32"
+      },
+      {
+        "name": "tone",
+        "type": "\"accent\" | \"success\" | \"warning\" | \"danger\" | \"info\"",
+        "required": false,
+        "default": "\"accent\""
+      },
+      {
+        "name": "fill",
+        "type": "false | true",
+        "required": false,
+        "default": "true"
+      },
+      {
+        "name": "live",
+        "type": "false | true",
+        "required": false,
+        "default": "false",
+        "description": "Pulse the last point."
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "HudStat": {
+    "description": "Telemetry readout: label, big mono value, delta and sparkline.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "label",
+        "type": "ReactNode",
+        "required": true
+      },
+      {
+        "name": "value",
+        "type": "ReactNode",
+        "required": true
+      },
+      {
+        "name": "unit",
+        "type": "ReactNode",
+        "required": false
+      },
+      {
+        "name": "delta",
+        "type": "number",
+        "required": false,
+        "description": "Percentage change; positive renders as success."
+      },
+      {
+        "name": "invertDelta",
+        "type": "false | true",
+        "required": false,
+        "description": "Invert delta colors (e.g. latency: lower is better)."
+      },
+      {
+        "name": "data",
+        "type": "number[]",
+        "required": false
+      },
+      {
+        "name": "icon",
+        "type": "ReactNode",
+        "required": false
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "Waveform": {
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "levels",
+        "type": "number[]",
+        "required": false,
+        "description": "Bins 0–1. When omitted, bars are synthesized from `level`."
+      },
+      {
+        "name": "level",
+        "type": "number",
+        "required": false,
+        "default": "0.5"
+      },
+      {
+        "name": "bars",
+        "type": "number",
+        "required": false,
+        "default": "48"
+      },
+      {
+        "name": "height",
+        "type": "number",
+        "required": false,
+        "default": "48"
+      },
+      {
+        "name": "active",
+        "type": "false | true",
+        "required": false,
+        "default": "true"
+      },
+      {
+        "name": "mirror",
+        "type": "false | true",
+        "required": false,
+        "default": "true",
+        "description": "Mirror bars around the vertical center."
+      },
+      {
+        "name": "tone",
+        "type": "\"accent\" | \"success\" | \"warning\" | \"danger\" | \"info\"",
+        "required": false,
+        "default": "\"accent\""
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "CommandConsole": {
+    "description": "Terminal-style command line for operating an agent by text commands.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "lines",
+        "type": "ConsoleLine[]",
+        "required": true
+      },
+      {
+        "name": "onCommand",
+        "type": "((command: string) => void)",
+        "required": false
+      },
+      {
+        "name": "prompt",
+        "type": "string",
+        "required": false,
+        "default": "\"›\""
+      },
+      {
+        "name": "placeholder",
+        "type": "string",
+        "required": false,
+        "default": "\"Type a command…\""
+      },
+      {
+        "name": "title",
+        "type": "ReactNode",
+        "required": false,
+        "default": "\"Command\""
+      },
+      {
+        "name": "height",
+        "type": "string | number",
+        "required": false,
+        "default": "280",
+        "description": "Height of the scroll area. Default 280."
+      },
+      {
+        "name": "disabled",
+        "type": "false | true",
+        "required": false
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "BootSequence": {
+    "description": "Animated startup checklist — great for agent \"wake up\" moments and onboarding.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "steps",
+        "type": "string[]",
+        "required": true
+      },
+      {
+        "name": "interval",
+        "type": "number",
+        "required": false,
+        "default": "320",
+        "description": "ms between steps. Default 320."
+      },
+      {
+        "name": "title",
+        "type": "ReactNode",
+        "required": false,
+        "default": "\"Initializing agent\""
+      },
+      {
+        "name": "onComplete",
+        "type": "(() => void)",
+        "required": false
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "HudBackground": {
+    "description": "Ambient grid + glow + optional sweeping scan line. Place inside a `relative` container.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "scan",
+        "type": "false | true",
+        "required": false,
+        "default": "true"
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "DataTicker": {
+    "description": "Continuously scrolling status strip (markets, system events, agent activity).",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "items",
+        "type": "ReactNode[]",
+        "required": true
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "AgentGraph": {
+    "description": "Animated tree of agents: who delegated to whom, who's working, and where work is flowing.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "nodes",
+        "type": "AgentNode[]",
+        "required": true
+      },
+      {
+        "name": "links",
+        "type": "AgentLink[]",
+        "required": false,
+        "default": "[]",
+        "description": "Extra peer-to-peer links (drawn dashed), in addition to the parent tree."
+      },
+      {
+        "name": "direction",
+        "type": "\"down\" | \"right\"",
+        "required": false,
+        "default": "\"right\"",
+        "description": "Layout direction. Default \"right\"."
+      },
+      {
+        "name": "nodeWidth",
+        "type": "number",
+        "required": false,
+        "default": "216"
+      },
+      {
+        "name": "nodeHeight",
+        "type": "number",
+        "required": false,
+        "default": "66"
+      },
+      {
+        "name": "levelGap",
+        "type": "number",
+        "required": false,
+        "default": "64",
+        "description": "Space between depth levels."
+      },
+      {
+        "name": "siblingGap",
+        "type": "number",
+        "required": false,
+        "default": "16",
+        "description": "Space between siblings."
+      },
+      {
+        "name": "selectedId",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "onSelect",
+        "type": "((id: string) => void)",
+        "required": false
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "TraceTree": {
+    "description": "Nested trace of agent, LLM and tool spans with a live waterfall timeline.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "spans",
+        "type": "TraceSpan[]",
+        "required": true
+      },
+      {
+        "name": "now",
+        "type": "number",
+        "required": false,
+        "description": "Current time (ms from trace start) for running spans. Auto-advances when omitted."
+      },
+      {
+        "name": "selectedId",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "onSelect",
+        "type": "((id: string) => void)",
+        "required": false
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "AgentHub": {
+    "description": "Hub-and-spoke (\"octopus\") view: an orchestrator reaching out to the agents it coordinates.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "hub",
+        "type": "Omit<AgentNode, \"parentId\">",
+        "required": true,
+        "description": "The orchestrating agent in the center."
+      },
+      {
+        "name": "agents",
+        "type": "Omit<AgentNode, \"parentId\">[]",
+        "required": true,
+        "description": "Agents (or tools) the hub reaches out to."
+      },
+      {
+        "name": "size",
+        "type": "number",
+        "required": false,
+        "default": "560",
+        "description": "Square size in px (scales down to fit). Default 560."
+      },
+      {
+        "name": "sway",
+        "type": "false | true",
+        "required": false,
+        "default": "true",
+        "description": "Gently sway the tentacles. Default true."
+      },
+      {
+        "name": "selectedId",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "onSelect",
+        "type": "((id: string) => void)",
+        "required": false
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "AttitudeIndicator": {
+    "description": "An aviation attitude indicator re-imagined as an agent's presence:\r\nthe horizon steadies when idle, rolls gently while thinking, and responds\r\nto audio while listening or speaking. The bezel pointer shows `value`.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "state",
+        "type": "\"idle\" | \"thinking\" | \"working\" | \"error\" | \"offline\" | \"listening\" | \"speaking\"",
+        "required": false,
+        "default": "\"idle\""
+      },
+      {
+        "name": "value",
+        "type": "number",
+        "required": false,
+        "description": "Bezel pointer 0–100 (e.g. confidence, progress, context used)."
+      },
+      {
+        "name": "level",
+        "type": "number",
+        "required": false,
+        "default": "0",
+        "description": "Live loudness 0–1 — tilts the horizon while listening/speaking."
+      },
+      {
+        "name": "label",
+        "type": "ReactNode",
+        "required": false,
+        "description": "Large label drawn in the sky (e.g. \"Awaiting approval\")."
+      },
+      {
+        "name": "sublabel",
+        "type": "ReactNode",
+        "required": false,
+        "description": "Small caption under the label (e.g. \"Executor / K-03\")."
+      },
+      {
+        "name": "caption",
+        "type": "ReactNode",
+        "required": false,
+        "description": "Third line, e.g. \"Observe → Propose → Confirm\"."
+      },
+      {
+        "name": "tone",
+        "type": "\"accent\" | \"success\" | \"warning\" | \"danger\" | \"info\" | \"muted\"",
+        "required": false,
+        "default": "\"warning\"",
+        "description": "Instrument markings color. Default \"warning\" (ochre)."
+      },
+      {
+        "name": "size",
+        "type": "number",
+        "required": false,
+        "default": "420"
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "RunCard": {
+    "description": "A single agent run: title, run id, status chip and a step timeline with rich step content.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "title",
+        "type": "ReactNode",
+        "required": true
+      },
+      {
+        "name": "runId",
+        "type": "ReactNode",
+        "required": false
+      },
+      {
+        "name": "status",
+        "type": "\"waiting\" | \"running\" | \"complete\" | \"failed\" | \"paused\"",
+        "required": false,
+        "default": "\"running\""
+      },
+      {
+        "name": "steps",
+        "type": "RunStep[]",
+        "required": true
+      },
+      {
+        "name": "actions",
+        "type": "ReactNode",
+        "required": false,
+        "description": "Header actions."
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "TelemetryChart": {
+    "description": "Readout + gridded line chart for latency, throughput, success rate, cost…",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "label",
+        "type": "ReactNode",
+        "required": true
+      },
+      {
+        "name": "value",
+        "type": "ReactNode",
+        "required": false,
+        "description": "Big readout; defaults to the last data point."
+      },
+      {
+        "name": "unit",
+        "type": "ReactNode",
+        "required": false
+      },
+      {
+        "name": "data",
+        "type": "number[]",
+        "required": true
+      },
+      {
+        "name": "xLabels",
+        "type": "string[]",
+        "required": false,
+        "description": "X-axis labels (shown at even intervals)."
+      },
+      {
+        "name": "yTicks",
+        "type": "number",
+        "required": false,
+        "default": "4",
+        "description": "Y-axis tick count. Default 4."
+      },
+      {
+        "name": "min",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "max",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "formatY",
+        "type": "((v: number) => string)",
+        "required": false,
+        "default": "(v) => (Math.abs(v) >= 1000 ? v.toLocaleString() : String(Math.round(v * 10) / 10))",
+        "description": "Format y-axis labels."
+      },
+      {
+        "name": "tone",
+        "type": "\"accent\" | \"success\" | \"warning\" | \"danger\" | \"info\" | \"muted\"",
+        "required": false,
+        "default": "\"warning\""
+      },
+      {
+        "name": "height",
+        "type": "number",
+        "required": false,
+        "default": "96"
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "ToolCallRow": {
+    "description": "Compact, single-line tool status — for dense lists and dashboards.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "status",
+        "type": "\"success\" | \"waiting\" | \"error\" | \"pending\" | \"running\" | \"denied\"",
+        "required": true
+      },
+      {
+        "name": "icon",
+        "type": "ReactNode",
+        "required": false
+      },
+      {
+        "name": "progress",
+        "type": "number",
+        "required": false,
+        "description": "0–100 shows a progress bar while running."
+      },
+      {
+        "name": "durationMs",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "detail",
+        "type": "ReactNode",
+        "required": false
+      },
+      {
+        "name": "onRetry",
+        "type": "(() => void)",
+        "required": false
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "SegmentedMeter": {
+    "description": "Block-style meter for context windows, quotas and budgets.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "value",
+        "type": "number",
+        "required": true
+      },
+      {
+        "name": "max",
+        "type": "number",
+        "required": true
+      },
+      {
+        "name": "segments",
+        "type": "number",
+        "required": false,
+        "default": "20"
+      },
+      {
+        "name": "label",
+        "type": "ReactNode",
+        "required": false
+      },
+      {
+        "name": "caption",
+        "type": "ReactNode",
+        "required": false,
+        "description": "Right-side caption; defaults to \"NN% used\"."
+      },
+      {
+        "name": "detail",
+        "type": "ReactNode",
+        "required": false,
+        "description": "Text under the bar, e.g. \"12,480 / 32,000 tokens\"."
+      },
+      {
+        "name": "tone",
+        "type": "\"accent\" | \"success\" | \"warning\" | \"danger\" | \"info\" | \"muted\"",
+        "required": false,
+        "default": "\"muted\""
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "EventLog": {
+    "description": "Structured event stream (`event` + `key=value` fields) for agent runs and audits.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "events",
+        "type": "LogEvent[]",
+        "required": true
+      },
+      {
+        "name": "footer",
+        "type": "ReactNode",
+        "required": false,
+        "description": "Footer prompt, e.g. \"Awaiting operator input\"."
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "Lightbox": {
+    "description": "Full-screen image viewer with zoom (wheel, pinch, double-click, buttons), pan and keyboard navigation.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "images",
+        "type": "ImageItem[]",
+        "required": true
+      },
+      {
+        "name": "index",
+        "type": "number",
+        "required": true,
+        "description": "Index of the image to show."
+      },
+      {
+        "name": "open",
+        "type": "false | true",
+        "required": true
+      },
+      {
+        "name": "onOpenChange",
+        "type": "(open: boolean) => void",
+        "required": true
+      },
+      {
+        "name": "onIndexChange",
+        "type": "((index: number) => void)",
+        "required": false
+      },
+      {
+        "name": "onReference",
+        "type": "((image: ImageItem, index: number) => void)",
+        "required": false,
+        "description": "Adds an \"Ask about this image\" action — e.g. to reference it in the chat composer."
+      },
+      {
+        "name": "referenceLabel",
+        "type": "string",
+        "required": false,
+        "default": "\"Ask about this image\""
+      },
+      {
+        "name": "download",
+        "type": "false | true",
+        "required": false,
+        "default": "true",
+        "description": "Show a download button. Default true."
+      }
+    ]
+  },
+  "ImagePreview": {
+    "description": "A single image with loading state that opens a zoomable lightbox.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "image",
+        "type": "ImageItem",
+        "required": true
+      },
+      {
+        "name": "zoomable",
+        "type": "false | true",
+        "required": false,
+        "default": "true",
+        "description": "Click opens a lightbox. Default true."
+      },
+      {
+        "name": "onReference",
+        "type": "((image: ImageItem, index: number) => void)",
+        "required": false
+      },
+      {
+        "name": "aspect",
+        "type": "string",
+        "required": false,
+        "description": "CSS aspect ratio, e.g. \"16/9\". Uses the image's own when omitted."
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "ImageGallery": {
+    "description": "Responsive grid for 1–N images (generated images, screenshots, product photos) with a shared lightbox.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "images",
+        "type": "ImageItem[]",
+        "required": true
+      },
+      {
+        "name": "max",
+        "type": "number",
+        "required": false,
+        "default": "4",
+        "description": "Max tiles before a \"+N\" overflow tile. Default 4."
+      },
+      {
+        "name": "onReference",
+        "type": "((image: ImageItem, index: number) => void)",
+        "required": false
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "SegmentedControl": {
+    "description": "A compact single-choice toggle group with a sliding indicator.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "options",
+        "type": "SegmentOption<T>[]",
+        "required": true
+      },
+      {
+        "name": "value",
+        "type": "T",
+        "required": false
+      },
+      {
+        "name": "defaultValue",
+        "type": "T",
+        "required": false
+      },
+      {
+        "name": "onValueChange",
+        "type": "((value: T) => void)",
+        "required": false
+      },
+      {
+        "name": "size",
+        "type": "\"sm\" | \"md\"",
+        "required": false,
+        "default": "\"md\""
+      },
+      {
+        "name": "block",
+        "type": "false | true",
+        "required": false,
+        "description": "Stretch to the container width."
+      },
+      {
+        "name": "aria-label",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "Switch": {
+    "extendsNative": true,
+    "props": [
+      {
+        "name": "checked",
+        "type": "false | true",
+        "required": false
+      },
+      {
+        "name": "defaultChecked",
+        "type": "false | true",
+        "required": false,
+        "default": "false"
+      },
+      {
+        "name": "onCheckedChange",
+        "type": "((checked: boolean) => void)",
+        "required": false
+      },
+      {
+        "name": "size",
+        "type": "\"sm\" | \"md\"",
+        "required": false,
+        "default": "\"md\""
+      }
+    ]
+  },
+  "TaskStatusBadge": {
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "status",
+        "type": "\"running\" | \"failed\" | \"draft\" | \"queued\" | \"needs-input\" | \"done\" | \"scheduled\"",
+        "required": true
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "TaskCard": {
+    "description": "Compact card for one agent task: status, agent, progress, schedule, tags.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "task",
+        "type": "AgentTask",
+        "required": true
+      },
+      {
+        "name": "onOpen",
+        "type": "((id: string) => void)",
+        "required": false
+      },
+      {
+        "name": "actions",
+        "type": "ReactNode",
+        "required": false,
+        "description": "Extra controls, rendered in the footer."
+      },
+      {
+        "name": "draggable",
+        "type": "false | true",
+        "required": false,
+        "description": "Enable HTML5 drag (used by TaskBoard)."
+      },
+      {
+        "name": "onDragStart",
+        "type": "((e: DragEvent<Element>, id: string) => void)",
+        "required": false
+      },
+      {
+        "name": "selected",
+        "type": "false | true",
+        "required": false
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "TaskBoard": {
+    "description": "Kanban board of agent tasks with drag-and-drop between columns.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "tasks",
+        "type": "AgentTask[]",
+        "required": true
+      },
+      {
+        "name": "columns",
+        "type": "TaskColumn[]",
+        "required": false,
+        "default": "defaultTaskColumns"
+      },
+      {
+        "name": "onMove",
+        "type": "((taskId: string, status: TaskStatus) => void)",
+        "required": false,
+        "description": "Called when a task is dragged to another column."
+      },
+      {
+        "name": "onOpen",
+        "type": "((id: string) => void)",
+        "required": false
+      },
+      {
+        "name": "onAdd",
+        "type": "((status: TaskStatus) => void)",
+        "required": false,
+        "description": "Shows a \"+\" button per column."
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "TaskList": {
+    "description": "Dense table of agent tasks: status, agent, progress, schedule.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "tasks",
+        "type": "AgentTask[]",
+        "required": true
+      },
+      {
+        "name": "onOpen",
+        "type": "((id: string) => void)",
+        "required": false
+      },
+      {
+        "name": "selectedId",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "renderActions",
+        "type": "((task: AgentTask) => ReactNode)",
+        "required": false,
+        "description": "Row actions, e.g. run / pause / menu."
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "TaskCreator": {
+    "description": "Form for handing an agent a job: what to do, who does it, when, what it may do on its own, and the budget.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "agents",
+        "type": "TaskAgentOption[]",
+        "required": false,
+        "default": "[]"
+      },
+      {
+        "name": "permissions",
+        "type": "TaskPermission[]",
+        "required": false,
+        "default": "[]"
+      },
+      {
+        "name": "templates",
+        "type": "{ label: string; title: string; instructions: string; }[]",
+        "required": false,
+        "default": "[]",
+        "description": "Starter templates shown above the instructions."
+      },
+      {
+        "name": "currency",
+        "type": "string",
+        "required": false,
+        "default": "\"$\""
+      },
+      {
+        "name": "defaultBudget",
+        "type": "number",
+        "required": false,
+        "default": "5"
+      },
+      {
+        "name": "submitLabel",
+        "type": "ReactNode",
+        "required": false,
+        "default": "\"Create task\""
+      },
+      {
+        "name": "onSubmit",
+        "type": "((task: NewTask) => void)",
+        "required": false
+      },
+      {
+        "name": "onCancel",
+        "type": "(() => void)",
+        "required": false
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  }
+}

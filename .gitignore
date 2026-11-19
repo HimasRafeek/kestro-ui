@@ -1,0 +1,7 @@
+node_modules
+dist
+*.log
+.DS_Store
+design/codex-log.txt
+design/
+apps/docs/public/og.png.tmp

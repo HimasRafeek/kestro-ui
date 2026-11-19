@@ -1,0 +1,39 @@
+@import "tailwindcss";
+/* In your app this is:  @import "kestro-ui/theme.css"; */
+@import "../../../packages/kestro-ui/src/theme.css";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: "Archivo", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Martian Mono", ui-monospace, monospace;
+}
+
+:root {
+  /* Kestro's display face: Archivo at its widest cut */
+  --kui-font-display: "Archivo", ui-sans-serif, system-ui, sans-serif;
+}
+
+.font-display {
+  font-family: var(--kui-font-display);
+  font-stretch: 125%;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+html, body, #root { height: 100%; }
+body {
+  background: var(--kui-bg);
+  color: var(--kui-fg);
+  font-feature-settings: "cv11", "ss01";
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Screenshot mode: render every animation at its final frame */
+.kui-shot *,
+.kui-shot *::before,
+.kui-shot *::after {
+  animation-delay: 0s !important;
+  animation-duration: 0s !important;
+  transition-duration: 0s !important;
+}

@@ -1,0 +1,16 @@
+{
+  "name": "kestro-ui-monorepo",
+  "private": true,
+  "version": "0.0.0",
+  "packageManager": "pnpm@10.0.0",
+  "scripts": {
+    "dev": "pnpm docs:gen && pnpm --filter docs dev",
+    "docs:gen": "node scripts/extract-api.mjs && node scripts/generate-llms.mjs",
+    "build": "pnpm build:lib && pnpm build:docs",
+    "build:lib": "pnpm docs:gen && pnpm --filter kestro-ui build",
+    "build:docs": "pnpm docs:gen && pnpm --filter docs build",
+    "deploy:docs": "pnpm build:docs && node scripts/deploy-docs.mjs",
+    "screenshots": "node scripts/screenshots.mjs",
+    "typecheck": "pnpm -r typecheck"
+  }
+}

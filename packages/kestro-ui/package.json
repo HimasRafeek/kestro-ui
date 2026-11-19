@@ -1,0 +1,80 @@
+{
+  "name": "kestro-ui",
+  "version": "0.1.0",
+  "description": "Beautiful React + Tailwind CSS components for AI agents: chat, reasoning, tool calls, approvals, plans, voice and Jarvis-style HUDs.",
+  "keywords": [
+    "react",
+    "tailwindcss",
+    "ai",
+    "ai-agents",
+    "agent-ui",
+    "chat-ui",
+    "llm",
+    "generative-ui",
+    "human-in-the-loop",
+    "voice",
+    "hud",
+    "components",
+    "ui-library",
+    "kestro"
+  ],
+  "homepage": "https://himasrafeek.github.io/kestro-ui/",
+  "bugs": {
+    "url": "https://github.com/HimasRafeek/kestro-ui/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HimasRafeek/kestro-ui.git",
+    "directory": "packages/kestro-ui"
+  },
+  "license": "MIT",
+  "author": "Kestro",
+  "type": "module",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./styles.css": "./dist/styles.css",
+    "./theme.css": "./dist/theme.css",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "AGENTS.md",
+    "llms-full.txt",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup && node scripts/build-css.mjs",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "react-dom": ">=18"
+  },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.76.0",
+    "tailwind-merge": "^3.7.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.3.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "tailwindcss": "^4.3.5",
+    "tsup": "^9.0.0",
+    "typescript": "~5.9.3"
+  }
+}

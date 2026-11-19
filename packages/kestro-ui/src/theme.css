@@ -1,0 +1,343 @@
+/*
+ * Kestro UI — design tokens
+ *
+ * Tailwind v4:   @import "tailwindcss";
+ *                @import "kestro-ui/theme.css";
+ * (the @source below tells Tailwind to scan the kit's components for classes)
+ *
+ * Override any token on :root / .dark, e.g.
+ *   :root { --kui-accent: oklch(0.62 0.19 150); --kui-radius: 0.5rem; }
+ * or opt into the built-in Kestro palette with data-kui-palette="kestro".
+ */
+@source "./";
+
+:root,
+[data-kui-theme="light"] {
+  --kui-bg: oklch(0.992 0.001 286);
+  --kui-surface: oklch(1 0 0);
+  --kui-surface-2: oklch(0.973 0.002 286);
+  --kui-surface-3: oklch(0.945 0.003 286);
+  --kui-border: oklch(0.925 0.004 286);
+  --kui-border-strong: oklch(0.87 0.006 286);
+  --kui-fg: oklch(0.2 0.006 286);
+  --kui-fg-muted: oklch(0.46 0.012 286);
+  --kui-fg-subtle: oklch(0.62 0.012 286);
+  --kui-accent: oklch(0.55 0.21 278);
+  --kui-accent-fg: oklch(0.99 0 0);
+  --kui-user-bubble: oklch(0.955 0.004 286);
+  --kui-success: oklch(0.6 0.15 155);
+  --kui-warning: oklch(0.7 0.16 65);
+  --kui-danger: oklch(0.58 0.21 25);
+  --kui-info: oklch(0.6 0.15 240);
+
+  --kui-code-bg: oklch(0.975 0.002 286);
+  --kui-code-keyword: oklch(0.52 0.2 300);
+  --kui-code-string: oklch(0.52 0.14 150);
+  --kui-code-number: oklch(0.58 0.16 50);
+  --kui-code-comment: oklch(0.62 0.01 286);
+  --kui-code-function: oklch(0.52 0.16 255);
+  --kui-code-property: oklch(0.55 0.15 20);
+
+  --kui-radius: 0.75rem;
+  --kui-shadow: 0 1px 2px rgb(16 16 24 / 0.04), 0 8px 24px -8px rgb(16 16 24 / 0.1);
+  --kui-shadow-lg: 0 2px 4px rgb(16 16 24 / 0.04), 0 24px 48px -12px rgb(16 16 24 / 0.18);
+}
+
+.dark,
+[data-theme="dark"],
+[data-kui-theme="dark"] {
+  --kui-bg: oklch(0.145 0.004 286);
+  --kui-surface: oklch(0.178 0.005 286);
+  --kui-surface-2: oklch(0.21 0.006 286);
+  --kui-surface-3: oklch(0.25 0.007 286);
+  --kui-border: oklch(1 0 0 / 0.075);
+  --kui-border-strong: oklch(1 0 0 / 0.14);
+  --kui-fg: oklch(0.965 0.002 286);
+  --kui-fg-muted: oklch(0.72 0.01 286);
+  --kui-fg-subtle: oklch(0.55 0.012 286);
+  --kui-accent: oklch(0.63 0.2 280);
+  --kui-accent-fg: oklch(0.99 0 0);
+  --kui-user-bubble: oklch(0.23 0.006 286);
+  --kui-success: oklch(0.72 0.16 155);
+  --kui-warning: oklch(0.8 0.15 75);
+  --kui-danger: oklch(0.68 0.19 25);
+  --kui-info: oklch(0.72 0.13 240);
+
+  --kui-code-bg: oklch(0.16 0.004 286);
+  --kui-code-keyword: oklch(0.75 0.15 305);
+  --kui-code-string: oklch(0.8 0.13 150);
+  --kui-code-number: oklch(0.8 0.13 60);
+  --kui-code-comment: oklch(0.55 0.012 286);
+  --kui-code-function: oklch(0.78 0.12 250);
+  --kui-code-property: oklch(0.78 0.12 25);
+
+  --kui-shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px -8px rgb(0 0 0 / 0.5);
+  --kui-shadow-lg: 0 2px 4px rgb(0 0 0 / 0.3), 0 24px 48px -12px rgb(0 0 0 / 0.7);
+}
+
+/*
+ * Optional "Kestro" palette — cool slate neutrals with one rufous accent
+ * (after the kestrel's plumage). Opt in with data-kui-palette="kestro" on
+ * <html> or any container; it follows the same .dark switch.
+ */
+[data-kui-palette="kestro"] {
+  --kui-bg: oklch(0.982 0.003 250);
+  --kui-surface: oklch(0.997 0.001 250);
+  --kui-surface-2: oklch(0.962 0.005 250);
+  --kui-surface-3: oklch(0.93 0.007 250);
+  --kui-border: oklch(0.905 0.007 250);
+  --kui-border-strong: oklch(0.84 0.01 250);
+  --kui-fg: oklch(0.2 0.014 255);
+  --kui-fg-muted: oklch(0.44 0.022 255);
+  --kui-fg-subtle: oklch(0.6 0.018 255);
+  --kui-accent: oklch(0.56 0.145 42);
+  --kui-accent-fg: oklch(0.99 0.003 60);
+  --kui-user-bubble: oklch(0.945 0.008 250);
+  --kui-success: oklch(0.55 0.1 148);
+  --kui-warning: oklch(0.66 0.13 78);
+  --kui-danger: oklch(0.54 0.19 22);
+  --kui-info: oklch(0.54 0.09 245);
+
+  --kui-code-bg: oklch(0.97 0.004 250);
+  --kui-code-keyword: oklch(0.47 0.12 258);
+  --kui-code-string: oklch(0.5 0.1 148);
+  --kui-code-number: oklch(0.56 0.12 72);
+  --kui-code-comment: oklch(0.62 0.015 250);
+  --kui-code-function: oklch(0.52 0.13 42);
+  --kui-code-property: oklch(0.5 0.08 222);
+
+  --kui-radius: 0.5rem;
+  --kui-shadow: 0 1px 2px rgb(20 24 31 / 0.05), 0 4px 12px -6px rgb(20 24 31 / 0.08);
+  --kui-shadow-lg: 0 2px 4px rgb(20 24 31 / 0.05), 0 18px 40px -16px rgb(20 24 31 / 0.22);
+}
+
+.dark[data-kui-palette="kestro"],
+.dark [data-kui-palette="kestro"],
+[data-kui-palette="kestro"] .dark,
+[data-kui-palette="kestro"][data-kui-theme="dark"],
+[data-kui-palette="kestro"] [data-kui-theme="dark"] {
+  --kui-bg: oklch(0.175 0.012 255);
+  --kui-surface: oklch(0.205 0.013 255);
+  --kui-surface-2: oklch(0.235 0.014 255);
+  --kui-surface-3: oklch(0.275 0.015 255);
+  --kui-border: oklch(0.86 0.02 255 / 0.09);
+  --kui-border-strong: oklch(0.86 0.02 255 / 0.17);
+  --kui-fg: oklch(0.955 0.005 250);
+  --kui-fg-muted: oklch(0.75 0.015 250);
+  --kui-fg-subtle: oklch(0.58 0.018 250);
+  --kui-accent: oklch(0.7 0.135 48);
+  --kui-accent-fg: oklch(0.18 0.012 255);
+  --kui-user-bubble: oklch(0.255 0.014 255);
+  --kui-success: oklch(0.73 0.11 148);
+  --kui-warning: oklch(0.8 0.12 82);
+  --kui-danger: oklch(0.68 0.17 22);
+  --kui-info: oklch(0.73 0.08 240);
+
+  --kui-code-bg: oklch(0.19 0.013 255);
+  --kui-code-keyword: oklch(0.75 0.09 252);
+  --kui-code-string: oklch(0.78 0.1 148);
+  --kui-code-number: oklch(0.8 0.11 78);
+  --kui-code-comment: oklch(0.56 0.018 250);
+  --kui-code-function: oklch(0.77 0.11 48);
+  --kui-code-property: oklch(0.77 0.07 222);
+
+  --kui-shadow: 0 1px 2px rgb(4 6 10 / 0.35), 0 4px 12px -6px rgb(4 6 10 / 0.45);
+  --kui-shadow-lg: 0 2px 4px rgb(4 6 10 / 0.35), 0 18px 40px -16px rgb(4 6 10 / 0.7);
+}
+
+@theme inline {
+  --color-kui-bg: var(--kui-bg);
+  --color-kui-surface: var(--kui-surface);
+  --color-kui-surface-2: var(--kui-surface-2);
+  --color-kui-surface-3: var(--kui-surface-3);
+  --color-kui-border: var(--kui-border);
+  --color-kui-border-strong: var(--kui-border-strong);
+  --color-kui-fg: var(--kui-fg);
+  --color-kui-fg-muted: var(--kui-fg-muted);
+  --color-kui-fg-subtle: var(--kui-fg-subtle);
+  --color-kui-accent: var(--kui-accent);
+  --color-kui-accent-fg: var(--kui-accent-fg);
+  --color-kui-accent-soft: color-mix(in oklch, var(--kui-accent) 13%, transparent);
+  --color-kui-user-bubble: var(--kui-user-bubble);
+  --color-kui-success: var(--kui-success);
+  --color-kui-success-soft: color-mix(in oklch, var(--kui-success) 13%, transparent);
+  --color-kui-warning: var(--kui-warning);
+  --color-kui-warning-soft: color-mix(in oklch, var(--kui-warning) 15%, transparent);
+  --color-kui-danger: var(--kui-danger);
+  --color-kui-danger-soft: color-mix(in oklch, var(--kui-danger) 13%, transparent);
+  --color-kui-info: var(--kui-info);
+  --color-kui-info-soft: color-mix(in oklch, var(--kui-info) 13%, transparent);
+  --color-kui-code-bg: var(--kui-code-bg);
+
+  --font-kui-display: var(--kui-font-display, inherit);
+  --radius-kui: var(--kui-radius);
+  --radius-kui-sm: calc(var(--kui-radius) * 0.66);
+  --radius-kui-lg: calc(var(--kui-radius) * 1.4);
+  --shadow-kui: var(--kui-shadow);
+  --shadow-kui-lg: var(--kui-shadow-lg);
+}
+
+@theme {
+  /* Motion — expo-out for UI, a soft spring (≈4% overshoot) for things that "arrive" */
+  --ease-kui-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-kui-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-kui-spring: linear(0, 0.034 1.5%, 0.134 3.2%, 0.488 8.2%, 0.715 11.8%, 0.876 15.6%, 0.976 19.6%, 1.026 23.6%, 1.045 27.9%, 1.044 32.7%, 1.018 43.4%, 1.002 55.4%, 0.997 66.7%, 1);
+
+  --animate-kui-in: kui-in 0.55s var(--ease-kui-out) both;
+  --animate-kui-pop: kui-pop 0.45s var(--ease-kui-spring) both;
+  --animate-kui-fade: kui-fade 0.4s var(--ease-kui-out) both;
+  --animate-kui-reveal: kui-reveal 0.5s var(--ease-kui-out) both;
+  --animate-kui-blink: kui-blink 1.05s step-end infinite;
+  --animate-kui-dot: kui-dot 1.4s ease-in-out infinite;
+  --animate-kui-ping: kui-ping 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+  --animate-kui-spin-slow: kui-spin 9s linear infinite;
+  --animate-kui-spin-fast: kui-spin 2.4s linear infinite;
+  --animate-kui-spin-rev: kui-spin-rev 14s linear infinite;
+  --animate-kui-breathe: kui-breathe 3.2s ease-in-out infinite;
+  --animate-kui-wave: kui-wave 1.1s ease-in-out infinite;
+  --animate-kui-scan: kui-scan 3.6s var(--ease-kui-in-out) infinite;
+  --animate-kui-flicker: kui-flicker 4s linear infinite;
+  --animate-kui-glow: kui-glow 2.6s ease-in-out infinite;
+  --animate-kui-dash: kui-dash 1.6s linear infinite;
+
+  @keyframes kui-in {
+    from { opacity: 0; transform: translateY(10px); filter: blur(6px); }
+    to { opacity: 1; transform: translateY(0); filter: blur(0); }
+  }
+  @keyframes kui-pop {
+    from { opacity: 0; transform: translateY(6px) scale(0.96); filter: blur(4px); }
+    to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+  }
+  @keyframes kui-fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes kui-reveal {
+    from { opacity: 0; filter: blur(3px); }
+    to { opacity: 1; filter: blur(0); }
+  }
+  @keyframes kui-blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+  @keyframes kui-dot {
+    0%, 80%, 100% { opacity: 0.25; transform: translateY(0); }
+    40% { opacity: 1; transform: translateY(-3px); }
+  }
+  @keyframes kui-ping {
+    0% { transform: scale(1); opacity: 0.7; }
+    80%, 100% { transform: scale(2.4); opacity: 0; }
+  }
+  @keyframes kui-spin {
+    to { transform: rotate(360deg); }
+  }
+  @keyframes kui-spin-rev {
+    to { transform: rotate(-360deg); }
+  }
+  @keyframes kui-breathe {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.045); }
+  }
+  @keyframes kui-wave {
+    0%, 100% { transform: scaleY(0.35); }
+    50% { transform: scaleY(1); }
+  }
+  @keyframes kui-shimmer {
+    from { background-position: 100% 0; }
+    to { background-position: -100% 0; }
+  }
+  @keyframes kui-scan {
+    0% { transform: translateY(-100%); opacity: 0; }
+    10%, 90% { opacity: 1; }
+    100% { transform: translateY(100%); opacity: 0; }
+  }
+  @keyframes kui-flicker {
+    0%, 19%, 21%, 62%, 64%, 100% { opacity: 1; }
+    20%, 63% { opacity: 0.55; }
+  }
+  @keyframes kui-glow {
+    0%, 100% { opacity: 0.55; }
+    50% { opacity: 1; }
+  }
+  @keyframes kui-dash {
+    to { stroke-dashoffset: -24; }
+  }
+}
+
+/* Animated gradient text used for "Thinking…" style labels */
+@utility kui-shimmer {
+  background-image: linear-gradient(
+    90deg,
+    var(--kui-fg-subtle) 0%,
+    var(--kui-fg-subtle) 35%,
+    var(--kui-fg) 50%,
+    var(--kui-fg-subtle) 65%,
+    var(--kui-fg-subtle) 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: kui-shimmer 2.2s linear infinite;
+}
+
+/* Thin, unobtrusive scrollbars inside kit components */
+@utility kui-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--kui-border-strong) transparent;
+}
+
+/* HUD helpers (Jarvis-style surfaces) */
+@utility kui-hud-grid {
+  background-image:
+    linear-gradient(color-mix(in oklch, var(--kui-accent) 9%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in oklch, var(--kui-accent) 9%, transparent) 1px, transparent 1px);
+  background-size: 32px 32px;
+  mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+}
+@utility kui-hud-scanlines {
+  background-image: repeating-linear-gradient(0deg, rgb(255 255 255 / 0.035) 0 1px, transparent 1px 3px);
+}
+@utility kui-glow-text {
+  text-shadow: 0 0 12px color-mix(in oklch, var(--kui-accent) 65%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kui-shimmer,
+  [class*="animate-kui-"] {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+  [class*="animate-kui-spin"],
+  [class*="animate-kui-scan"],
+  [class*="animate-kui-wave"],
+  [class*="animate-kui-ping"] {
+    animation: none !important;
+  }
+}
+
+@theme {
+  --animate-kui-marquee: kui-marquee 28s linear infinite;
+  @keyframes kui-marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+}
+
+@theme {
+  --animate-kui-indeterminate: kui-indeterminate 1.4s var(--ease-kui-in-out) infinite;
+  @keyframes kui-indeterminate {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(300%); }
+  }
+  @keyframes kui-stripes {
+    to { background-position: 16px 0; }
+  }
+}
+
+/* Live (still running) bars in TraceTree */
+@utility kui-bar-live {
+  background-image: repeating-linear-gradient(-45deg, rgb(255 255 255 / 0.28) 0 4px, transparent 4px 8px);
+  background-size: 16px 100%;
+  animation: kui-stripes 0.8s linear infinite;
+}
