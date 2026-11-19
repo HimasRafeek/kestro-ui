@@ -1,0 +1,5666 @@
+# Kestro UI
+
+> Beautiful React + Tailwind CSS components for AI agents: chat, reasoning, tool calls, approvals, plans, voice and Jarvis-style HUDs.
+
+Install: `npm i kestro-ui`. With Tailwind CSS v4 add `@import "tailwindcss"; @import "kestro-ui/theme.css";` to your CSS. Without Tailwind: `import "kestro-ui/styles.css"`. Dark mode: add the `dark` class to an ancestor. All components are named exports of `kestro-ui`.
+
+Fastest path: `<AgentChat messages={messages} status={status} onSend={(text) => …} />` renders a complete agent chat. Messages are `{ id, role, content }` or `{ id, role, parts }` where parts follow the Vercel AI SDK UIMessage format (text, reasoning, tool-<name>, source-url, file, data-<name>).
+
+# Introduction
+
+**Kestro UI** is an open-source React + Tailwind CSS component library for building interfaces for **AI agents**: chat assistants, research agents, customer-support bots, booking and shopping agents, operations workflows, voice assistants, multi-agent systems and Jarvis-style HUDs.
+
+Agents need more than a chat box. They think, call tools, ask for permission, cite sources, run multi-step plans, hand off to humans and talk out loud. Kestro UI gives every one of those moments a polished, accessible component.
+
+## Principles
+
+- **Batteries included, never locked in.** `<AgentChat />` gives you a complete experience in one line. Every piece inside it (`Reasoning`, `ToolCall`, `ToolApproval`, `PromptInput`…) is exported so you can compose your own.
+- **Backend-agnostic.** Messages use a simple `parts` format compatible with the Vercel AI SDK `useChat()`, and plain `{ role, content }` objects work too. Bring LangGraph, Mastra, OpenAI Agents, your own SSE, anything.
+- **Human in the loop by default.** Approvals for payments, emails, bookings and deletions; structured questions; plans with live progress; hand-off to a person.
+- **Zero heavy dependencies.** Streaming Markdown, syntax highlighting and citations are built in. No `dangerouslySetInnerHTML`.
+- **Smooth.** Spring and expo motion, smooth token streaming, and full respect for `prefers-reduced-motion`.
+- **AI-native docs.** Every page has a *Copy for AI* button, and the site ships `llms.txt` and `llms-full.txt` so coding assistants use the components correctly.
+
+## What's inside
+
+| Area | Components |
+|---|---|
+| Chat | `AgentChat`, `Thread`, `Message`, `MessageActions`, `Markdown`, `StreamingMarkdown`, `CodeBlock`, `TypingIndicator` |
+| Input | `PromptInput`, `ModelSelector`, `Suggestions`, `EmptyState`, `Attachment` |
+| Transparency | `Reasoning`, `ToolCall`, `Sources`, `InlineCitation` |
+| Human in the loop | `ToolApproval`, `AgentQuestion`, `HandoffBanner` |
+| Workflows | `TaskPlan`, `AgentHeader`, `UsageMeter`, `ActivityFeed`, `Artifact`, `ConversationList` |
+| Multi-agent | `AgentAvatar`, `AgentRoster`, `AgentHandoff` |
+| Voice | `VoicePanel`, `VoiceOrb`, `VoiceWave`, `useMicrophone`, `useAudioAnalyser` |
+| HUD | `AgentCore`, `HudPanel`, `RadialGauge`, `HudStat`, `Sparkline`, `Waveform`, `CommandConsole`, `BootSequence`, `DataTicker` |
+| Embed | `ChatWidget` |
+
+Continue with **Installation** to add Kestro UI to your app.
+
+---
+
+# Installation
+
+Kestro UI works with **React 18+** and is designed for **Tailwind CSS v4**, but it also ships a pre-compiled stylesheet for apps without Tailwind.
+
+## 1. Install the package
+
+```bash
+npm install kestro-ui
+# or
+pnpm add kestro-ui
+```
+
+## 2. Add the styles
+
+### Option A: Tailwind CSS v4 (recommended)
+
+Import the theme after Tailwind in your main stylesheet. It registers the design tokens and tells Tailwind to scan Kestro's components for class names.
+
+```css
+/* app.css */
+@import "tailwindcss";
+@import "kestro-ui/theme.css";
+```
+
+### Option B: no Tailwind
+
+Import the pre-compiled CSS once, for example in your root layout:
+
+```tsx
+import "kestro-ui/styles.css";
+```
+
+## 3. Use a component
+
+```tsx
+import { AgentChat, type ChatMessage } from "kestro-ui";
+import { useState } from "react";
+
+export default function App() {
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  return (
+    <div className="h-dvh">
+      <AgentChat
+        messages={messages}
+        agent={{ name: "Atlas", description: "Your travel concierge" }}
+        suggestions={["Plan a weekend in Lisbon", "Find a quiet hotel"]}
+        onSend={(text) =>
+          setMessages((m) => [...m, { id: crypto.randomUUID(), role: "user", content: text }])
+        }
+      />
+    </div>
+  );
+}
+```
+
+## Dark mode
+
+Kestro UI follows a `.dark` class (or `data-theme="dark"`) on any ancestor, the same convention as Tailwind and shadcn/ui:
+
+```html
+<html class="dark">
+```
+
+## Next.js
+
+All components are client components and the package ships with a `"use client"` directive, so you can import them directly into Server Component pages.
+
+## Requirements
+
+- React 18 or 19
+- Tailwind CSS v4 (Option A) or any setup (Option B)
+- Modern evergreen browsers (uses `oklch()`, `color-mix()` and container queries)
+
+---
+
+# Connect your agent
+
+Kestro UI only cares about two things: a list of **messages** and a **status**. Any backend that can produce those works.
+
+## The message format
+
+```ts
+type ChatMessage = {
+  id: string;
+  role: "user" | "assistant" | "system";
+  content?: string;          // shortcut for one text part
+  parts?: ChatMessagePart[]; // rich content, rendered in order
+  name?: string;             // agent name (multi-agent)
+};
+```
+
+Supported parts (compatible with the Vercel AI SDK `UIMessage`):
+
+| Part | Renders as |
+|---|---|
+| `{ type: "text", text, state? }` | Streaming Markdown with citations |
+| `{ type: "reasoning", text, state? }` | `Reasoning` (collapsible thinking) |
+| `{ type: "tool-<name>", state, input, output, errorText }` | `ToolCall` |
+| `{ type: "tool-<name>", state: "approval-requested", approval: { id } }` | `ToolApproval` |
+| `{ type: "source-url", url, title }` | `Sources` + inline `[1]` citations |
+| `{ type: "file", url, filename, mediaType }` | `Attachment` |
+| `{ type: "data-<name>", data }` | Your own UI via `renderData` |
+
+Tool states map to statuses: `input-streaming` → pending, `input-available` → running, `output-available` → success, `output-error` → error, `output-denied` → denied.
+
+**Status** is one of `"ready" | "submitted" | "streaming" | "error"`.
+
+## Vercel AI SDK
+
+```tsx
+import { useChat } from "@ai-sdk/react";
+import { AgentChat } from "kestro-ui";
+
+export function Chat() {
+  const { messages, status, sendMessage, stop } = useChat();
+  return (
+    <AgentChat
+      messages={messages}
+      status={status}
+      onSend={(text) => sendMessage({ text })}
+      onStop={stop}
+    />
+  );
+}
+```
+
+## Any other backend (SSE, WebSocket, LangGraph…)
+
+Keep messages in state and update the last assistant message as chunks arrive:
+
+```tsx
+const [messages, setMessages] = useState<ChatMessage[]>([]);
+const [status, setStatus] = useState<ChatStatus>("ready");
+
+async function send(text: string) {
+  const id = crypto.randomUUID();
+  let reply = "";
+  setMessages((m) => [
+    ...m,
+    { id: `${id}-user`, role: "user", content: text },
+    { id, role: "assistant", parts: [{ type: "text", text: "" }] },
+  ]);
+  setStatus("streaming");
+  for await (const chunk of streamFromYourAgent(text)) {
+    reply += chunk;
+    const snapshot = reply;
+    setMessages((m) => m.map((msg) => (msg.id === id ? { ...msg, parts: [{ type: "text", text: snapshot }] } : msg)));
+  }
+  setStatus("ready");
+}
+```
+
+`StreamingMarkdown` (used inside `AgentChat`) smooths bursty chunks automatically, so the text flows even if your server sends large, irregular pieces.
+
+## Generative UI
+
+Render your own components for specific tools or data parts:
+
+```tsx
+<AgentChat
+  messages={messages}
+  renderTool={(part, { name }) =>
+    name === "get_weather" && part.state === "output-available"
+      ? <WeatherCard data={part.output} />
+      : undefined
+  }
+  renderData={(part) => (part.type === "data-flights" ? <FlightList flights={part.data} /> : null)}
+/>
+```
+
+Return `undefined` from `renderTool` to fall back to the default `ToolCall` card.
+
+## Approvals
+
+When a tool part arrives with `state: "approval-requested"`, `AgentChat` shows a `ToolApproval` card and calls `onToolApproval({ id, approved, part })` with the user's decision. Send that decision back to your agent runtime to continue or cancel.
+
+---
+
+# Theming
+
+Every color, radius and shadow in Kestro UI is a CSS variable. Override them anywhere: globally, per page, or per component subtree.
+
+## Accent color
+
+```css
+:root {
+  --kui-accent: oklch(0.66 0.16 160); /* emerald */
+}
+```
+
+Try the color dots in the top bar of this site: they change exactly one variable.
+
+## All tokens
+
+| Token | Purpose |
+|---|---|
+| `--kui-bg` | App background |
+| `--kui-surface`, `--kui-surface-2`, `--kui-surface-3` | Cards and raised layers |
+| `--kui-border`, `--kui-border-strong` | Hairlines and emphasized borders |
+| `--kui-fg`, `--kui-fg-muted`, `--kui-fg-subtle` | Text hierarchy |
+| `--kui-accent`, `--kui-accent-fg` | Brand color and text on it |
+| `--kui-success`, `--kui-warning`, `--kui-danger`, `--kui-info` | Status colors |
+| `--kui-user-bubble` | User message bubble |
+| `--kui-code-*` | Code block and syntax colors |
+| `--kui-radius` | Base corner radius (other radii derive from it) |
+| `--kui-shadow`, `--kui-shadow-lg` | Elevation |
+
+Light values live on `:root`; dark values on `.dark`, `[data-theme="dark"]` or `[data-kui-theme="dark"]`.
+
+## Use the tokens in your own code
+
+With Tailwind v4 the tokens become utilities, so your own UI matches the kit:
+
+```tsx
+<div className="rounded-kui border border-kui-border bg-kui-surface p-4 text-kui-fg-muted shadow-kui">
+  …
+</div>
+```
+
+## Motion
+
+Kestro ships easing tokens you can reuse: `ease-kui-out` (expo out), `ease-kui-spring` (soft spring), `ease-kui-in-out`, and entrance animations `animate-kui-in`, `animate-kui-pop`, `animate-kui-fade` and `animate-kui-reveal`.
+
+All animations respect `prefers-reduced-motion`.
+
+## Overriding a single component
+
+Every component accepts `className`, and classes are merged with `tailwind-merge`, so your utilities always win:
+
+```tsx
+<ToolCall className="rounded-none border-dashed" name="search" status="running" />
+```
+
+---
+
+# Using with AI assistants
+
+Kestro UI is designed to be easy for **AI coding assistants** (Claude Code, Cursor, Copilot, Codex, v0…) to use correctly.
+
+## llms.txt
+
+This site publishes machine-readable docs following the [llms.txt](https://llmstxt.org) convention:
+
+- **[llms.txt](./llms.txt)**: a short index of every component with one-line descriptions and links.
+- **[llms-full.txt](./llms-full.txt)**: the complete documentation in one file: guides, every example's source code, and full prop tables generated from the TypeScript types.
+
+Point your assistant at it:
+
+```text
+Build this with the Kestro UI component library.
+Docs: https://himasrafeek.github.io/kestro-ui/llms-full.txt
+```
+
+## AGENTS.md in the package
+
+The npm package ships `AGENTS.md` and `llms-full.txt` next to the code, so assistants that read `node_modules` can discover the API offline:
+
+```text
+node_modules/kestro-ui/AGENTS.md
+node_modules/kestro-ui/llms-full.txt
+```
+
+## Copy for AI
+
+Every component page has a **Copy for AI** button. It copies a Markdown version of the page (description, import, example code and props table) that you can paste straight into a chat.
+
+## Tips for prompting
+
+- Ask for *Kestro UI components* and name the ones you want (`AgentChat`, `ToolApproval`, `TaskPlan`…).
+- For full chat UIs, ask the assistant to use `<AgentChat>` with the `ChatMessage` parts format.
+- For custom tool UIs, ask for `renderTool` / `renderData` instead of re-implementing message rendering.
+- Remind it to add `@import "kestro-ui/theme.css";` after `@import "tailwindcss";`.
+
+## Fully typed
+
+Every prop is typed and documented with JSDoc, so editors and assistants get autocomplete and inline docs.
+
+---
+
+# AgentChat
+
+> Category: Chat · Package: `kestro-ui`
+
+A complete, batteries-included agent chat: thread, messages, reasoning, tools, approvals, sources, empty state, follow-ups and the prompt input. One component, works with any backend.
+
+## Import
+
+```tsx
+import { AgentChat } from "kestro-ui";
+```
+
+## Example: agent-chat
+
+```tsx
+import { useRef, useState } from "react";
+import { AgentChat, type ChatMessage, type ChatStatus } from "kestro-ui";
+import { Hotel, Plane, Utensils } from "lucide-react";
+
+const REPLY =
+  "Here's a relaxed **3-day Lisbon** plan:\n\n" +
+  "1. **Day 1:** Alfama walk, Castelo de São Jorge, sunset at Miradouro da Graça\n" +
+  "2. **Day 2:** Belém Tower, pastéis de nata, MAAT museum\n" +
+  "3. **Day 3:** Day trip to Sintra's Pena Palace\n\n" +
+  "Want me to look for hotels near Baixa?";
+
+export default function Example() {
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [status, setStatus] = useState<ChatStatus>("ready");
+  const timer = useRef<number | undefined>(undefined);
+
+  const stop = () => {
+    window.clearTimeout(timer.current);
+    window.clearInterval(timer.current);
+    setStatus("ready");
+  };
+
+  const send = (text: string) => {
+    const id = String(Date.now());
+    setMessages((m) => [...m, { id: `${id}-u`, role: "user", content: text }]);
+    setStatus("submitted");
+
+    timer.current = window.setTimeout(() => {
+      setStatus("streaming");
+      setMessages((m) => [...m, { id, role: "assistant", parts: [{ type: "text", text: "", state: "streaming" }] }]);
+      let i = 0;
+      timer.current = window.setInterval(() => {
+        i += 6;
+        const done = i >= REPLY.length;
+        setMessages((m) =>
+          m.map((msg) =>
+            msg.id === id
+              ? { ...msg, parts: [{ type: "text", text: REPLY.slice(0, i), state: done ? "done" : "streaming" }] }
+              : msg,
+          ),
+        );
+        if (done) stop();
+      }, 30);
+    }, 700);
+  };
+
+  return (
+    <div className="h-[520px] w-full max-w-2xl overflow-hidden rounded-kui border border-kui-border">
+      <AgentChat
+        messages={messages}
+        status={status}
+        onSend={send}
+        onStop={stop}
+        agent={{ name: "Atlas", description: "Your travel concierge for flights, stays and itineraries." }}
+        suggestions={[
+          { label: "Plan a weekend in Lisbon", icon: <Plane /> },
+          { label: "Find a hotel near the beach", icon: <Hotel /> },
+          { label: "Best tapas in Barcelona", icon: <Utensils /> },
+        ]}
+        header
+        compact
+      />
+    </div>
+  );
+}
+```
+
+## API
+
+### <AgentChat />
+
+Batteries-included chat surface: thread, messages, reasoning, tools,
+approvals, sources, empty state, follow-ups and the prompt input.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `messages` **(required)** | `ChatMessage[]` | — |  |
+| `status` | `"error" \| "streaming" \| "ready" \| "submitted"` | `"ready"` |  |
+| `onSend` | `((text: string, submission: PromptSubmission) => void)` | — |  |
+| `onStop` | `(() => void)` | — |  |
+| `onRegenerate` | `((messageId: string) => void)` | — |  |
+| `onFeedback` | `((messageId: string, value: Feedback) => void)` | — |  |
+| `agent` | `AgentInfo` | — |  |
+| `header` | `ReactNode` | — | `true` renders a default header from `agent`; or pass your own node. |
+| `welcome` | `{ title?: ReactNode; description?: ReactNode; icon?: ReactNode; }` | — | Empty-state title/description. |
+| `suggestions` | `Suggestion[]` | — | Starter prompts shown in the empty state. |
+| `followUps` | `Suggestion[]` | — | Follow-up chips shown above the input after the last answer. |
+| `models` | `ModelOption[]` | — |  |
+| `model` | `string` | — |  |
+| `onModelChange` | `((id: string) => void)` | — |  |
+| `placeholder` | `string` | — |  |
+| `allowAttachments` | `false \| true` | `true` |  |
+| `onVoice` | `(() => void)` | — |  |
+| `toolbar` | `ReactNode` | — | Extra controls in the prompt toolbar. |
+| `error` | `ReactNode` | — | Error message shown at the end of the thread. |
+| `onRetry` | `(() => void)` | — |  |
+| `compact` | `false \| true` | `false` | Tighter spacing for widgets & side panels. |
+| `autoFocus` | `false \| true` | — | Focus the input on mount. Defaults to `true` unless `compact`. |
+| `variant` | `"bubble" \| "flat"` | `"bubble"` | Message layout. |
+| `className` | `string` | — |  |
+| `renderCode` | `((code: string, language: string, streaming: boolean) => ReactNode)` | — |  |
+| `renderTool` | `((part: ToolPart, ctx: { name: string; status: ToolStatus; }) => ReactNode)` | — | Return a node to custom-render a tool (generative UI); return undefined for the default card. |
+| `renderData` | `((part: DataPart) => ReactNode)` | — | Render custom `data-*` parts. |
+| `onToolApproval` | `((decision: { id: string; approved: boolean; part: ToolPart; }) => void)` | — |  |
+| `toolTitles` | `Record<string, string>` | — | Friendly titles per tool name, e.g. { web_search: "Searching the web" } |
+
+---
+
+# Message
+
+> Category: Chat · Package: `kestro-ui`
+
+A single chat message for user, assistant or system roles, with avatar, name, timestamp and hover actions (copy, feedback, regenerate).
+
+## Import
+
+```tsx
+import { Message, MessageActions } from "kestro-ui";
+```
+
+## Example: message
+
+```tsx
+import { useState } from "react";
+import { Markdown, Message, MessageActions, type Feedback } from "kestro-ui";
+
+const ANSWER =
+  "Your order **#48213** shipped this morning via UPS and should arrive **Thursday, Nov 21**. " +
+  "I've emailed you the tracking link.";
+
+export default function Example() {
+  const [feedback, setFeedback] = useState<Feedback>(null);
+  const [regenerations, setRegenerations] = useState(0);
+
+  return (
+    <div className="w-full max-w-xl space-y-6">
+      <Message from="system">Conversation started · Today 9:41 AM</Message>
+
+      <Message from="user" timestamp="9:41 AM">
+        Where is my order? It's been a few days.
+      </Message>
+
+      <Message
+        from="assistant"
+        name="Nova · Support"
+        avatar={{ name: "Nova", state: "online" }}
+        timestamp="9:41 AM"
+        actions={
+          <MessageActions
+            copyText={ANSWER}
+            feedback={feedback}
+            onFeedback={setFeedback}
+            onRegenerate={() => setRegenerations((n) => n + 1)}
+            alwaysVisible
+          />
+        }
+      >
+        <Markdown>{ANSWER}</Markdown>
+      </Message>
+
+      <p className="text-center text-xs text-kui-fg-subtle">
+        Feedback: {feedback ?? "none"} · Regenerated {regenerations}×
+      </p>
+    </div>
+  );
+}
+```
+
+## API
+
+### <Message />
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `from` **(required)** | `"user" \| "assistant" \| "system"` | — |  |
+| `name` | `ReactNode` | — | Display name (shown above assistant messages). |
+| `avatar` | `ReactNode \| AgentAvatarProps` | — | Avatar node, avatar props, or `false` to hide. |
+| `timestamp` | `ReactNode` | — |  |
+| `actions` | `ReactNode` | — | Rendered under the message (e.g. <MessageActions/>). |
+| `variant` | `"bubble" \| "flat"` | `"bubble"` | "bubble": user messages in a bubble on the right (default) "flat":   everything left-aligned with avatars (document style) |
+
+Also accepts the native HTML attributes of its root element.
+
+### <MessageActions />
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `copyText` | `string` | — | Text copied by the copy button. Omit to hide it. |
+| `onRegenerate` | `(() => void)` | — |  |
+| `onEdit` | `(() => void)` | — |  |
+| `feedback` | `"up" \| "down"` | — |  |
+| `onFeedback` | `((value: Feedback) => void)` | — |  |
+| `alwaysVisible` | `false \| true` | `false` | Keep visible instead of revealing on hover. |
+| `children` | `ReactNode` | — |  |
+| `className` | `string` | — |  |
+
+---
+
+# Thread
+
+> Category: Chat · Package: `kestro-ui`
+
+Scrollable message list that sticks to the bottom while content streams in, with a floating scroll-to-bottom button.
+
+## Import
+
+```tsx
+import { Thread } from "kestro-ui";
+```
+
+## Example: thread
+
+```tsx
+import { useState } from "react";
+import { Button, Message, Thread } from "kestro-ui";
+import { Plus } from "lucide-react";
+
+type Line = { id: number; from: "user" | "assistant"; text: string };
+
+const script = [
+  "Is the 2 TB NVMe drive compatible with my laptop?",
+  "Yes! Your model has an M.2 2280 slot that supports PCIe 4.0, so it will work at full speed.",
+  "Great. Does it come with a heatsink?",
+  "It doesn't, but your laptop has a built-in thermal pad over the slot, so you won't need one.",
+  "Can it arrive by Friday?",
+  "Order in the next 3 hours and choose Express — it arrives Thursday.",
+];
+
+export default function Example() {
+  const [lines, setLines] = useState<Line[]>(
+    script.slice(0, 4).map((text, i) => ({ id: i, from: i % 2 ? "assistant" : "user", text })),
+  );
+
+  const add = () =>
+    setLines((ls) => {
+      const i = ls.length;
+      return [...ls, { id: i, from: i % 2 ? "assistant" : "user", text: script[i % script.length] }];
+    });
+
+  return (
+    <div className="w-full max-w-xl space-y-3">
+      <div className="flex h-[420px] flex-col overflow-hidden rounded-kui border border-kui-border bg-kui-bg">
+        <Thread contentClassName="gap-5 py-5">
+          {lines.map((l) => (
+            <Message key={l.id} from={l.from} name={l.from === "assistant" ? "Shopper" : undefined}>
+              {l.text}
+            </Message>
+          ))}
+        </Thread>
+      </div>
+      <Button variant="outline" size="sm" onClick={add}>
+        <Plus /> Add message
+      </Button>
+    </div>
+  );
+}
+```
+
+## API
+
+### <Thread />
+
+Scrollable message list that sticks to the bottom while content streams.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `children` **(required)** | `ReactNode` | — |  |
+| `className` | `string` | — | Classes for the scroll container. |
+| `contentClassName` | `string` | — | Classes for the centered content column. |
+| `hideScrollButton` | `false \| true` | — | Hide the floating "scroll to bottom" button. |
+
+---
+
+# Markdown
+
+> Category: Chat · Package: `kestro-ui`
+
+Zero-dependency, safe Markdown renderer for LLM output: tables, task lists, code, citations. StreamingMarkdown adds a smooth, frame-paced reveal for bursty token streams.
+
+## Import
+
+```tsx
+import { Markdown, StreamingMarkdown } from "kestro-ui";
+```
+
+## Example: markdown
+
+```tsx
+import { Markdown, type Source } from "kestro-ui";
+
+const sources: Source[] = [
+  { url: "https://example.com/energy-report-2026", title: "Global Energy Outlook 2026", snippet: "Solar capacity grew 32% year over year." },
+  { url: "https://example.com/battery-costs", title: "Battery pack prices hit record low", snippet: "Average pack prices fell below $90/kWh." },
+];
+
+const content = `## Home solar: is it worth it?
+
+Short answer: **usually yes**, especially if you plan to stay *5+ years*. Panel installs grew fast last year [1], and storage keeps getting cheaper [2].
+
+### What to check first
+- Roof orientation and shade
+- Your average monthly bill
+- Local incentives and net metering
+
+### Your checklist
+- [x] Pull last 12 months of utility bills
+- [x] Get a satellite roof estimate
+- [ ] Request 3 installer quotes
+
+| System | Upfront cost | Payback |
+| :--- | ---: | ---: |
+| 6 kW panels | $14,800 | 7.5 yrs |
+| 6 kW + battery | $24,300 | 10.2 yrs |
+
+Estimate savings with \`monthly_bill * 0.7\` as a rough rule of thumb:
+
+\`\`\`python
+def payback_years(cost: float, monthly_savings: float) -> float:
+    return round(cost / (monthly_savings * 12), 1)
+
+print(payback_years(14_800, 165))  # 7.5
+\`\`\`
+
+> **Tip:** quotes vary a lot. The cheapest per-watt price isn't always the best warranty.`;
+
+export default function Example() {
+  return (
+    <div className="w-full max-w-2xl">
+      <Markdown sources={sources}>{content}</Markdown>
+    </div>
+  );
+}
+```
+
+## Example: streaming-markdown
+
+```tsx
+import { useEffect, useRef, useState } from "react";
+import { Button, StreamingMarkdown } from "kestro-ui";
+import { RotateCcw } from "lucide-react";
+
+const FULL = `### Weeknight lemon garlic pasta
+
+Ready in **20 minutes**, serves 2.
+
+1. Boil 200 g spaghetti in well-salted water.
+2. Meanwhile, sizzle 3 sliced garlic cloves in olive oil until *just* golden.
+3. Toss the pasta with the garlic, zest of 1 lemon, a splash of pasta water and parmesan.
+
+> Finish with black pepper and chopped parsley. A handful of spinach works great too.`;
+
+export default function Example() {
+  const [text, setText] = useState("");
+  const [streaming, setStreaming] = useState(false);
+  const timer = useRef<number | undefined>(undefined);
+
+  const replay = () => {
+    window.clearInterval(timer.current);
+    setText("");
+    setStreaming(true);
+    let i = 0;
+    timer.current = window.setInterval(() => {
+      i += 2 + Math.floor(Math.random() * 28);
+      setText(FULL.slice(0, i));
+      if (i >= FULL.length) {
+        window.clearInterval(timer.current);
+        setStreaming(false);
+      }
+    }, 120);
+  };
+
+  useEffect(() => {
+    replay();
+    return () => window.clearInterval(timer.current);
+  }, []);
+
+  return (
+    <div className="w-full max-w-xl space-y-4">
+      <div className="min-h-64 rounded-kui border border-kui-border bg-kui-surface p-5">
+        <StreamingMarkdown streaming={streaming}>{text}</StreamingMarkdown>
+      </div>
+      <Button variant="outline" size="sm" onClick={replay}>
+        <RotateCcw /> Replay
+      </Button>
+    </div>
+  );
+}
+```
+
+## API
+
+### <Markdown />
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `children` **(required)** | `string` | — |  |
+| `streaming` | `false \| true` | `false` | Show a blinking caret at the end of the content. |
+| `sources` | `Source[]` | — | Sources used to resolve `[1]`-style inline citations. |
+| `renderCode` | `((code: string, language: string, streaming: boolean) => ReactNode)` | — | Override code block rendering (e.g. plug in Shiki). |
+| `className` | `string` | — |  |
+
+### <StreamingMarkdown />
+
+Markdown + smooth token reveal + caret. Use this for live LLM output.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `streaming` | `false \| true` | `false` | True while tokens are still arriving. |
+| `smooth` | `boolean \| SmoothTextOptions` | `true` | Smooth out bursty chunks with a frame-paced reveal. Default true. |
+| `className` | `string` | — |  |
+| `children` **(required)** | `string` | — |  |
+| `sources` | `Source[]` | — | Sources used to resolve `[1]`-style inline citations. |
+| `renderCode` | `((code: string, language: string, streaming: boolean) => ReactNode)` | — | Override code block rendering (e.g. plug in Shiki). |
+
+---
+
+# CodeBlock
+
+> Category: Chat · Package: `kestro-ui`
+
+Syntax-highlighted code with copy button, filename, line numbers and a streaming caret. Built-in tiny highlighter, no dependencies.
+
+## Import
+
+```tsx
+import { CodeBlock } from "kestro-ui";
+```
+
+## Example: code-block
+
+```tsx
+import { CodeBlock } from "kestro-ui";
+
+const handler = `import { streamText } from "ai";
+
+export async function POST(req: Request) {
+  const { messages } = await req.json();
+  const result = streamText({
+    model: "anthropic/claude-sonnet",
+    system: "You are a friendly travel concierge.",
+    messages,
+  });
+  return result.toUIMessageStreamResponse();
+}`;
+
+const query = `SELECT region, SUM(amount) AS revenue
+FROM orders
+WHERE created_at >= '2026-10-01'
+GROUP BY region
+ORDER BY revenue DESC;`;
+
+export default function Example() {
+  return (
+    <div className="w-full max-w-2xl space-y-4">
+      <CodeBlock code={handler} language="ts" filename="app/api/chat/route.ts" showLineNumbers />
+      <CodeBlock code={query} language="sql" hideHeader />
+    </div>
+  );
+}
+```
+
+## API
+
+### <CodeBlock />
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `code` **(required)** | `string` | — |  |
+| `language` | `string` | `""` |  |
+| `filename` | `string` | — | Shown in the header instead of the language. |
+| `showLineNumbers` | `false \| true` | `false` |  |
+| `hideHeader` | `false \| true` | `false` | Hide the header bar (copy button floats on hover instead). |
+| `maxHeight` | `string \| number` | — | Max height before scrolling, e.g. 320 or "20rem". |
+| `streaming` | `false \| true` | — | Show a blinking caret at the end (while streaming). |
+| `actions` | `ReactNode` | — | Extra actions rendered in the header. |
+| `className` | `string` | — |  |
+
+---
+
+# TypingIndicator
+
+> Category: Chat · Package: `kestro-ui`
+
+Animated three-dot indicator for when the agent is preparing a response.
+
+## Import
+
+```tsx
+import { TypingIndicator } from "kestro-ui";
+```
+
+## Example: typing-indicator
+
+```tsx
+import { Message, TypingIndicator } from "kestro-ui";
+
+export default function Example() {
+  return (
+    <div className="w-full max-w-xl space-y-6">
+      <Message from="user">Can you find me a vegetarian lasagna recipe?</Message>
+      <Message from="assistant" name="Basil" avatar={{ name: "Basil", state: "thinking" }}>
+        <TypingIndicator />
+      </Message>
+      <Message from="assistant" name="Basil" avatar={{ name: "Basil", state: "working" }}>
+        <TypingIndicator label="Checking 12 recipe sites…" />
+      </Message>
+    </div>
+  );
+}
+```
+
+## API
+
+### <TypingIndicator />
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `label` | `ReactNode` | — |  |
+| `className` | `string` | — |  |
+
+---
+
+# PromptInput
+
+> Category: Input · Package: `kestro-ui`
+
+Auto-growing composer with attachments (button, drag & drop, paste), stop button while streaming, voice button and toolbar slots.
+
+## Import
+
+```tsx
+import { PromptInput } from "kestro-ui";
+```
+
+## Example: prompt-input
+
+```tsx
+import { useRef, useState } from "react";
+import { ModelSelector, PromptInput, type ChatStatus } from "kestro-ui";
+import { Brain, Sparkles, Zap } from "lucide-react";
+
+const models = [
+  { id: "auto", name: "Auto", icon: <Sparkles />, description: "Picks the best model per request" },
+  { id: "fast", name: "Fast", icon: <Zap />, description: "Quick answers for everyday tasks", badge: "Fast" },
+  { id: "deep", name: "Deep think", icon: <Brain />, description: "Multi-step reasoning", badge: "Reasoning" },
+];
+
+export default function Example() {
+  const [status, setStatus] = useState<ChatStatus>("ready");
+  const [model, setModel] = useState("auto");
+  const [listening, setListening] = useState(false);
+  const [last, setLast] = useState<string | null>(null);
+  const timer = useRef<number | undefined>(undefined);
+
+  const stop = () => {
+    window.clearTimeout(timer.current);
+    setStatus("ready");
+  };
+
+  return (
+    <div className="w-full max-w-xl space-y-3">
+      <PromptInput
+        placeholder="Ask about your spending, budgets or bills…"
+        status={status}
+        onStop={stop}
+        onSubmit={({ text }) => {
+          setLast(text);
+          setStatus("streaming");
+          timer.current = window.setTimeout(() => setStatus("ready"), 2000);
+        }}
+        onVoice={() => setListening((v) => !v)}
+        voiceActive={listening}
+        toolbar={<ModelSelector models={models} value={model} onValueChange={setModel} />}
+      />
+      {last ? (
+        <p className="text-center text-xs text-kui-fg-subtle">
+          Sent with <span className="text-kui-fg-muted">{model}</span>: “{last}”
+        </p>
+      ) : null}
+    </div>
+  );
+}
+```
+
+## API
+
+### <PromptInput />
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `value` | `string` | — |  |
+| `defaultValue` | `string` | `""` |  |
+| `onValueChange` | `((value: string) => void)` | — |  |
+| `onSubmit` | `((message: PromptSubmission) => void)` | — |  |
+| `status` | `"error" \| "streaming" \| "ready" \| "submitted"` | `"ready"` | "streaming"/"submitted" turns the send button into a stop button. |
+| `onStop` | `(() => void)` | — |  |
+| `placeholder` | `string` | `"Ask anything…"` |  |
+| `disabled` | `false \| true` | — |  |
+| `autoFocus` | `false \| true` | — |  |
+| `maxRows` | `number` | `8` |  |
+| `allowAttachments` | `false \| true` | `true` | Enable file attachments (button, drag & drop, paste). |
+| `accept` | `string` | — |  |
+| `attachments` | `AttachmentData[]` | — | Controlled attachments. If omitted, attachments are managed internally. |
+| `onAttach` | `((files: File[]) => void)` | — |  |
+| `onRemoveAttachment` | `((id: string) => void)` | — |  |
+| `references` | `PromptReference[]` | — | Context chips shown above the input (e.g. a referenced image). |
+| `onRemoveReference` | `((id: string) => void)` | — |  |
+| `onVoice` | `(() => void)` | — | Show a microphone button. |
+| `voiceActive` | `false \| true` | — |  |
+| `toolbar` | `ReactNode` | — | Extra controls on the left of the toolbar (e.g. <ModelSelector/>). |
+| `actions` | `ReactNode` | — | Extra controls on the right of the toolbar, before send. |
+| `hint` | `ReactNode` | — | Footer hint. `false` hides it. |
+| `className` | `string` | — |  |
+
+Also accepts the native HTML attributes of its root element.
+
+---
+
+# ModelSelector
+
+> Category: Input · Package: `kestro-ui`
+
+Keyboard-accessible dropdown for choosing a model, agent, persona or mode.
+
+## Import
+
+```tsx
+import { ModelSelector } from "kestro-ui";
+```
+
+## Example: model-selector
+
+```tsx
+import { useState } from "react";
+import { ModelSelector, type ModelOption } from "kestro-ui";
+import { Brain, Globe, Search, Sparkles, Zap } from "lucide-react";
+
+const models: ModelOption[] = [
+  { id: "auto", name: "Auto", icon: <Sparkles />, description: "Routes each request to the best model" },
+  { id: "flash", name: "Flash", icon: <Zap />, description: "Fastest replies, lowest cost", badge: "Fast" },
+  { id: "reason", name: "Reasoner", icon: <Brain />, description: "Thinks step by step before answering", badge: "Reasoning" },
+  { id: "research", name: "Deep research", icon: <Search />, description: "Reads dozens of sources for you", badge: "New" },
+  { id: "web", name: "Web agent", icon: <Globe />, description: "Browses sites on your behalf", disabled: true },
+];
+
+export default function Example() {
+  const [value, setValue] = useState("auto");
+
+  return (
+    <div className="flex w-full max-w-xl min-h-96 flex-col items-center gap-3">
+      <ModelSelector models={models} value={value} onValueChange={setValue} side="bottom" label="Choose a model" />
+      <p className="text-xs text-kui-fg-subtle">
+        Selected: <code className="text-kui-fg-muted">{value}</code>
+      </p>
+    </div>
+  );
+}
+```
+
+## API
+
+### <ModelSelector />
+
+Dropdown for picking a model, agent, persona or mode.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `models` **(required)** | `ModelOption[]` | — |  |
+| `value` | `string` | — |  |
+| `defaultValue` | `string` | — |  |
+| `onValueChange` | `((id: string) => void)` | — |  |
+| `side` | `"top" \| "bottom"` | `"top"` | Which side the menu opens on. Defaults to "top" (good inside a prompt input). |
+| `align` | `"start" \| "end"` | `"start"` |  |
+| `label` | `ReactNode` | — | Header label inside the menu. |
+| `className` | `string` | — |  |
+
+---
+
+# Suggestions
+
+> Category: Input · Package: `kestro-ui`
+
+Starter prompts and follow-ups as compact chips or descriptive cards.
+
+## Import
+
+```tsx
+import { Suggestions } from "kestro-ui";
+```
+
+## Example: suggestions
+
+```tsx
+import { useState } from "react";
+import { Suggestions } from "kestro-ui";
+import { ChefHat, CreditCard, Plane, ShoppingBag } from "lucide-react";
+
+export default function Example() {
+  const [selected, setSelected] = useState<string | null>(null);
+
+  return (
+    <div className="w-full max-w-2xl space-y-6">
+      <Suggestions
+        suggestions={["Track my order", "Change my seat", "Cancel subscription", "Talk to a human"]}
+        onSelect={setSelected}
+      />
+
+      <Suggestions
+        variant="cards"
+        onSelect={setSelected}
+        suggestions={[
+          { label: "Plan a trip", description: "A 4-day food tour of Tokyo", icon: <Plane />, value: "Plan a 4-day food tour of Tokyo" },
+          { label: "Find a gift", description: "For a coffee lover, under $50", icon: <ShoppingBag />, value: "Find a gift for a coffee lover under $50" },
+          { label: "Cook dinner", description: "Using chicken, rice and spinach", icon: <ChefHat />, value: "What can I cook with chicken, rice and spinach?" },
+          { label: "Review spending", description: "Where did my money go in October?", icon: <CreditCard />, value: "Summarize my October spending" },
+        ]}
+      />
+
+      <p className="text-center text-xs text-kui-fg-subtle">
+        Last selected: <span className="text-kui-fg-muted">{selected ?? "nothing yet"}</span>
+      </p>
+    </div>
+  );
+}
+```
+
+## API
+
+### <Suggestions />
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `suggestions` **(required)** | `Suggestion[]` | — |  |
+| `onSelect` | `((value: string) => void)` | — |  |
+| `variant` | `"chips" \| "cards"` | `"chips"` | "chips" (compact pills) or "cards" (grid with descriptions). |
+| `className` | `string` | — |  |
+
+---
+
+# EmptyState
+
+> Category: Input · Package: `kestro-ui`
+
+Welcome screen shown before the first message.
+
+## Import
+
+```tsx
+import { EmptyState } from "kestro-ui";
+```
+
+## Example: empty-state
+
+```tsx
+import { AgentAvatar, EmptyState, Suggestions } from "kestro-ui";
+import { FileSearch, Newspaper, Quote, TrendingUp } from "lucide-react";
+
+export default function Example() {
+  return (
+    <div className="w-full max-w-2xl">
+      <EmptyState
+        icon={<AgentAvatar size="lg" name="Scout" />}
+        title="What should we research today?"
+        description="Scout reads papers, news and reports, then gives you a cited summary."
+      >
+        <Suggestions
+          variant="cards"
+          onSelect={(prompt) => console.log(prompt)}
+          suggestions={[
+            { label: "Market snapshot", description: "EV adoption in Europe, 2026", icon: <TrendingUp /> },
+            { label: "Literature review", description: "Sleep and memory consolidation", icon: <FileSearch /> },
+            { label: "News digest", description: "This week in AI regulation", icon: <Newspaper /> },
+            { label: "Fact check", description: "Verify a quote or statistic", icon: <Quote /> },
+          ]}
+        />
+      </EmptyState>
+    </div>
+  );
+}
+```
+
+## API
+
+### <EmptyState />
+
+Welcome screen shown before the first message.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `icon` | `ReactNode` | — |  |
+| `title` | `ReactNode` | `"How can I help you today?"` |  |
+| `description` | `ReactNode` | — |  |
+| `children` | `ReactNode` | — |  |
+| `className` | `string` | — |  |
+
+---
+
+# Attachment
+
+> Category: Input · Package: `kestro-ui`
+
+File chips with type-aware icons, image previews, upload progress and errors.
+
+## Import
+
+```tsx
+import { Attachment, AttachmentList } from "kestro-ui";
+```
+
+## Example: attachment
+
+```tsx
+import { useEffect, useState } from "react";
+import { AttachmentList, type AttachmentData } from "kestro-ui";
+
+const initial: AttachmentData[] = [
+  { id: "1", name: "Q3-expense-report.pdf", type: "application/pdf", size: 482_133 },
+  { id: "2", name: "transactions-october.csv", size: 18_420 },
+  { id: "3", name: "receipt-photo.jpg", type: "image/jpeg", size: 2_310_000 },
+  { id: "4", name: "invoice-2291.pdf", size: 96_000, progress: 0 },
+  { id: "5", name: "bank-statement.zip", size: 64_000_000, error: "File too large (max 25 MB)" },
+];
+
+export default function Example() {
+  const [files, setFiles] = useState(initial);
+
+  useEffect(() => {
+    const t = window.setInterval(() => {
+      setFiles((fs) =>
+        fs.map((f) => (f.progress !== undefined && f.progress < 100 ? { ...f, progress: Math.min(100, f.progress + 7) } : f)),
+      );
+    }, 250);
+    return () => window.clearInterval(t);
+  }, []);
+
+  return (
+    <div className="w-full max-w-xl space-y-3">
+      <AttachmentList attachments={files} onRemove={(id) => setFiles((fs) => fs.filter((f) => f.id !== id))} />
+      {files.length < initial.length ? (
+        <button type="button" onClick={() => setFiles(initial)} className="text-xs font-medium text-kui-accent hover:underline">
+          Reset files
+        </button>
+      ) : null}
+    </div>
+  );
+}
+```
+
+## API
+
+### <Attachment />
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `attachment` **(required)** | `AttachmentData` | — |  |
+| `onRemove` | `((id: string) => void)` | — |  |
+| `className` | `string` | — |  |
+
+### <AttachmentList />
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `attachments` **(required)** | `AttachmentData[]` | — |  |
+| `onRemove` | `((id: string) => void)` | — |  |
+| `className` | `string` | — |  |
+
+---
+
+# Reasoning
+
+> Category: Agent transparency · Package: `kestro-ui`
+
+Collapsible thinking block with live shimmer, last-line preview and automatic duration.
+
+## Import
+
+```tsx
+import { Reasoning } from "kestro-ui";
+```
+
+## Example: reasoning
+
+```tsx
+import { useState } from "react";
+import { Button, Reasoning } from "kestro-ui";
+
+const thoughts = `The user wants to fly **NYC → Tokyo** in late March under $900.
+
+- Direct flights from JFK start around $1,150, too expensive.
+- One-stop via Seoul on Mar 24 is $812 with a 2h layover.
+- Checking whether Haneda or Narita is closer to their hotel in Shibuya…`;
+
+export default function Example() {
+  const [streaming, setStreaming] = useState(true);
+
+  return (
+    <div className="w-full max-w-xl space-y-4">
+      <Reasoning content={thoughts} streaming={streaming} />
+      <Button variant="outline" size="xs" onClick={() => setStreaming((s) => !s)}>
+        {streaming ? "Finish thinking" : "Resume thinking"}
+      </Button>
+
+      <Reasoning
+        duration={14}
+        content="Compared 3 refund policies. The order is within the 30-day window and unopened, so a full refund applies."
+      />
+
+      <Reasoning
+        variant="inline"
+        duration={6}
+        defaultOpen
+        content="Converted 2 cups of flour to **250 g** and scaled the recipe from 4 to 6 servings."
+      />
+    </div>
+  );
+}
+```
+
+## API
+
+### <Reasoning />
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `content` | `string` | — | The reasoning text (markdown) — or pass `children`. |
+| `children` | `ReactNode` | — |  |
+| `streaming` | `false \| true` | `false` | True while the model is still thinking. |
+| `duration` | `number` | — | Seconds spent thinking. Measured automatically if omitted. |
+| `summary` | `ReactNode` | — | Optional one-line summary shown under the title. |
+| `variant` | `"card" \| "inline"` | `"card"` | "card" (bordered) or "inline" (minimal, flows with the message). |
+| `open` | `false \| true` | — |  |
+| `defaultOpen` | `false \| true` | `false` |  |
+| `onOpenChange` | `((open: boolean) => void)` | — |  |
+| `labels` | `{ thinking?: ReactNode; thought?: ((seconds: number) => ReactNode) \| undefined; }` | — | Label overrides. |
+| `className` | `string` | — |  |
+
+---
+
+# ToolCall
+
+> Category: Agent transparency · Package: `kestro-ui`
+
+Shows a tool invocation with arguments, result, status and duration. Pass children to render custom results (generative UI).
+
+## Import
+
+```tsx
+import { ToolCall, ToolCallGroup, ToolStatusBadge } from "kestro-ui";
+```
+
+## Example: tool-call
+
+```tsx
+import { ToolCall } from "kestro-ui";
+
+export default function Example() {
+  return (
+    <div className="w-full max-w-xl space-y-2">
+      <ToolCall name="check_inventory" status="pending" input={{ sku: "SHOE-AIR-42" }} />
+      <ToolCall name="web_search" title="Searching the web" status="running" input={{ query: "best ramen in Osaka" }} />
+      <ToolCall
+        name="get_order_status"
+        status="success"
+        input={{ order_id: "48213" }}
+        output={{ status: "shipped", carrier: "UPS", eta: "2026-11-21" }}
+        durationMs={840}
+        defaultOpen
+      />
+      <ToolCall
+        name="charge_card"
+        status="error"
+        input={{ amount: 129.0, currency: "USD" }}
+        error="Card declined: insufficient funds."
+        onRetry={() => console.log("retry")}
+        durationMs={1200}
+      />
+      <ToolCall name="send_email" status="denied" input={{ to: "team@example.com", subject: "Q3 numbers" }} />
+    </div>
+  );
+}
+```
+
+## Example: tool-call-custom
+
+```tsx
+import { ToolCall, ToolCallGroup } from "kestro-ui";
+import { CloudRain, CloudSun, Sun } from "lucide-react";
+
+const forecast = [
+  { day: "Fri", icon: <Sun />, high: 24, low: 16 },
+  { day: "Sat", icon: <CloudSun />, high: 21, low: 15 },
+  { day: "Sun", icon: <CloudRain />, high: 18, low: 13 },
+];
+
+export default function Example() {
+  return (
+    <div className="w-full max-w-xl">
+      <ToolCallGroup>
+        <ToolCall name="geocode" title="Finding location" input={{ place: "Lisbon, Portugal" }} durationMs={210} />
+        <ToolCall name="get_weather" title="Weekend forecast" input={{ city: "Lisbon", days: 3 }} durationMs={530} defaultOpen>
+          <div className="grid grid-cols-3 gap-2">
+            {forecast.map((d) => (
+              <div
+                key={d.day}
+                className="flex flex-col items-center gap-1.5 rounded-kui-sm border border-kui-border bg-kui-surface-2 p-3 [&_svg]:size-6 [&_svg]:text-kui-accent"
+              >
+                <span className="text-xs font-medium text-kui-fg-muted">{d.day}</span>
+                {d.icon}
+                <span className="text-sm font-semibold text-kui-fg tabular-nums">
+                  {d.high}° <span className="font-normal text-kui-fg-subtle">{d.low}°</span>
+                </span>
+              </div>
+            ))}
+          </div>
+        </ToolCall>
+      </ToolCallGroup>
+    </div>
+  );
+}
+```
+
+## API
+
+### <ToolCall />
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `name` **(required)** | `string` | — | Tool identifier, e.g. "web_search". |
+| `title` | `ReactNode` | — | Friendly title shown instead of the raw name (e.g. "Searching the web"). |
+| `icon` | `ReactNode` | — |  |
+| `status` | `"success" \| "error" \| "pending" \| "running" \| "denied"` | `"success"` |  |
+| `input` | `unknown` | — |  |
+| `output` | `unknown` | — |  |
+| `error` | `ReactNode` | — |  |
+| `durationMs` | `number` | — | Duration in milliseconds. |
+| `children` | `ReactNode` | — | Custom output renderer — overrides the default JSON/text output view. |
+| `open` | `false \| true` | — |  |
+| `defaultOpen` | `false \| true` | `false` |  |
+| `onOpenChange` | `((open: boolean) => void)` | — |  |
+| `onRetry` | `(() => void)` | — |  |
+| `className` | `string` | — |  |
+
+### <ToolCallGroup />
+
+Stack of tool calls with a subtle connecting header, e.g. "Used 3 tools".
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `children` **(required)** | `ReactNode` | — |  |
+| `label` | `ReactNode` | — |  |
+| `className` | `string` | — |  |
+
+### <ToolStatusBadge />
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `status` **(required)** | `"success" \| "error" \| "pending" \| "running" \| "denied"` | — |  |
+
+---
+
+# ToolCallRow
+
+> Category: Agent transparency · Package: `kestro-ui`
+
+Compact, single-line tool status for dense lists and dashboards, with progress, duration and retry.
+
+## Import
+
+```tsx
+import { ToolCallRow } from "kestro-ui";
+```
+
+## Example: tool-call-row
+
+```tsx
+import { useEffect, useState } from "react";
+import { ToolCallRow } from "kestro-ui";
+import { CalendarDays, FileText, Search } from "lucide-react";
+
+export default function Example() {
+  const [progress, setProgress] = useState(20);
+
+  useEffect(() => {
+    const id = setInterval(() => setProgress((p) => (p >= 100 ? 10 : p + 6)), 400);
+    return () => clearInterval(id);
+  }, []);
+
+  return (
+    <div className="w-full max-w-xl rounded-kui border border-kui-border bg-kui-surface px-4">
+      <ToolCallRow name="search_flights" icon={<Search />} status="running" progress={progress} />
+      <ToolCallRow name="check_fare_rules" icon={<FileText />} status="success" durationMs={218} />
+      <ToolCallRow name="book_flight" icon={<CalendarDays />} status="waiting" />
+      <ToolCallRow name="fetch_receipt" icon={<FileText />} status="error" detail="Airline API timed out after 30s" onRetry={() => {}} />
+    </div>
+  );
+}
+```
+
+## API
+
+### <ToolCallRow />
+
+Compact, single-line tool status — for dense lists and dashboards.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `name` **(required)** | `string` | — |  |
+| `status` **(required)** | `"success" \| "waiting" \| "error" \| "pending" \| "running" \| "denied"` | — |  |
+| `icon` | `ReactNode` | — |  |
+| `progress` | `number` | — | 0–100 shows a progress bar while running. |
+| `durationMs` | `number` | — |  |
+| `detail` | `ReactNode` | — |  |
+| `onRetry` | `(() => void)` | — |  |
+| `className` | `string` | — |  |
+
+---
+
+# Sources
+
+> Category: Agent transparency · Package: `kestro-ui`
+
+Citations: collapsible source list, source cards, chips and inline numbered citations with hover previews.
+
+## Import
+
+```tsx
+import { Sources, SourceCard, SourceChip, InlineCitation } from "kestro-ui";
+```
+
+## Example: sources
+
+```tsx
+import { InlineCitation, SourceCard, SourceChip, Sources, type Source } from "kestro-ui";
+
+const sources: Source[] = [
+  { url: "https://example.com/health/coffee-study", title: "Coffee and longevity: a 10-year cohort study", snippet: "Moderate intake of 2–3 cups a day was linked to lower mortality." },
+  { url: "https://news.example.org/caffeine-sleep", title: "How late is too late for caffeine?", snippet: "Caffeine's half-life averages around 5 hours in healthy adults." },
+  { url: "https://example.net/nutrition/guidelines", title: "Dietary guidelines 2025–2030", snippet: "Up to 400 mg of caffeine per day is considered safe for most adults." },
+];
+
+export default function Example() {
+  return (
+    <div className="w-full max-w-xl space-y-5">
+      <p className="text-[15px] leading-relaxed text-kui-fg">
+        Two to three cups of coffee a day is linked to a longer life
+        <InlineCitation index={1} source={sources[0]} />, but try to stop by early afternoon since caffeine lingers for
+        hours
+        <InlineCitation index={2} source={sources[1]} />.
+      </p>
+
+      <Sources sources={sources} defaultOpen />
+
+      <div className="flex flex-wrap gap-2">
+        <SourceChip source={sources[2]} />
+        <SourceChip source={sources[0]} index={1} />
+      </div>
+
+      <SourceCard source={sources[2]} index={3} />
+    </div>
+  );
+}
+```
+
+## API
+
+### <Sources />
+
+Collapsible "Used N sources" block with favicon stack.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `sources` **(required)** | `Source[]` | — |  |
+| `defaultOpen` | `false \| true` | `false` |  |
+| `label` | `((count: number) => ReactNode)` | — | Label override, receives the count. |
+| `className` | `string` | — |  |
+
+### <SourceCard />
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `source` **(required)** | `Source` | — |  |
+| `index` | `number` | — |  |
+| `className` | `string` | — |  |
+
+### <SourceChip />
+
+Pill-shaped source link: "[1] Title ↗"
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `source` **(required)** | `Source` | — |  |
+| `index` | `number` | — |  |
+| `className` | `string` | — |  |
+
+### <InlineCitation />
+
+Inline numbered citation with a hover card preview.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `index` **(required)** | `number` | — |  |
+| `source` | `Source` | — |  |
+
+---
+
+# ToolApproval
+
+> Category: Human in the loop · Package: `kestro-ui`
+
+Ask the user before the agent acts: payments, emails, bookings, deletions, shell commands. Supports details, previews, risk levels and 'remember' choice.
+
+## Import
+
+```tsx
+import { ToolApproval } from "kestro-ui";
+```
+
+## Example: tool-approval
+
+```tsx
+import { useState } from "react";
+import { Button, ToolApproval, type ApprovalStatus } from "kestro-ui";
+import { Plane, RotateCcw } from "lucide-react";
+
+export default function Example() {
+  const [status, setStatus] = useState<ApprovalStatus>("pending");
+
+  return (
+    <div className="w-full max-w-xl space-y-3">
+      <ToolApproval
+        icon={<Plane />}
+        title="Book this flight for $412?"
+        description="Atlas found a nonstop that matches your preferences and will charge your saved card."
+        details={[
+          { label: "Flight", value: "TAP 202 · JFK → LIS" },
+          { label: "Departs", value: "Fri, Dec 12 · 7:45 PM" },
+          { label: "Seat", value: "14A (window)" },
+          { label: "Payment", value: "Visa •••• 4242" },
+          { label: "Total", value: "$412.60" },
+        ]}
+        status={status}
+        approveLabel="Book for $412.60"
+        onApprove={() => setStatus("approved")}
+        onDeny={() => setStatus("denied")}
+      />
+      {status !== "pending" ? (
+        <Button variant="ghost" size="xs" onClick={() => setStatus("pending")}>
+          <RotateCcw /> Reset
+        </Button>
+      ) : null}
+    </div>
+  );
+}
+```
+
+## Example: tool-approval-command
+
+```tsx
+import { useState } from "react";
+import { ToolApproval, type ApprovalStatus } from "kestro-ui";
+import { Trash2 } from "lucide-react";
+
+export default function Example() {
+  const [cleanup, setCleanup] = useState<ApprovalStatus>("pending");
+  const [shell, setShell] = useState<ApprovalStatus>("pending");
+
+  return (
+    <div className="w-full max-w-xl space-y-4">
+      <ToolApproval
+        risk="high"
+        icon={<Trash2 />}
+        title="Delete 1,204 CRM records?"
+        description="These contacts haven't been active in 2 years. This can't be undone."
+        details={[
+          { label: "Object", value: "Contacts" },
+          { label: "Filter", value: "last_activity < 2024-11-01" },
+          { label: "Records", value: "1,204" },
+        ]}
+        rememberLabel={false}
+        approveLabel="Delete records"
+        status={cleanup}
+        onApprove={() => setCleanup("approved")}
+        onDeny={() => setCleanup("denied")}
+      />
+
+      <ToolApproval
+        risk="high"
+        title="Run shell command?"
+        description="The ops agent wants to restart the payments service on production."
+        command="kubectl rollout restart deployment/payments -n prod"
+        status={shell}
+        onApprove={() => setShell("approved")}
+        onDeny={() => setShell("denied")}
+      />
+    </div>
+  );
+}
+```
+
+## API
+
+### <ToolApproval />
+
+Human-in-the-loop confirmation for any agent action.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `title` **(required)** | `ReactNode` | — | e.g. "Send this email to 3 recipients?", "Book flight for $412?", "Run shell command?" |
+| `description` | `ReactNode` | — |  |
+| `icon` | `ReactNode` | — |  |
+| `risk` | `"low" \| "medium" \| "high"` | `"medium"` |  |
+| `details` | `ApprovalDetail[]` | — | Key/value rows describing exactly what will happen (amount, recipient, date…). |
+| `command` | `string` | — | Optional command / code preview (rendered as a code block). |
+| `commandLanguage` | `string` | `"bash"` |  |
+| `children` | `ReactNode` | — | Any custom preview (email draft, diff, product card…). |
+| `status` | `"pending" \| "denied" \| "approved"` | `"pending"` |  |
+| `onApprove` | `((opts: { remember: boolean; }) => void)` | — |  |
+| `onDeny` | `(() => void)` | — |  |
+| `rememberLabel` | `ReactNode` | `"Don't ask again for this action"` | Label for the "remember" checkbox. Pass `false` to hide it. |
+| `approveLabel` | `ReactNode` | `"Approve"` |  |
+| `denyLabel` | `ReactNode` | `"Deny"` |  |
+| `className` | `string` | — |  |
+
+---
+
+# AgentQuestion
+
+> Category: Human in the loop · Package: `kestro-ui`
+
+The agent asks the user a structured question: single or multiple choice, with optional free text.
+
+## Import
+
+```tsx
+import { AgentQuestion } from "kestro-ui";
+```
+
+## Example: agent-question
+
+```tsx
+import { useState } from "react";
+import { AgentQuestion } from "kestro-ui";
+import { Building2, House, Tent } from "lucide-react";
+
+type Answer = { optionIds: string[]; text?: string };
+
+export default function Example() {
+  const [stay, setStay] = useState<Answer | null>(null);
+  const [diet, setDiet] = useState<Answer | null>(null);
+
+  return (
+    <div className="w-full max-w-xl space-y-4">
+      <AgentQuestion
+        question="Where would you like to stay in Kyoto?"
+        description="I'll only show options that fit your $180/night budget."
+        options={[
+          { id: "hotel", label: "Hotel", description: "Central, near Kyoto Station", icon: <Building2 /> },
+          { id: "ryokan", label: "Ryokan", description: "Traditional inn with onsen", icon: <House /> },
+          { id: "glamping", label: "Glamping", description: "Forest stay in Arashiyama", icon: <Tent /> },
+        ]}
+        answered={!!stay}
+        onSubmit={setStay}
+      />
+
+      <AgentQuestion
+        question="Any dietary preferences for the meal plan?"
+        multiple
+        allowCustom
+        customPlaceholder="Anything else? e.g. no cilantro"
+        options={[
+          { id: "veg", label: "Vegetarian" },
+          { id: "gf", label: "Gluten-free" },
+          { id: "dairy", label: "Dairy-free" },
+          { id: "lowcarb", label: "Low carb" },
+        ]}
+        answered={!!diet}
+        onSubmit={setDiet}
+        onSkip={() => setDiet({ optionIds: [] })}
+      />
+
+      <pre className="rounded-kui-sm bg-kui-surface-2 p-3 text-xs text-kui-fg-muted">
+        {JSON.stringify({ stay, diet }, null, 2)}
+      </pre>
+    </div>
+  );
+}
+```
+
+## API
+
+### <AgentQuestion />
+
+The agent asks the user a structured question (choice or free text).
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `question` **(required)** | `ReactNode` | — |  |
+| `description` | `ReactNode` | — |  |
+| `options` | `QuestionOption[]` | `[]` |  |
+| `multiple` | `false \| true` | `false` | Allow selecting several options. |
+| `allowCustom` | `false \| true` | `false` | Show a free-text field ("Other…"). |
+| `customPlaceholder` | `string` | `"Type your answer…"` |  |
+| `submitLabel` | `ReactNode` | `"Continue"` |  |
+| `answered` | `false \| true` | `false` | Once answered the card locks and shows the answer. |
+| `onSubmit` | `((answer: { optionIds: string[]; text?: string \| undefined; }) => void)` | — |  |
+| `onSkip` | `(() => void)` | — |  |
+| `className` | `string` | — |  |
+
+---
+
+# HandoffBanner
+
+> Category: Human in the loop · Package: `kestro-ui`
+
+Escalate a conversation from the AI to a human specialist.
+
+## Import
+
+```tsx
+import { HandoffBanner } from "kestro-ui";
+```
+
+## Example: handoff-banner
+
+```tsx
+import { useState } from "react";
+import { Button, HandoffBanner, type HandoffBannerProps } from "kestro-ui";
+
+const statuses: HandoffBannerProps["status"][] = ["requested", "connecting", "connected", "ended"];
+
+export default function Example() {
+  const [status, setStatus] = useState<HandoffBannerProps["status"]>("requested");
+
+  return (
+    <div className="w-full max-w-xl space-y-4">
+      <HandoffBanner status={status} agentName="Maya from Support" eta="~2 min" onCancel={() => setStatus("ended")} />
+      <div className="flex flex-wrap gap-2">
+        {statuses.map((s) => (
+          <Button key={s} size="xs" variant={s === status ? "secondary" : "ghost"} onClick={() => setStatus(s)}>
+            {s}
+          </Button>
+        ))}
+      </div>
+    </div>
+  );
+}
+```
+
+## API
+
+### <HandoffBanner />
+
+Banner for escalating a conversation from AI to a human (support use-cases).
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `status` **(required)** | `"requested" \| "connecting" \| "connected" \| "ended"` | — |  |
+| `agentName` | `string` | — | Human agent name once connected. |
+| `agentAvatar` | `string` | — |  |
+| `eta` | `ReactNode` | — | e.g. "~2 min" |
+| `onCancel` | `(() => void)` | — |  |
+| `className` | `string` | — |  |
+
+---
+
+# TokenUsage
+
+> Category: Usage & cost · Package: `kestro-ui`
+
+Token breakdown — input, cached, reasoning, output — with per-kind cost from your pricing. TokenCounter is the inline version.
+
+## Import
+
+```tsx
+import { TokenUsage, TokenCounter } from "kestro-ui";
+```
+
+## Example: token-usage
+
+```tsx
+import { TokenCounter, TokenUsage } from "kestro-ui";
+
+export default function Example() {
+  return (
+    <div className="w-full max-w-md space-y-4">
+      <TokenUsage
+        title="This conversation"
+        caption="Sonata Large · 14 turns"
+        input={48_200}
+        cached={31_000}
+        reasoning={6_400}
+        output={9_850}
+        pricing={{ input: 3, output: 15, cached: 0.3 }}
+      />
+      <p className="flex flex-wrap items-center gap-2 text-sm text-kui-fg-muted">
+        Inline, under a message: <TokenCounter tokens={1_217} cost={0.0042} detail="812 in · 405 out" />
+      </p>
+    </div>
+  );
+}
+```
+
+## API
+
+### <TokenUsage />
+
+Token breakdown (input, cached, reasoning, output) with per-kind cost.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `input` **(required)** | `number` | — |  |
+| `output` **(required)** | `number` | — |  |
+| `cached` | `number` | `0` | Input tokens served from cache. |
+| `reasoning` | `number` | `0` | Hidden reasoning / thinking tokens. |
+| `pricing` | `TokenPricing` | — | Pricing per 1M tokens — used to compute cost when `cost` is omitted. |
+| `cost` | `number` | — | Total cost override. |
+| `currency` | `string` | `"$"` |  |
+| `title` | `ReactNode` | `"Token usage"` |  |
+| `caption` | `ReactNode` | — | Small caption, e.g. the model name or period. |
+| `className` | `string` | — |  |
+
+### <TokenCounter />
+
+Inline "1.2k tok · $0.004" chip for messages, tool calls and runs.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `tokens` **(required)** | `number` | — |  |
+| `cost` | `number` | — |  |
+| `currency` | `string` | `"$"` |  |
+| `detail` | `string` | — | Optional detail shown on hover, e.g. "812 in · 405 out". |
+| `className` | `string` | — |  |
+
+---
+
+# ContextWindow
+
+> Category: Usage & cost · Package: `kestro-ui`
+
+What's filling the model's context — system prompt, tools, files, conversation — as a bar or a 100-cell grid, with a warning before it runs out.
+
+## Import
+
+```tsx
+import { ContextWindow } from "kestro-ui";
+```
+
+## Example: context-window
+
+```tsx
+import { useEffect, useState } from "react";
+import { ContextWindow } from "kestro-ui";
+
+export default function Example() {
+  const [history, setHistory] = useState(62_000);
+
+  // The conversation grows until it nears the limit, then resets
+  useEffect(() => {
+    const id = setInterval(() => setHistory((h) => (h > 150_000 ? 62_000 : h + 9_000)), 1200);
+    return () => clearInterval(id);
+  }, []);
+
+  const segments = [
+    { id: "system", label: "System prompt", tokens: 3_200 },
+    { id: "tools", label: "Tool definitions", tokens: 11_400 },
+    { id: "files", label: "Attached files", tokens: 18_600 },
+    { id: "history", label: "Conversation", tokens: history },
+  ];
+
+  return (
+    <div className="grid w-full max-w-2xl gap-4 sm:grid-cols-2">
+      <ContextWindow segments={segments} limit={200_000} />
+      <ContextWindow segments={segments} limit={200_000} variant="grid" title="Same, as a grid" />
+    </div>
+  );
+}
+```
+
+## API
+
+### <ContextWindow />
+
+What's filling the model's context window — system prompt, history, tools, files — and how much is left.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `segments` **(required)** | `ContextSegment[]` | — |  |
+| `limit` **(required)** | `number` | — | Model context size in tokens. |
+| `title` | `ReactNode` | `"Context window"` |  |
+| `variant` | `"bar" \| "grid"` | `"bar"` | "bar" (default) or "grid" (100 cells, one per 1%). |
+| `warnAt` | `number` | `0.8` | Usage ratio (0–1) from which to warn. Default 0.8. |
+| `warning` | `((free: number) => ReactNode)` | `(free) => `Only ${formatNumber(free)} tokens left — older messages will be summarized soon.`` | Warning text; receives the free token count. |
+| `className` | `string` | — |  |
+
+---
+
+# ModelUsageTable
+
+> Category: Usage & cost · Package: `kestro-ui`
+
+Usage per model: requests, input and output tokens, latency, share of spend and cost, with totals.
+
+## Import
+
+```tsx
+import { ModelUsageTable } from "kestro-ui";
+```
+
+## Example: model-usage
+
+```tsx
+import { ModelUsageTable } from "kestro-ui";
+
+export default function Example() {
+  return (
+    <ModelUsageTable
+      className="max-w-3xl"
+      period="Last 30 days"
+      rows={[
+        { id: "large", name: "Sonata Large", provider: "Sonata", requests: 8_412, inputTokens: 41_200_000, outputTokens: 6_300_000, cost: 218.1, latency: 1840, delta: 12 },
+        { id: "fast", name: "Sonata Fast", provider: "Sonata", requests: 31_906, inputTokens: 52_800_000, outputTokens: 9_100_000, cost: 61.4, latency: 620, delta: -4 },
+        { id: "vision", name: "Lumen Vision", provider: "Lumen", requests: 2_244, inputTokens: 9_700_000, outputTokens: 1_200_000, cost: 34.9, latency: 2310, delta: 31 },
+        { id: "embed", name: "Orbit Embed", provider: "Orbit", requests: 120_480, inputTokens: 88_000_000, outputTokens: 0, cost: 8.8, latency: 90 },
+      ]}
+    />
+  );
+}
+```
+
+## API
+
+### <ModelUsageTable />
+
+Usage per model: requests, tokens, cost, share of spend and latency, with a totals row.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `rows` **(required)** | `ModelUsageRow[]` | — |  |
+| `currency` | `string` | `"$"` |  |
+| `period` | `ReactNode` | — | Period caption, e.g. "Last 30 days". |
+| `onSelect` | `((id: string) => void)` | — |  |
+| `className` | `string` | — |  |
+
+---
+
+# UsageChart
+
+> Category: Usage & cost · Package: `kestro-ui`
+
+Stacked bars of tokens or spend over time, split by model or agent, with hover readouts.
+
+## Import
+
+```tsx
+import { UsageChart } from "kestro-ui";
+```
+
+## Example: usage-chart
+
+```tsx
+import { UsageChart } from "kestro-ui";
+
+const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const data = days.map((label, i) => ({
+  label,
+  values: {
+    large: [4.1, 5.3, 4.8, 6.2, 7.4, 2.1, 1.8][i],
+    fast: [1.2, 1.6, 1.4, 1.9, 2.3, 0.8, 0.6][i],
+    vision: [0.4, 0.9, 0.5, 1.1, 0.7, 0.2, 0.1][i],
+  },
+}));
+
+export default function Example() {
+  return (
+    <UsageChart
+      className="max-w-2xl"
+      title="Spend this week"
+      data={data}
+      format={(v) => `$${v.toFixed(2)}`}
+      series={[
+        { id: "large", label: "Sonata Large" },
+        { id: "fast", label: "Sonata Fast" },
+        { id: "vision", label: "Lumen Vision" },
+      ]}
+    />
+  );
+}
+```
+
+## API
+
+### <UsageChart />
+
+Stacked bar chart of usage over time — tokens or spend per day, split by model or agent.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `data` **(required)** | `UsagePoint[]` | — |  |
+| `series` **(required)** | `UsageSeries[]` | — |  |
+| `title` | `ReactNode` | — |  |
+| `format` | `((v: number) => string)` | `formatNumber` | Format values (axis + tooltip). Default compact number. |
+| `height` | `number` | `180` |  |
+| `className` | `string` | — |  |
+
+---
+
+# StatTile
+
+> Category: Usage & cost · Package: `kestro-ui`
+
+Dashboard KPI tile: label, big value, trend and sparkline.
+
+## Import
+
+```tsx
+import { StatTile } from "kestro-ui";
+```
+
+## Example: stat-tile
+
+```tsx
+import { StatTile } from "kestro-ui";
+import { CircleCheck, Clock, Coins, MessagesSquare } from "lucide-react";
+
+export default function Example() {
+  return (
+    <div className="grid w-full max-w-3xl gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <StatTile label="Conversations" icon={<MessagesSquare />} value="12,480" delta={8.2} trend={[30, 34, 31, 38, 42, 40, 47]} />
+      <StatTile label="Resolved by agent" icon={<CircleCheck />} value="71%" delta={3.1} trend={[61, 63, 64, 66, 68, 70, 71]} />
+      <StatTile label="Median response" icon={<Clock />} value="1.8s" delta={-12} invertDelta trend={[2.4, 2.2, 2.3, 2.0, 1.9, 1.9, 1.8]} />
+      <StatTile label="Spend" icon={<Coins />} value="$323" delta={14} invertDelta trend={[38, 41, 44, 40, 48, 52, 60]} caption="Last 7 days" />
+    </div>
+  );
+}
+```
+
+## API
+
+### <StatTile />
+
+Dashboard KPI tile: label, big value, change and a sparkline.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `label` **(required)** | `ReactNode` | — |  |
+| `value` **(required)** | `ReactNode` | — |  |
+| `delta` | `number` | — | Percent change vs. previous period. |
+| `invertDelta` | `false \| true` | — |  |
+| `trend` | `number[]` | — | Sparkline data. |
+| `icon` | `ReactNode` | — |  |
+| `caption` | `ReactNode` | — |  |
+| `className` | `string` | — |  |
+
+---
+
+# Metric chips
+
+> Category: Usage & cost · Package: `kestro-ui`
+
+Tiny inline building blocks: cost, latency, duration, speed, requests, trends, context, mini bars, model and agent chips, and a one-line message footer.
+
+## Import
+
+```tsx
+import { CostTag, LatencyTag, DurationTag, TokensPerSecond, RequestCount, TrendTag, ContextPill, MiniBar, AgentChip, CapabilityTags, MessageMeta, TimeAgo } from "kestro-ui";
+```
+
+## Example: metric-chips
+
+```tsx
+import {
+  AgentChip,
+  CapabilityTags,
+  ContextPill,
+  CostTag,
+  DurationTag,
+  LatencyTag,
+  MessageMeta,
+  MiniBar,
+  ModelBadge,
+  RequestCount,
+  TimeAgo,
+  TokenCounter,
+  TokensPerSecond,
+  TrendTag,
+} from "kestro-ui";
+
+function Row({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-wrap items-center gap-2 border-b border-kui-border py-3 last:border-0">
+      <span className="w-24 shrink-0 text-xs text-kui-fg-subtle">{label}</span>
+      {children}
+    </div>
+  );
+}
+
+export default function Example() {
+  return (
+    <div className="w-full max-w-2xl rounded-kui border border-kui-border bg-kui-surface px-4">
+      <Row label="Tokens & cost">
+        <TokenCounter tokens={1_217} cost={0.0042} />
+        <CostTag value={0.042} />
+        <RequestCount value={1_204} />
+      </Row>
+      <Row label="Time">
+        <LatencyTag ms={420} />
+        <LatencyTag ms={1_900} label="TTFT" />
+        <LatencyTag ms={4_800} />
+        <DurationTag seconds={38} />
+        <TokensPerSecond value={62} />
+        <span className="text-xs text-kui-fg-muted">
+          Updated <TimeAgo date={Date.now() - 3 * 60_000} />
+        </span>
+      </Row>
+      <Row label="Trends">
+        <TrendTag value={12.5} />
+        <TrendTag value={-3.2} />
+        <TrendTag value={18} invert />
+        <TrendTag value={-22} invert />
+      </Row>
+      <Row label="Meters">
+        <ContextPill used={62_000} limit={200_000} />
+        <ContextPill used={182_000} limit={200_000} />
+        <MiniBar value={64} />
+        <MiniBar value={91} tone="danger" width={48} />
+      </Row>
+      <Row label="Models">
+        <ModelBadge name="Sonata Large" provider="Sonata" context={200_000} />
+        <ModelBadge name="Lumen Vision" provider="Lumen" />
+        <CapabilityTags capabilities={["tools", "vision", "reasoning", "json"]} />
+      </Row>
+      <Row label="Agents">
+        <AgentChip name="Atlas" state="working" />
+        <AgentChip name="Ledger" state="waiting" />
+        <AgentChip name="Scout" state="online" />
+      </Row>
+      <Row label="Message footer">
+        <MessageMeta model="Sonata Large" provider="Sonata" tokens={1_217} cost={0.0042} duration={3.4} speed={58} />
+      </Row>
+    </div>
+  );
+}
+```
+
+## API
+
+### <CostTag />
+
+"$0.042"
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `value` **(required)** | `number` | — |  |
+| `currency` | `string` | `"$"` |  |
+| `className` | `string` | — |  |
+
+### <LatencyTag />
+
+"842ms" — green, ochre or red by threshold.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `ms` **(required)** | `number` | — |  |
+| `thresholds` | `[number, number]` | `[800, 2500]` | [good, slow] thresholds in ms. Default [800, 2500]. |
+| `label` | `string` | — |  |
+| `className` | `string` | — |  |
+
+### <DurationTag />
+
+"4.2s" with a clock.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `seconds` **(required)** | `number` | — |  |
+| `className` | `string` | — |  |
+
+### <TokensPerSecond />
+
+"48 tok/s"
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `value` **(required)** | `number` | — |  |
+| `className` | `string` | — |  |
+
+### <RequestCount />
+
+"1,204 req"
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `value` **(required)** | `number` | — |  |
+| `label` | `string` | `"req"` |  |
+| `className` | `string` | — |  |
+
+### <TrendTag />
+
+"▲ 12.5%" — green when it's good news.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `value` **(required)** | `number` | — | Percent change, e.g. 12.5 or -3. |
+| `invert` | `false \| true` | — | For metrics where lower is better (cost, latency). |
+| `className` | `string` | — |  |
+
+### <ContextPill />
+
+Mini ring + percent, e.g. context used.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `used` **(required)** | `number` | — |  |
+| `limit` **(required)** | `number` | — |  |
+| `label` | `string` | `"ctx"` |  |
+| `className` | `string` | — |  |
+
+### <MiniBar />
+
+Thin inline percentage bar.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `value` **(required)** | `number` | — |  |
+| `max` | `number` | `100` |  |
+| `tone` | `"accent" \| "success" \| "warning" \| "danger" \| "info" \| "muted"` | `"accent"` |  |
+| `width` | `number` | `64` |  |
+| `className` | `string` | — |  |
+
+### <AgentChip />
+
+Mini avatar + name + status dot.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `name` **(required)** | `string` | — |  |
+| `state` | `"idle" \| "online" \| "thinking" \| "working" \| "waiting" \| "error" \| "offline"` | — |  |
+| `avatar` | `string` | — |  |
+| `className` | `string` | — |  |
+
+### <CapabilityTags />
+
+Icon-only capability row with tooltips (vision, tools, reasoning…).
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `capabilities` **(required)** | `ModelCapability[]` | — |  |
+| `className` | `string` | — |  |
+
+### <MessageMeta />
+
+One-line footer for an answer or run: model · tokens · cost · time · speed.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `model` | `string` | — |  |
+| `provider` | `string` | — |  |
+| `tokens` | `number` | — |  |
+| `cost` | `number` | — |  |
+| `duration` | `number` | — | Seconds. |
+| `speed` | `number` | — | Tokens per second. |
+| `currency` | `string` | — |  |
+| `className` | `string` | — |  |
+
+### <TimeAgo />
+
+Relative time ("3 min ago") that updates itself; hover shows the exact time.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `date` **(required)** | `string \| number \| Date` | — |  |
+| `locale` | `string` | — |  |
+| `className` | `string` | — |  |
+
+---
+
+# RunTimer
+
+> Category: Time · Package: `kestro-ui`
+
+Live elapsed timer for a run, with an estimate of time left and an optional timeout ring.
+
+## Import
+
+```tsx
+import { RunTimer } from "kestro-ui";
+```
+
+## Example: run-timer
+
+```tsx
+import { useEffect, useState } from "react";
+import { RunTimer } from "kestro-ui";
+
+export default function Example() {
+  const [startedAt] = useState(() => Date.now() - 83_000);
+  const [progress, setProgress] = useState(40);
+
+  useEffect(() => {
+    const id = setInterval(() => setProgress((p) => (p >= 95 ? 40 : p + 1)), 800);
+    return () => clearInterval(id);
+  }, []);
+
+  return (
+    <div className="grid w-full max-w-2xl gap-6 rounded-kui border border-kui-border bg-kui-surface p-5 sm:grid-cols-3">
+      <RunTimer startedAt={startedAt} progress={progress} label="Research run" />
+      <RunTimer startedAt={startedAt} timeout={120_000} label="Timeout 2 min" />
+      <RunTimer elapsed={754_000} running={false} label="Finished in" />
+    </div>
+  );
+}
+```
+
+## API
+
+### <RunTimer />
+
+Live elapsed timer for an agent run, with an estimate of time left and an optional timeout ring.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `startedAt` | `number` | — | When the run started (ms since epoch). The timer ticks while `running`. |
+| `elapsed` | `number` | — | Or pass a fixed elapsed time in ms (e.g. for finished runs). |
+| `running` | `false \| true` | `true` |  |
+| `progress` | `number` | — | Progress 0–100 — used to estimate the time remaining. |
+| `timeout` | `number` | — | Max run time in ms; shows a ring and warns as it gets close. |
+| `label` | `ReactNode` | `"Elapsed"` |  |
+| `size` | `"sm" \| "md"` | `"md"` |  |
+| `className` | `string` | — |  |
+
+---
+
+# LatencyBreakdown
+
+> Category: Time · Package: `kestro-ui`
+
+Where the time went in one response: queue, first token, tools and generation, plus tokens per second.
+
+## Import
+
+```tsx
+import { LatencyBreakdown } from "kestro-ui";
+```
+
+## Example: latency-breakdown
+
+```tsx
+import { LatencyBreakdown } from "kestro-ui";
+
+export default function Example() {
+  return (
+    <div className="grid w-full max-w-2xl gap-4 sm:grid-cols-2">
+      <LatencyBreakdown
+        title="Fast answer"
+        outputTokens={420}
+        segments={[
+          { id: "queue", label: "Queue", ms: 40 },
+          { id: "ttft", label: "First token", ms: 310 },
+          { id: "generation", label: "Generation", ms: 3_900 },
+        ]}
+      />
+      <LatencyBreakdown
+        title="Answer with tools"
+        outputTokens={980}
+        segments={[
+          { id: "queue", label: "Queue", ms: 60 },
+          { id: "ttft", label: "First token", ms: 540 },
+          { id: "tools", label: "Tools (3)", ms: 4_200, tone: "warning" },
+          { id: "generation", label: "Generation", ms: 6_100 },
+        ]}
+      />
+    </div>
+  );
+}
+```
+
+## API
+
+### <LatencyBreakdown />
+
+Where the time went in one response: queue, time to first token, generation, tools.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `segments` **(required)** | `LatencySegment[]` | — |  |
+| `outputTokens` | `number` | — | Output tokens, to show tokens per second for the generation phase. |
+| `generationId` | `string` | `"generation"` | Which segment is generation (for tokens/sec). Default "generation". |
+| `title` | `ReactNode` | `"Response time"` |  |
+| `className` | `string` | — |  |
+
+---
+
+# AgentCard
+
+> Category: Agents & models · Package: `kestro-ui`
+
+Agent profile: identity, live status, model, tools and key stats, with actions.
+
+## Import
+
+```tsx
+import { AgentCard } from "kestro-ui";
+```
+
+## Example: agent-card
+
+```tsx
+import { useState } from "react";
+import { AgentCard, Button, type AgentProfile } from "kestro-ui";
+
+const agents: AgentProfile[] = [
+  {
+    id: "atlas",
+    name: "Atlas",
+    role: "Travel concierge",
+    description: "Finds flights and hotels, watches prices and books with your approval.",
+    state: "online",
+    model: "Sonata Large",
+    tools: ["search_flights", "search_hotels", "book", "calendar"],
+    stats: [
+      { label: "Tasks", value: "1,204" },
+      { label: "Success", value: "97%" },
+      { label: "Avg time", value: "38s" },
+    ],
+  },
+  {
+    id: "ledger",
+    name: "Ledger",
+    role: "Finance assistant",
+    description: "Reconciles payouts, chases invoices and flags anything unusual.",
+    state: "working",
+    model: "Sonata Fast",
+    tools: ["stripe", "sheets", "email", "bank_feed", "slack"],
+    stats: [
+      { label: "Tasks", value: "486" },
+      { label: "Success", value: "99%" },
+      { label: "Saved", value: "$12k" },
+    ],
+  },
+];
+
+export default function Example() {
+  const [selected, setSelected] = useState("atlas");
+  return (
+    <div className="grid w-full max-w-2xl gap-4 sm:grid-cols-2">
+      {agents.map((a) => (
+        <AgentCard
+          key={a.id}
+          agent={a}
+          selected={selected === a.id}
+          onSelect={setSelected}
+          actions={
+            <>
+              <Button size="xs" variant="outline">Settings</Button>
+              <Button size="xs" variant="ghost">Run history</Button>
+            </>
+          }
+        />
+      ))}
+    </div>
+  );
+}
+```
+
+## API
+
+### <AgentCard />
+
+Profile card for an agent: identity, status, model, tools and key stats.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `agent` **(required)** | `AgentProfile` | — |  |
+| `selected` | `false \| true` | — |  |
+| `onSelect` | `((id: string) => void)` | — |  |
+| `actions` | `ReactNode` | — | Footer actions (buttons). |
+| `maxTools` | `number` | `4` | Max tool chips before "+N". Default 4. |
+| `className` | `string` | — |  |
+
+---
+
+# AgentPicker
+
+> Category: Agents & models · Package: `kestro-ui`
+
+Searchable, keyboard-friendly list for choosing which agent handles something.
+
+## Import
+
+```tsx
+import { AgentPicker } from "kestro-ui";
+```
+
+## Example: agent-picker
+
+```tsx
+import { useState } from "react";
+import { AgentPicker } from "kestro-ui";
+
+export default function Example() {
+  const [agent, setAgent] = useState("support");
+  return (
+    <div className="w-full max-w-md space-y-2">
+      <AgentPicker
+        value={agent}
+        onValueChange={setAgent}
+        agents={[
+          { id: "support", name: "Support", role: "Customer care", description: "Refunds, orders and returns", state: "online", model: "Sonata Fast" },
+          { id: "atlas", name: "Atlas", role: "Travel", description: "Flights, hotels, itineraries", state: "working", model: "Sonata Large" },
+          { id: "ledger", name: "Ledger", role: "Finance", description: "Invoices and reconciliation", state: "idle", model: "Sonata Fast" },
+          { id: "scout", name: "Scout", role: "Research", description: "Market and competitor research", state: "online", model: "Sonata Large", tools: ["web_search"] },
+          { id: "lumen", name: "Lumen", role: "Design", description: "Reads screenshots and mockups", state: "offline", model: "Lumen Vision" },
+        ]}
+      />
+      <p className="text-sm text-kui-fg-muted">Assigned to: {agent}</p>
+    </div>
+  );
+}
+```
+
+## API
+
+### <AgentPicker />
+
+Searchable list for choosing which agent handles something.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `agents` **(required)** | `AgentProfile[]` | — |  |
+| `value` | `string` | — |  |
+| `defaultValue` | `string` | — |  |
+| `onValueChange` | `((id: string) => void)` | — |  |
+| `placeholder` | `string` | `"Search agents…"` |  |
+| `maxHeight` | `number` | `320` | Max list height before scrolling. Default 320. |
+| `className` | `string` | — |  |
+
+---
+
+# ModelCard
+
+> Category: Agents & models · Package: `kestro-ui`
+
+Model spec card: context size, price per 1M tokens, speed, quality and capabilities.
+
+## Import
+
+```tsx
+import { ModelCard, ModelBadge } from "kestro-ui";
+```
+
+## Example: model-card
+
+```tsx
+import { useState } from "react";
+import { ModelCard, type ModelInfo } from "kestro-ui";
+
+const models: ModelInfo[] = [
+  {
+    id: "large",
+    name: "Sonata Large",
+    provider: "Sonata",
+    description: "Best for complex, multi-step work with many tools.",
+    context: 200_000,
+    pricing: { input: 3, output: 15 },
+    speed: 62,
+    quality: 5,
+    capabilities: ["tools", "vision", "reasoning", "json"],
+    badge: "Default",
+  },
+  {
+    id: "fast",
+    name: "Sonata Fast",
+    provider: "Sonata",
+    description: "Quick, low-cost answers for everyday requests.",
+    context: 128_000,
+    pricing: { input: 0.25, output: 1.25 },
+    speed: 180,
+    quality: 3,
+    capabilities: ["tools", "json", "fast"],
+  },
+];
+
+export default function Example() {
+  const [selected, setSelected] = useState("large");
+  return (
+    <div className="grid w-full max-w-2xl gap-4 sm:grid-cols-2">
+      {models.map((m) => (
+        <ModelCard key={m.id} model={m} selected={selected === m.id} onSelect={setSelected} />
+      ))}
+    </div>
+  );
+}
+```
+
+## API
+
+### <ModelCard />
+
+Spec card for a model: context, pricing, speed, quality and capabilities.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `model` **(required)** | `ModelInfo` | — |  |
+| `selected` | `false \| true` | — |  |
+| `onSelect` | `((id: string) => void)` | — |  |
+| `currency` | `string` | `"$"` |  |
+| `className` | `string` | — |  |
+
+### <ModelBadge />
+
+Inline model chip: provider tile, name and optional context size.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `name` **(required)** | `string` | — |  |
+| `provider` | `string` | — |  |
+| `context` | `number` | — |  |
+| `className` | `string` | — |  |
+
+---
+
+# ModelCompare
+
+> Category: Agents & models · Package: `kestro-ui`
+
+Side-by-side model table that highlights the best value in each column.
+
+## Import
+
+```tsx
+import { ModelCompare } from "kestro-ui";
+```
+
+## Example: model-compare
+
+```tsx
+import { useState } from "react";
+import { ModelCompare } from "kestro-ui";
+
+export default function Example() {
+  const [selected, setSelected] = useState("large");
+  return (
+    <ModelCompare
+      className="max-w-3xl"
+      selectedId={selected}
+      onSelect={setSelected}
+      models={[
+        { id: "large", name: "Sonata Large", provider: "Sonata", context: 200_000, pricing: { input: 3, output: 15 }, speed: 62, quality: 5, capabilities: ["tools", "vision", "reasoning"], badge: "Default" },
+        { id: "fast", name: "Sonata Fast", provider: "Sonata", context: 128_000, pricing: { input: 0.25, output: 1.25 }, speed: 180, quality: 3, capabilities: ["tools"] },
+        { id: "vision", name: "Lumen Vision", provider: "Lumen", context: 64_000, pricing: { input: 1.5, output: 6 }, speed: 95, quality: 4, capabilities: ["tools", "vision"] },
+        { id: "mini", name: "Orbit Mini", provider: "Orbit", context: 32_000, pricing: { input: 0.1, output: 0.4 }, speed: 240, quality: 2, capabilities: [] },
+      ]}
+    />
+  );
+}
+```
+
+## API
+
+### <ModelCompare />
+
+Side-by-side model comparison. The best value in each numeric column is highlighted.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `models` **(required)** | `ModelInfo[]` | — |  |
+| `selectedId` | `string` | — |  |
+| `onSelect` | `((id: string) => void)` | — |  |
+| `currency` | `string` | `"$"` |  |
+| `capabilities` | `ModelCapability[]` | `["tools", "vision", "reasoning"]` | Capabilities to show as columns. Default: tools, vision, reasoning. |
+| `className` | `string` | — |  |
+
+---
+
+# TaskCreator
+
+> Category: Tasks · Package: `kestro-ui`
+
+Hand an agent a job: what to do, which agent, when it runs (now, scheduled or repeating), what it may do without asking, and a spend limit.
+
+## Import
+
+```tsx
+import { TaskCreator } from "kestro-ui";
+```
+
+## Example: task-creator
+
+```tsx
+import { useState } from "react";
+import { TaskCreator, type NewTask } from "kestro-ui";
+import { CreditCard, Globe, Mail, Table } from "lucide-react";
+
+export default function Example() {
+  const [created, setCreated] = useState<NewTask | null>(null);
+
+  return (
+    <div className="w-full max-w-xl space-y-3">
+      <TaskCreator
+        agents={[
+          { id: "scout", name: "Scout", description: "Research & monitoring" },
+          { id: "ledger", name: "Ledger", description: "Finance & invoices" },
+        ]}
+        templates={[
+          { label: "Competitor prices", title: "Weekly competitor pricing report", instructions: "Check the pricing pages of our 5 main competitors, note any changes since last week, and email me a short summary table." },
+          { label: "Chase invoices", title: "Chase overdue invoices", instructions: "Find invoices more than 14 days overdue and draft a polite reminder for each customer." },
+        ]}
+        permissions={[
+          { id: "web", label: "Browse the web", icon: <Globe />, defaultMode: "allow" },
+          { id: "sheets", label: "Edit spreadsheets", icon: <Table />, defaultMode: "allow" },
+          { id: "email", label: "Send email", description: "From your work address", icon: <Mail />, defaultMode: "ask" },
+          { id: "pay", label: "Make payments", icon: <CreditCard />, defaultMode: "off" },
+        ]}
+        onSubmit={setCreated}
+        onCancel={() => setCreated(null)}
+      />
+      {created ? (
+        <pre className="kui-scrollbar max-h-48 overflow-auto rounded-kui border border-kui-border bg-kui-code-bg p-3 font-mono text-xs text-kui-fg-muted">
+          {JSON.stringify({ ...created, files: created.files.map((f) => f.name) }, null, 2)}
+        </pre>
+      ) : null}
+    </div>
+  );
+}
+```
+
+## API
+
+### <TaskCreator />
+
+Form for handing an agent a job: what to do, who does it, when, what it may do on its own, and the budget.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `agents` | `TaskAgentOption[]` | `[]` |  |
+| `permissions` | `TaskPermission[]` | `[]` |  |
+| `templates` | `{ label: string; title: string; instructions: string; }[]` | `[]` | Starter templates shown above the instructions. |
+| `currency` | `string` | `"$"` |  |
+| `defaultBudget` | `number` | `5` |  |
+| `submitLabel` | `ReactNode` | `"Create task"` |  |
+| `onSubmit` | `((task: NewTask) => void)` | — |  |
+| `onCancel` | `(() => void)` | — |  |
+| `className` | `string` | — |  |
+
+---
+
+# TaskBoard
+
+> Category: Tasks · Package: `kestro-ui`
+
+Kanban board of agent tasks — Queued, Running, Needs you, Done — with drag and drop and live progress.
+
+## Import
+
+```tsx
+import { TaskBoard, TaskCard } from "kestro-ui";
+```
+
+## Example: task-board
+
+```tsx
+import { useEffect, useState } from "react";
+import { TaskBoard, type AgentTask } from "kestro-ui";
+
+const initial: AgentTask[] = [
+  { id: "1", title: "Chase overdue invoices", status: "queued", agent: { name: "Ledger" }, priority: "high", tags: ["finance"], schedule: "Today 14:00" },
+  { id: "2", title: "Weekly competitor pricing", status: "running", agent: { name: "Scout" }, progress: 35, steps: { done: 2, total: 5 }, tags: ["research"] },
+  { id: "3", title: "Refund order #4821", status: "needs-input", agent: { name: "Support" }, description: "Approve a $249 refund to the original card.", priority: "urgent" },
+  { id: "4", title: "Summarize Q3 board notes", status: "done", agent: { name: "Docs" }, updated: "12m ago", tags: ["docs"] },
+  { id: "5", title: "Rebook Lisbon flight", status: "running", agent: { name: "Atlas" }, progress: 70, steps: { done: 4, total: 6 }, tags: ["travel"] },
+];
+
+export default function Example() {
+  const [tasks, setTasks] = useState(initial);
+
+  // Running tasks make progress on their own
+  useEffect(() => {
+    const id = setInterval(() => {
+      setTasks((list) =>
+        list.map((t) => {
+          if (t.status !== "running") return t;
+          const progress = Math.min(100, (t.progress ?? 0) + 7);
+          return progress >= 100 ? { ...t, status: "done", progress, updated: "just now" } : { ...t, progress };
+        }),
+      );
+    }, 1200);
+    return () => clearInterval(id);
+  }, []);
+
+  return (
+    <div className="w-full">
+      <p className="mb-3 text-sm text-kui-fg-muted">Drag cards between columns.</p>
+      <TaskBoard
+        tasks={tasks}
+        onMove={(id, status) => setTasks((list) => list.map((t) => (t.id === id ? { ...t, status, progress: status === "running" ? (t.progress ?? 0) : t.progress } : t)))}
+        onAdd={(status) => setTasks((list) => [...list, { id: String(Date.now()), title: "New task", status, agent: { name: "Scout" } }])}
+      />
+    </div>
+  );
+}
+```
+
+## API
+
+### <TaskBoard />
+
+Kanban board of agent tasks with drag-and-drop between columns.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `tasks` **(required)** | `AgentTask[]` | — |  |
+| `columns` | `TaskColumn[]` | `defaultTaskColumns` |  |
+| `onMove` | `((taskId: string, status: TaskStatus) => void)` | — | Called when a task is dragged to another column. |
+| `onOpen` | `((id: string) => void)` | — |  |
+| `onAdd` | `((status: TaskStatus) => void)` | — | Shows a "+" button per column. |
+| `className` | `string` | — |  |
+
+### <TaskCard />
+
+Compact card for one agent task: status, agent, progress, schedule, tags.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `task` **(required)** | `AgentTask` | — |  |
+| `onOpen` | `((id: string) => void)` | — |  |
+| `actions` | `ReactNode` | — | Extra controls, rendered in the footer. |
+| `draggable` | `false \| true` | — | Enable HTML5 drag (used by TaskBoard). |
+| `onDragStart` | `((e: DragEvent<Element>, id: string) => void)` | — |  |
+| `selected` | `false \| true` | — |  |
+| `className` | `string` | — |  |
+
+---
+
+# TaskList
+
+> Category: Tasks · Package: `kestro-ui`
+
+Dense table of agent tasks with status, agent, progress, schedule and row actions.
+
+## Import
+
+```tsx
+import { TaskList, TaskStatusBadge } from "kestro-ui";
+```
+
+## Example: task-list
+
+```tsx
+import { useState } from "react";
+import { IconButton, TaskList, type AgentTask } from "kestro-ui";
+import { Pause, Play } from "lucide-react";
+
+const initial: AgentTask[] = [
+  { id: "1", title: "Morning inbox digest", status: "scheduled", agent: { name: "Inbox" }, schedule: "Every weekday · 08:00", priority: "normal" },
+  { id: "2", title: "Monitor flight prices LHR → LIS", status: "running", agent: { name: "Atlas" }, progress: 62, schedule: "Every hour" },
+  { id: "3", title: "Reconcile Stripe payouts", status: "failed", agent: { name: "Ledger" }, description: "Bank API returned 401 — reconnect the account.", priority: "high" },
+  { id: "4", title: "Draft newsletter", status: "done", agent: { name: "Writer" }, updated: "Yesterday" },
+];
+
+export default function Example() {
+  const [tasks, setTasks] = useState(initial);
+  const [selected, setSelected] = useState<string>();
+  const toggle = (id: string) =>
+    setTasks((list) => list.map((t) => (t.id === id ? { ...t, status: t.status === "running" ? "queued" : "running", progress: t.progress ?? 0 } : t)));
+
+  return (
+    <TaskList
+      className="max-w-3xl"
+      tasks={tasks}
+      selectedId={selected}
+      onOpen={setSelected}
+      renderActions={(t) => (
+        <IconButton label={t.status === "running" ? "Pause" : "Run now"} size="xs" onClick={() => toggle(t.id)}>
+          {t.status === "running" ? <Pause /> : <Play />}
+        </IconButton>
+      )}
+    />
+  );
+}
+```
+
+## API
+
+### <TaskList />
+
+Dense table of agent tasks: status, agent, progress, schedule.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `tasks` **(required)** | `AgentTask[]` | — |  |
+| `onOpen` | `((id: string) => void)` | — |  |
+| `selectedId` | `string` | — |  |
+| `renderActions` | `((task: AgentTask) => ReactNode)` | — | Row actions, e.g. run / pause / menu. |
+| `className` | `string` | — |  |
+
+### <TaskStatusBadge />
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `status` **(required)** | `"running" \| "failed" \| "draft" \| "queued" \| "needs-input" \| "done" \| "scheduled"` | — |  |
+| `className` | `string` | — |  |
+
+---
+
+# TaskPlan
+
+> Category: Workflows · Package: `kestro-ui`
+
+Vertical timeline of an agent's plan with live step states and rich step content (e.g. approvals).
+
+## Import
+
+```tsx
+import { TaskPlan } from "kestro-ui";
+```
+
+## Example: task-plan
+
+```tsx
+import { useEffect, useState } from "react";
+import { Button, TaskPlan, type PlanStep } from "kestro-ui";
+import { Play, RotateCcw } from "lucide-react";
+
+const initialSteps: PlanStep[] = [
+  { id: "dates", title: "Poll the team for dates", status: "pending" },
+  { id: "venue", title: "Shortlist venues near Lisbon", status: "pending" },
+  {
+    id: "budget",
+    title: "Check budget with finance",
+    status: "pending",
+    details: "€18,400 approved for 24 people · flights, 3 nights, catering and one group activity.",
+  },
+  { id: "book", title: "Book flights and hotel", status: "pending" },
+  { id: "invite", title: "Send calendar invites", status: "pending" },
+];
+
+export default function Example() {
+  const [steps, setSteps] = useState(initialSteps);
+  const [running, setRunning] = useState(false);
+
+  const finished = steps.every((s) => s.status === "complete");
+
+  useEffect(() => {
+    if (finished) setRunning(false);
+  }, [finished]);
+
+  useEffect(() => {
+    if (!running) return;
+    const id = setInterval(() => {
+      setSteps((prev) => {
+        const i = prev.findIndex((s) => s.status !== "complete");
+        return prev.map((s, idx) => {
+          if (idx !== i) return s;
+          if (s.status === "pending") return { ...s, status: "running" };
+          return { ...s, status: "complete", duration: 2 + idx * 3 };
+        });
+      });
+    }, 900);
+    return () => clearInterval(id);
+  }, [running]);
+
+  return (
+    <div className="w-full max-w-md space-y-5 rounded-kui border border-kui-border bg-kui-surface p-5">
+      <TaskPlan title="Plan a team offsite" steps={steps} />
+      <div className="flex gap-2">
+        <Button size="sm" variant="accent" onClick={() => setRunning(true)} disabled={running || finished}>
+          <Play /> Run
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => {
+            setRunning(false);
+            setSteps(initialSteps);
+          }}
+        >
+          <RotateCcw /> Reset
+        </Button>
+      </div>
+    </div>
+  );
+}
+```
+
+## API
+
+### <TaskPlan />
+
+Vertical timeline of an agent's plan / workflow steps.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `steps` **(required)** | `PlanStep[]` | — |  |
+| `title` | `ReactNode` | — |  |
+| `showProgress` | `false \| true` | `true` | Show "3 of 6" + progress bar in the header. |
+| `className` | `string` | — |  |
+
+---
+
+# RunCard
+
+> Category: Workflows · Package: `kestro-ui`
+
+One agent run at a glance: title, run id, status chip and a step timeline that can hold tool calls and approvals.
+
+## Import
+
+```tsx
+import { RunCard } from "kestro-ui";
+```
+
+## Example: run-card
+
+```tsx
+import { useState } from "react";
+import { RunCard, ToolApproval, ToolCall } from "kestro-ui";
+import { Mail } from "lucide-react";
+
+export default function Example() {
+  const [decision, setDecision] = useState<"pending" | "approved" | "denied">("pending");
+
+  return (
+    <RunCard
+      className="max-w-xl"
+      title="Weekly investor update"
+      runId="Run 0388"
+      status={decision === "pending" ? "waiting" : decision === "approved" ? "complete" : "failed"}
+      steps={[
+        { id: "1", title: "Pull this week's metrics", description: "Revenue, churn and pipeline from 3 sources.", status: "complete", duration: 6 },
+        {
+          id: "2",
+          title: "Draft the email",
+          status: "complete",
+          duration: 11,
+          content: <ToolCall name="docs.write" status="success" durationMs={2140} input={{ template: "investor-update", words: 280 }} />,
+        },
+        {
+          id: "3",
+          title: decision === "approved" ? "Sent" : "Send to 14 investors",
+          status: decision === "pending" ? "waiting" : decision === "approved" ? "complete" : "error",
+          content: (
+            <ToolApproval
+              title="Send this update to 14 investors?"
+              icon={<Mail />}
+              rememberLabel={false}
+              status={decision}
+              onApprove={() => setDecision("approved")}
+              onDeny={() => setDecision("denied")}
+            />
+          ),
+        },
+      ]}
+    />
+  );
+}
+```
+
+## API
+
+### <RunCard />
+
+A single agent run: title, run id, status chip and a step timeline with rich step content.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `title` **(required)** | `ReactNode` | — |  |
+| `runId` | `ReactNode` | — |  |
+| `status` | `"waiting" \| "running" \| "complete" \| "failed" \| "paused"` | `"running"` |  |
+| `steps` **(required)** | `RunStep[]` | — |  |
+| `actions` | `ReactNode` | — | Header actions. |
+| `className` | `string` | — |  |
+
+---
+
+# AgentHeader
+
+> Category: Workflows · Package: `kestro-ui`
+
+Agent identity with live state badge and actions.
+
+## Import
+
+```tsx
+import { AgentHeader } from "kestro-ui";
+```
+
+## Example: agent-header
+
+```tsx
+import { AgentHeader, Button, IconButton } from "kestro-ui";
+import { Ellipsis, Headset, Phone, Plane, Search, Settings, Share2 } from "lucide-react";
+
+export default function Example() {
+  return (
+    <div className="w-full max-w-xl divide-y divide-kui-border rounded-kui border border-kui-border bg-kui-surface">
+      <AgentHeader
+        className="p-4"
+        name="Atlas"
+        description="Travel concierge · books flights, hotels and dinners"
+        state="online"
+        avatar={{ icon: <Plane /> }}
+        actions={
+          <>
+            <IconButton label="Share">
+              <Share2 />
+            </IconButton>
+            <IconButton label="More">
+              <Ellipsis />
+            </IconButton>
+          </>
+        }
+      />
+      <AgentHeader
+        className="p-4"
+        name="Scout"
+        description="Researching competitor pricing across 14 sites"
+        state="working"
+        stateLabel="Researching"
+        avatar={{ icon: <Search /> }}
+        actions={
+          <Button size="sm" variant="outline">
+            Stop
+          </Button>
+        }
+      />
+      <AgentHeader
+        className="p-4"
+        name="Nova Support"
+        description="Waiting for you to confirm the refund"
+        state="waiting"
+        avatar={{ icon: <Headset /> }}
+        actions={
+          <>
+            <IconButton label="Call">
+              <Phone />
+            </IconButton>
+            <Button size="sm" variant="accent">
+              Review
+            </Button>
+          </>
+        }
+      />
+      <AgentHeader
+        className="p-4"
+        name="Ops Runner"
+        description="Lost connection to the deployment cluster"
+        state="error"
+        actions={
+          <IconButton label="Settings">
+            <Settings />
+          </IconButton>
+        }
+      />
+    </div>
+  );
+}
+```
+
+## API
+
+### <AgentHeader />
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `name` **(required)** | `ReactNode` | — |  |
+| `description` | `ReactNode` | — |  |
+| `state` | `"idle" \| "online" \| "thinking" \| "working" \| "waiting" \| "error" \| "offline"` | `"online"` |  |
+| `stateLabel` | `ReactNode` | — | Override the state label. |
+| `avatar` | `AgentAvatarProps` | — |  |
+| `actions` | `ReactNode` | — |  |
+| `className` | `string` | — |  |
+
+---
+
+# UsageMeter
+
+> Category: Workflows · Package: `kestro-ui`
+
+Token, credit or context-window usage as a card, bar or compact ring.
+
+## Import
+
+```tsx
+import { UsageMeter } from "kestro-ui";
+```
+
+## Example: usage-meter
+
+```tsx
+import { UsageMeter } from "kestro-ui";
+
+export default function Example() {
+  return (
+    <div className="grid w-full max-w-2xl gap-6 sm:grid-cols-2">
+      <UsageMeter title="This conversation" used={48_210} limit={200_000} input={39_870} output={8_340} cached={21_500} cost={0.184} />
+      <div className="space-y-6 rounded-kui border border-kui-border bg-kui-surface p-4">
+        <div className="space-y-2">
+          <p className="text-[13px] font-medium text-kui-fg">Monthly credits</p>
+          <UsageMeter variant="bar" used={7_450} limit={10_000} unit="credits" />
+        </div>
+        <div className="space-y-2">
+          <p className="text-[13px] font-medium text-kui-fg">Voice minutes</p>
+          <UsageMeter variant="bar" used={2_870} limit={3_000} unit="min" />
+        </div>
+        <div className="flex items-center justify-between text-[13px] text-kui-fg-muted">
+          Context window
+          <UsageMeter variant="ring" used={61_000} limit={200_000} />
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+## API
+
+### <UsageMeter />
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `used` **(required)** | `number` | — | Tokens (or credits) used. |
+| `limit` **(required)** | `number` | — |  |
+| `input` | `number` | — |  |
+| `output` | `number` | — |  |
+| `cached` | `number` | — |  |
+| `cost` | `number` | — | Cost in currency units, e.g. 0.046. |
+| `currency` | `string` | `"$"` |  |
+| `unit` | `string` | `"tokens"` |  |
+| `title` | `ReactNode` | `"Usage"` |  |
+| `variant` | `"card" \| "bar" \| "ring"` | `"card"` | "card" with breakdown, "bar" inline, or "ring" compact. |
+| `className` | `string` | — |  |
+
+---
+
+# SegmentedMeter
+
+> Category: Workflows · Package: `kestro-ui`
+
+Block-style meter for context windows, quotas and budgets.
+
+## Import
+
+```tsx
+import { SegmentedMeter } from "kestro-ui";
+```
+
+## Example: segmented-meter
+
+```tsx
+import { SegmentedMeter } from "kestro-ui";
+
+export default function Example() {
+  return (
+    <div className="w-full max-w-md space-y-6 rounded-kui border border-kui-border bg-kui-surface p-5">
+      <SegmentedMeter label="Context window" value={12480} max={32000} detail="12,480 / 32,000 tokens" />
+      <SegmentedMeter label="Monthly budget" value={41} max={50} caption="$41 of $50" tone="accent" />
+      <SegmentedMeter label="Voice minutes" value={590} max={600} segments={30} caption="10 min left" />
+    </div>
+  );
+}
+```
+
+## API
+
+### <SegmentedMeter />
+
+Block-style meter for context windows, quotas and budgets.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `value` **(required)** | `number` | — |  |
+| `max` **(required)** | `number` | — |  |
+| `segments` | `number` | `20` |  |
+| `label` | `ReactNode` | — |  |
+| `caption` | `ReactNode` | — | Right-side caption; defaults to "NN% used". |
+| `detail` | `ReactNode` | — | Text under the bar, e.g. "12,480 / 32,000 tokens". |
+| `tone` | `"accent" \| "success" \| "warning" \| "danger" \| "info" \| "muted"` | `"muted"` |  |
+| `className` | `string` | — |  |
+
+---
+
+# ActivityFeed
+
+> Category: Workflows · Package: `kestro-ui`
+
+Chronological log of what the agent did.
+
+## Import
+
+```tsx
+import { ActivityFeed } from "kestro-ui";
+```
+
+## Example: activity-feed
+
+```tsx
+import { useState } from "react";
+import { ActivityFeed, Button, type ActivityItem } from "kestro-ui";
+import { CalendarCheck, CreditCard, Mail, Package, Plus, TriangleAlert, Truck } from "lucide-react";
+
+const initial: ActivityItem[] = [
+  { id: "1", title: "Order #4821 shipped", description: "UPS · arriving Thursday", icon: <Truck />, tone: "success", time: "09:12" },
+  { id: "2", title: "Refund issued to Maya Chen", description: "$42.00 to Visa •• 4242", icon: <CreditCard />, tone: "accent", time: "09:05" },
+  { id: "3", title: "Low stock: Trail Runner 2, size 9", description: "3 units left in Denver warehouse", icon: <TriangleAlert />, tone: "warning", time: "08:47" },
+  { id: "4", title: "Weekly digest sent", description: "1,284 subscribers", icon: <Mail />, time: "08:30" },
+];
+
+const extras: Omit<ActivityItem, "id" | "time">[] = [
+  { title: "Restock order placed", description: "120 units from supplier", icon: <Package />, tone: "accent" },
+  { title: "Demo call booked", description: "Acme Corp · Friday 2:00 PM", icon: <CalendarCheck />, tone: "success" },
+  { title: "Payment failed", description: "Card declined for order #4830", icon: <CreditCard />, tone: "danger" },
+];
+
+export default function Example() {
+  const [items, setItems] = useState(initial);
+
+  const addItem = () => {
+    const next = extras[items.length % extras.length];
+    const time = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
+    setItems((prev) => [{ ...next, id: String(Date.now()), time }, ...prev]);
+  };
+
+  return (
+    <div className="w-full max-w-md rounded-kui border border-kui-border bg-kui-surface px-4 py-3">
+      <div className="mb-1 flex items-center justify-between">
+        <h3 className="text-sm font-semibold text-kui-fg">Store agent activity</h3>
+        <Button size="xs" variant="outline" onClick={addItem}>
+          <Plus /> Add event
+        </Button>
+      </div>
+      <ActivityFeed items={items.slice(0, 6)} />
+    </div>
+  );
+}
+```
+
+## API
+
+### <ActivityFeed />
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `items` **(required)** | `ActivityItem[]` | — |  |
+| `className` | `string` | — |  |
+
+---
+
+# Artifact
+
+> Category: Workflows · Package: `kestro-ui`
+
+Panel for generated documents, code, itineraries or reports with tabs, copy and download.
+
+## Import
+
+```tsx
+import { Artifact } from "kestro-ui";
+```
+
+## Example: artifact
+
+```tsx
+import { Artifact, CodeBlock, Markdown } from "kestro-ui";
+import { Code, Eye, MapPin } from "lucide-react";
+
+const itinerary = `# Kyoto in 3 days
+
+**Travelers:** 2 adults · **Dates:** Apr 4 – Apr 7 · **Budget:** ¥180,000
+
+## Day 1 — Higashiyama
+- 08:00 Fushimi Inari before the crowds
+- 12:30 Lunch at *Nishiki Market*
+- 16:00 Kiyomizu-dera at golden hour
+
+## Day 2 — Arashiyama
+- Bamboo grove walk and Tenryū-ji gardens
+- Sagano scenic railway (seats reserved, car 5)
+
+## Day 3 — Slow morning
+1. Tea ceremony in Gion (10:00, confirmed)
+2. Shinkansen to Tokyo at 15:12
+
+> Tip: pick up an ICOCA card at Kyoto Station on arrival.
+`;
+
+export default function Example() {
+  const download = () => {
+    const url = URL.createObjectURL(new Blob([itinerary], { type: "text/markdown" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "kyoto-itinerary.md";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  return (
+    <Artifact
+      className="h-[460px] max-w-xl"
+      icon={<MapPin />}
+      title="Kyoto itinerary"
+      subtitle="Generated by Atlas · 3 days, 9 stops"
+      copyText={itinerary}
+      onDownload={download}
+      tabs={[
+        {
+          id: "preview",
+          label: "Preview",
+          icon: <Eye />,
+          content: <Markdown className="px-5 py-4">{itinerary}</Markdown>,
+        },
+        {
+          id: "source",
+          label: "Source",
+          icon: <Code />,
+          content: <CodeBlock code={itinerary} language="markdown" filename="kyoto-itinerary.md" className="m-4" />,
+        },
+      ]}
+      footer="Last updated 2 minutes ago · v3"
+    />
+  );
+}
+```
+
+## API
+
+### <Artifact />
+
+Side panel / card for generated documents, code, charts, itineraries, etc.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `title` **(required)** | `ReactNode` | — |  |
+| `subtitle` | `ReactNode` | — |  |
+| `icon` | `ReactNode` | — |  |
+| `tabs` | `ArtifactTab[]` | — |  |
+| `defaultTab` | `string` | — |  |
+| `copyText` | `string` | — | Text for the built-in copy button. |
+| `onDownload` | `(() => void)` | — |  |
+| `onClose` | `(() => void)` | — |  |
+| `actions` | `ReactNode` | — |  |
+| `footer` | `ReactNode` | — |  |
+| `children` | `ReactNode` | — | Body when not using tabs. |
+| `className` | `string` | — |  |
+
+---
+
+# ConversationList
+
+> Category: Workflows · Package: `kestro-ui`
+
+Sidebar of threads grouped by date, with search, new chat, running and unread states.
+
+## Import
+
+```tsx
+import { ConversationList } from "kestro-ui";
+```
+
+## Example: conversation-list
+
+```tsx
+import { useState } from "react";
+import { ConversationList, type ConversationItem } from "kestro-ui";
+import { ChartLine, Coffee, Headset, Plane, ShoppingCart } from "lucide-react";
+
+const initial: ConversationItem[] = [
+  { id: "1", group: "Today", title: "Lisbon offsite logistics", icon: <Plane />, running: true },
+  { id: "2", group: "Today", title: "Q3 churn analysis", icon: <ChartLine />, unread: true },
+  { id: "3", group: "Today", title: "Refund for order #4821", icon: <Headset /> },
+  { id: "4", group: "Yesterday", title: "Gift ideas under $50", icon: <ShoppingCart /> },
+  { id: "5", group: "Yesterday", title: "Best espresso grinders 2026", icon: <Coffee />, unread: true },
+  { id: "6", group: "Yesterday", title: "Draft investor update" },
+  { id: "7", group: "Previous 7 days", title: "Summarize onboarding calls" },
+  { id: "8", group: "Previous 7 days", title: "Compare CRM pricing" },
+];
+
+export default function Example() {
+  const [items, setItems] = useState(initial);
+  const [activeId, setActiveId] = useState("2");
+
+  return (
+    <div className="h-[440px] w-72 overflow-hidden rounded-kui border border-kui-border">
+      <ConversationList
+        items={items}
+        activeId={activeId}
+        onSelect={(id) => {
+          setActiveId(id);
+          setItems((prev) => prev.map((i) => (i.id === id ? { ...i, unread: false } : i)));
+        }}
+        onNew={() => {
+          const id = String(Date.now());
+          setItems((prev) => [{ id, group: "Today", title: "New conversation" }, ...prev]);
+          setActiveId(id);
+        }}
+        onDelete={(id) => setItems((prev) => prev.filter((i) => i.id !== id))}
+      />
+    </div>
+  );
+}
+```
+
+## API
+
+### <ConversationList />
+
+Sidebar with threads grouped by date, search and "New chat".
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `items` **(required)** | `ConversationItem[]` | — |  |
+| `activeId` | `string` | — |  |
+| `onSelect` | `((id: string) => void)` | — |  |
+| `onNew` | `(() => void)` | — |  |
+| `onDelete` | `((id: string) => void)` | — |  |
+| `newLabel` | `ReactNode` | `"New chat"` |  |
+| `searchable` | `false \| true` | `true` |  |
+| `header` | `ReactNode` | — |  |
+| `footer` | `ReactNode` | — |  |
+| `className` | `string` | — |  |
+
+---
+
+# AgentGraph
+
+> Category: Multi-agent · Package: `kestro-ui`
+
+Animated tree of agents: who delegated to whom, who is working, and where work is flowing. Lays itself out and scales to fit. Click any agent for a popover with its activity, model, token usage and steps.
+
+## Import
+
+```tsx
+import { AgentGraph, AgentDetails } from "kestro-ui";
+```
+
+## Example: agent-graph
+
+```tsx
+import { useEffect, useState } from "react";
+import { AgentGraph, Button, type AgentNode, type AgentNodeState } from "kestro-ui";
+
+const team = [
+  { id: "lead", name: "Concierge", role: "Lead", model: "Sonata Large", provider: "Sonata" },
+  { id: "flights", name: "Flights", role: "Search", parentId: "lead", model: "Sonata Fast", provider: "Sonata" },
+  { id: "hotels", name: "Hotels", role: "Search", parentId: "lead", model: "Sonata Fast", provider: "Sonata" },
+  { id: "reviews", name: "Reviews", role: "Read", parentId: "hotels", model: "Lumen Vision", provider: "Lumen" },
+  { id: "pay", name: "Payments", role: "Checkout", parentId: "lead", model: "Sonata Large", provider: "Sonata" },
+];
+
+// Which agents are working at each step of the run
+const steps: Record<string, AgentNodeState>[] = [
+  { lead: "working", flights: "queued", hotels: "queued", reviews: "queued", pay: "queued" },
+  { lead: "working", flights: "working", hotels: "working", reviews: "queued", pay: "queued" },
+  { lead: "working", flights: "done", hotels: "working", reviews: "working", pay: "queued" },
+  { lead: "working", flights: "done", hotels: "done", reviews: "done", pay: "waiting" },
+  { lead: "done", flights: "done", hotels: "done", reviews: "done", pay: "done" },
+];
+
+const activity: Record<string, string> = {
+  lead: "Coordinating 4 agents",
+  flights: "Comparing 14 fares LHR → LIS",
+  hotels: "Shortlisting hotels in Alfama",
+  reviews: "Reading 120 guest reviews",
+  pay: "Approve £412 checkout",
+};
+
+export default function Example() {
+  const [step, setStep] = useState(1);
+
+  useEffect(() => {
+    const id = setInterval(() => setStep((s) => (s + 1) % steps.length), 2600);
+    return () => clearInterval(id);
+  }, []);
+
+  const nodes: AgentNode[] = team.map((a, i) => {
+    const state = steps[step][a.id];
+    const work = state === "queued" ? 0 : (step + 1) * (i + 2); // fake, grows as the run goes on
+    return {
+      ...a,
+      state,
+      activity: state === "working" || state === "waiting" ? activity[a.id] : undefined,
+      usage: work ? { input: work * 900, output: work * 210, cost: work * 0.0031 } : undefined,
+      elapsed: work * 1.7,
+      steps: [
+        { id: "1", title: "Read the brief", status: state === "queued" ? "pending" : "done" },
+        { id: "2", title: activity[a.id], status: state === "working" ? "running" : state === "waiting" ? "waiting" : state === "done" ? "done" : "pending" },
+        { id: "3", title: "Report back to Concierge", status: state === "done" ? "done" : "pending" },
+      ],
+    };
+  });
+
+  return (
+    <div className="w-full max-w-2xl space-y-4">
+      <AgentGraph nodes={nodes} />
+      <div className="flex items-center gap-3">
+        <Button variant="outline" size="sm" onClick={() => setStep((s) => (s + 1) % steps.length)}>
+          Next step ({step + 1}/{steps.length})
+        </Button>
+        <span className="text-sm text-kui-fg-muted">Click an agent to see what it's doing.</span>
+      </div>
+    </div>
+  );
+}
+```
+
+## API
+
+### <AgentGraph />
+
+Animated tree of agents: who delegated to whom, who's working, and where work is flowing.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `nodes` **(required)** | `AgentNode[]` | — |  |
+| `links` | `AgentLink[]` | `[]` | Extra peer-to-peer links (drawn dashed), in addition to the parent tree. |
+| `direction` | `"down" \| "right"` | `"right"` | Layout direction. Default "right". |
+| `nodeWidth` | `number` | `216` |  |
+| `nodeHeight` | `number` | — |  |
+| `levelGap` | `number` | `64` | Space between depth levels. |
+| `siblingGap` | `number` | `16` | Space between siblings. |
+| `selectedId` | `string` | — |  |
+| `onSelect` | `((id: string) => void)` | — |  |
+| `showDetails` | `false \| true` | `true` | Open a details popover when a node is clicked. Default true. |
+| `renderDetails` | `((node: AgentNode) => ReactNode)` | — | Replace the popover content. |
+| `className` | `string` | — |  |
+
+### <AgentDetails />
+
+What one agent is doing: status, current activity, model, token usage, time and recent steps.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `node` **(required)** | `Omit<AgentNode, "parentId"> & { parentId?: string \| undefined; }` | — |  |
+| `onClose` | `(() => void)` | — |  |
+| `className` | `string` | — |  |
+
+---
+
+# AgentHub
+
+> Category: Multi-agent · Package: `kestro-ui`
+
+Hub-and-spoke view of an orchestrator reaching out to the agents it coordinates, with swaying connections and live work packets. Click any agent for a popover with its activity, model, token usage and steps.
+
+## Import
+
+```tsx
+import { AgentHub, AgentDetails } from "kestro-ui";
+```
+
+## Example: agent-hub
+
+```tsx
+import { useEffect, useState } from "react";
+import { AgentHub, type AgentNodeState } from "kestro-ui";
+
+const agents = [
+  { id: "inbox", name: "Inbox", activity: "Triaging 48 emails", model: "Sonata Fast" },
+  { id: "calendar", name: "Calendar", activity: "Finding a slot", model: "Sonata Fast" },
+  { id: "docs", name: "Docs", activity: "Summarizing Q3 notes", model: "Sonata Large" },
+  { id: "crm", name: "CRM", activity: "Updating 12 contacts", model: "Orbit Mini" },
+  { id: "billing", name: "Billing", activity: "Matching invoices", model: "Sonata Large" },
+  { id: "travel", name: "Travel", activity: "Rebooking a flight", model: "Sonata Large" },
+];
+
+const cycle: AgentNodeState[] = ["queued", "working", "working", "done"];
+
+export default function Example() {
+  const [tick, setTick] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => setTick((t) => t + 1), 1600);
+    return () => clearInterval(id);
+  }, []);
+
+  return (
+    <div className="w-full max-w-2xl space-y-2">
+      <AgentHub
+        size={540}
+        hub={{ id: "chief", name: "Chief of staff", state: "working", activity: "Coordinating 6 agents", model: "Sonata Large", usage: { input: 18_400 + tick * 600, output: 4_100 + tick * 150, cost: 0.12 + tick * 0.004 } }}
+        agents={agents.map((a, i) => {
+          const state = cycle[(tick + i) % cycle.length];
+          const work = (tick % 20) + i + 1;
+          return {
+            ...a,
+            state,
+            usage: { input: work * 1_200, output: work * 260, cost: work * 0.002 },
+            steps: [
+              { id: "a", title: a.activity, status: state === "working" ? "running" : state === "done" ? "done" : "pending" },
+              { id: "b", title: "Report to Chief of staff", status: state === "done" ? "done" : "pending" },
+            ],
+          };
+        })}
+      />
+      <p className="text-center text-sm text-kui-fg-muted">Click any agent for its model, tokens and steps.</p>
+    </div>
+  );
+}
+```
+
+## API
+
+### <AgentHub />
+
+Hub-and-spoke ("octopus") view: an orchestrator reaching out to the agents it coordinates.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `hub` **(required)** | `Omit<AgentNode, "parentId">` | — | The orchestrating agent in the center. |
+| `agents` **(required)** | `Omit<AgentNode, "parentId">[]` | — | Agents (or tools) the hub reaches out to. |
+| `size` | `number` | `560` | Square size in px (scales down to fit). Default 560. |
+| `sway` | `false \| true` | `true` | Gently sway the tentacles. Default true. |
+| `selectedId` | `string` | — |  |
+| `onSelect` | `((id: string) => void)` | — |  |
+| `showDetails` | `false \| true` | `true` | Open a details popover when an agent is clicked. Default true. |
+| `renderDetails` | `((node: AgentNode) => ReactNode)` | — |  |
+| `className` | `string` | — |  |
+
+### <AgentDetails />
+
+What one agent is doing: status, current activity, model, token usage, time and recent steps.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `node` **(required)** | `Omit<AgentNode, "parentId"> & { parentId?: string \| undefined; }` | — |  |
+| `onClose` | `(() => void)` | — |  |
+| `className` | `string` | — |  |
+
+---
+
+# TraceTree
+
+> Category: Multi-agent · Package: `kestro-ui`
+
+Nested trace of agent, LLM, tool and retrieval spans with a live waterfall timeline. Running spans grow in real time.
+
+## Import
+
+```tsx
+import { TraceTree } from "kestro-ui";
+```
+
+## Example: trace-tree
+
+```tsx
+import { useEffect, useState } from "react";
+import { Button, TraceTree, type TraceSpan } from "kestro-ui";
+
+const trace: TraceSpan[] = [
+  { id: "run", name: "Support agent", kind: "agent", start: 0, end: 6400 },
+  { id: "guard", parentId: "run", name: "PII check", kind: "guardrail", start: 80, end: 420 },
+  { id: "plan", parentId: "run", name: "Understand the request", kind: "llm", start: 450, end: 1700, meta: "640 tok" },
+  { id: "kb", parentId: "run", name: "help_center.search", kind: "retrieval", start: 1750, end: 2900, meta: "5 docs" },
+  { id: "order", parentId: "run", name: "orders.lookup #4821", kind: "tool", start: 1800, end: 2600 },
+  { id: "refund", parentId: "run", name: "Refund specialist", kind: "handoff", start: 3000, end: 5400 },
+  { id: "policy", parentId: "refund", name: "Check refund policy", kind: "llm", start: 3100, end: 4300, meta: "1.1k tok" },
+  { id: "issue", parentId: "refund", name: "payments.refund $249", kind: "tool", start: 4400, end: 5300 },
+  { id: "reply", parentId: "run", name: "Write the reply", kind: "llm", start: 5450, end: 6400, meta: "380 tok" },
+];
+
+export default function Example() {
+  const [now, setNow] = useState(0);
+
+  useEffect(() => {
+    if (now >= 6400) return;
+    const id = setTimeout(() => setNow((n) => Math.min(6400, n + 100)), 60);
+    return () => clearTimeout(id);
+  }, [now]);
+
+  // Only show spans that have started; unfinished ones render as live bars.
+  const spans = trace
+    .filter((s) => s.start <= now)
+    .map((s) => ({ ...s, end: s.end !== undefined && s.end <= now ? s.end : undefined }));
+
+  return (
+    <div className="w-full max-w-2xl space-y-3">
+      <TraceTree spans={spans} now={now} />
+      <Button variant="outline" size="sm" onClick={() => setNow(0)}>
+        Replay trace
+      </Button>
+    </div>
+  );
+}
+```
+
+## API
+
+### <TraceTree />
+
+Nested trace of agent, LLM and tool spans with a live waterfall timeline.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `spans` **(required)** | `TraceSpan[]` | — |  |
+| `now` | `number` | — | Current time (ms from trace start) for running spans. Auto-advances when omitted. |
+| `selectedId` | `string` | — |  |
+| `onSelect` | `((id: string) => void)` | — |  |
+| `className` | `string` | — |  |
+
+---
+
+# AgentAvatar
+
+> Category: Multi-agent · Package: `kestro-ui`
+
+Avatar with live status (online, working, waiting, error, offline) and gradient agent tile.
+
+## Import
+
+```tsx
+import { AgentAvatar } from "kestro-ui";
+```
+
+## Example: agent-avatar
+
+```tsx
+import { AgentAvatar, type AgentState } from "kestro-ui";
+import { Bot, Headset, Plane } from "lucide-react";
+
+const states: AgentState[] = ["idle", "online", "thinking", "working", "waiting", "error", "offline"];
+
+export default function Example() {
+  return (
+    <div className="flex w-full max-w-xl flex-col gap-8">
+      <div className="flex items-end gap-4">
+        <AgentAvatar size="xs" name="Atlas" />
+        <AgentAvatar size="sm" name="Atlas" />
+        <AgentAvatar size="md" name="Atlas" />
+        <AgentAvatar size="lg" name="Atlas" />
+      </div>
+
+      <div className="flex flex-wrap gap-5">
+        {states.map((state) => (
+          <div key={state} className="flex flex-col items-center gap-2">
+            <AgentAvatar size="md" name="Atlas" state={state} />
+            <span className="text-xs text-kui-fg-subtle capitalize">{state}</span>
+          </div>
+        ))}
+      </div>
+
+      <div className="flex items-center gap-4">
+        <AgentAvatar size="md" variant="user" name="Maya Chen" state="online" />
+        <AgentAvatar size="md" variant="user" name="Diego Ramírez" />
+        <AgentAvatar size="md" name="Travel" icon={<Plane />} state="working" />
+        <AgentAvatar size="md" name="Support" icon={<Headset />} state="waiting" />
+        <AgentAvatar size="md" name="Ops" icon={<Bot />} />
+        <AgentAvatar size="md" name="Research Lab" initials />
+      </div>
+    </div>
+  );
+}
+```
+
+## API
+
+### <AgentAvatar />
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `name` | `string` | — | Used for initials & accessible label. |
+| `src` | `string` | — |  |
+| `icon` | `ReactNode` | — | Custom icon; defaults to a sparkle (gradient) or a monogram of `name` (monogram). |
+| `initials` | `false \| true` | — | Show initials instead of the icon (e.g. for human users). |
+| `state` | `"idle" \| "online" \| "thinking" \| "working" \| "waiting" \| "error" \| "offline"` | — |  |
+| `size` | `"xs" \| "sm" \| "md" \| "lg"` | `"sm"` |  |
+| `variant` | `"agent" \| "user"` | `"agent"` | "agent" renders the accent gradient, "user" a neutral tile. |
+| `appearance` | `"gradient" \| "monogram"` | `"gradient"` | Agent tile style. "gradient" (default) is the accent gradient tile; "monogram" is a flat letter tile tinted by `color`. |
+| `color` | `"accent" \| "auto" \| "ink" \| (string & {})` | `"auto"` | Monogram tile color: a CSS color, "accent", "ink", or "auto" (a muted color picked from the name so each agent is recognisable). Default "auto". |
+| `className` | `string` | — |  |
+
+---
+
+# AgentRoster
+
+> Category: Multi-agent · Package: `kestro-ui`
+
+A team of agents with roles, states and what each one is doing right now.
+
+## Import
+
+```tsx
+import { AgentRoster } from "kestro-ui";
+```
+
+## Example: agent-roster
+
+```tsx
+import { useState } from "react";
+import { AgentRoster, type RosterAgent } from "kestro-ui";
+import { CalendarCheck, Compass, CreditCard, Hotel, Plane } from "lucide-react";
+
+const agents: RosterAgent[] = [
+  { id: "planner", name: "Planner", role: "Orchestrator", state: "online", activity: "Coordinating 4 agents", avatar: { icon: <Compass /> } },
+  { id: "flights", name: "Flights", role: "Search", state: "working", activity: "Comparing 38 fares to Lisbon…", avatar: { icon: <Plane /> } },
+  { id: "hotels", name: "Hotels", role: "Search", state: "thinking", activity: "Ranking hotels near Alfama…", avatar: { icon: <Hotel /> } },
+  { id: "booker", name: "Booker", role: "Payments", state: "waiting", activity: "Needs approval for €2,140", avatar: { icon: <CreditCard /> } },
+  { id: "calendar", name: "Calendar", role: "Scheduling", state: "idle", avatar: { icon: <CalendarCheck /> } },
+];
+
+export default function Example() {
+  const [activeId, setActiveId] = useState("planner");
+  const active = agents.find((a) => a.id === activeId);
+
+  return (
+    <div className="w-full max-w-sm rounded-kui border border-kui-border bg-kui-surface p-2">
+      <p className="px-2 pt-1 pb-2 text-[11px] font-semibold tracking-wide text-kui-fg-subtle uppercase">Trip team</p>
+      <AgentRoster agents={agents} activeId={activeId} onSelect={setActiveId} />
+      <p className="mt-2 border-t border-kui-border px-2 pt-2.5 pb-1 text-xs text-kui-fg-muted">
+        Viewing <span className="font-medium text-kui-fg">{active?.name}</span>'s workspace
+      </p>
+    </div>
+  );
+}
+```
+
+## API
+
+### <AgentRoster />
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `agents` **(required)** | `RosterAgent[]` | — |  |
+| `activeId` | `string` | — |  |
+| `onSelect` | `((id: string) => void)` | — |  |
+| `className` | `string` | — |  |
+
+---
+
+# AgentHandoff
+
+> Category: Multi-agent · Package: `kestro-ui`
+
+Inline divider showing control passing from one agent to another.
+
+## Import
+
+```tsx
+import { AgentHandoff } from "kestro-ui";
+```
+
+## Example: agent-handoff
+
+```tsx
+import { AgentHandoff, Message } from "kestro-ui";
+import { Compass, CreditCard, Hotel } from "lucide-react";
+
+const planner = { name: "Planner", avatar: { icon: <Compass /> } };
+const hotels = { name: "Hotels", avatar: { icon: <Hotel /> } };
+const booker = { name: "Booker", avatar: { icon: <CreditCard /> } };
+
+export default function Example() {
+  return (
+    <div className="flex w-full max-w-xl flex-col gap-5">
+      <Message from="user">Find us a boutique hotel in Lisbon for Oct 12–15 and book it, max €250/night.</Message>
+      <Message from="assistant" name={planner.name} avatar={planner.avatar}>
+        On it. I'll have Hotels shortlist options, then Booker will reserve the one you pick.
+      </Message>
+
+      <AgentHandoff from={planner} to={hotels} reason="hotel search" />
+
+      <Message from="assistant" name={hotels.name} avatar={hotels.avatar}>
+        Top pick: Memmo Alfama — rooftop pool, river views, €232/night. Two backups are within budget too.
+      </Message>
+      <Message from="user">Memmo looks great, go ahead.</Message>
+
+      <AgentHandoff from={hotels} to={booker} reason="payment" />
+
+      <Message from="assistant" name={booker.name} avatar={booker.avatar}>
+        Booked! 3 nights at Memmo Alfama, €696 total. Confirmation #MA-55821 is in your inbox.
+      </Message>
+    </div>
+  );
+}
+```
+
+## API
+
+### <AgentHandoff />
+
+Inline divider showing control passing from one agent to another.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `from` **(required)** | `AgentRef` | — |  |
+| `to` **(required)** | `AgentRef` | — |  |
+| `reason` | `ReactNode` | — |  |
+| `className` | `string` | — |  |
+
+---
+
+# ImageGallery
+
+> Category: Images · Package: `kestro-ui`
+
+Grid for one or many images in a message, with a shared lightbox and an optional 'Ask about this image' action that references the image in the composer.
+
+## Import
+
+```tsx
+import { ImageGallery } from "kestro-ui";
+```
+
+## Example: image-gallery
+
+```tsx
+import { useState } from "react";
+import { ImageGallery, Message, type ImageItem } from "kestro-ui";
+
+const photos: ImageItem[] = [
+  { src: "images/rooftops.svg", alt: "Alfama rooftops at sunset", caption: "Option 1 · Casa do Largo terrace, Alfama" },
+  { src: "images/coast.svg", alt: "Cliffs above the Atlantic", caption: "Option 2 · Cascais, 40 min by train" },
+  { src: "images/forest.svg", alt: "Pine forest in Sintra", caption: "Option 3 · Sintra hills retreat" },
+  { src: "images/night.svg", alt: "Baixa at night", caption: "Option 4 · Baixa, walkable to everything" },
+];
+
+export default function Example() {
+  const [asked, setAsked] = useState<string | null>(null);
+
+  return (
+    <div className="w-full max-w-xl space-y-4">
+      <Message from="assistant" name="Atlas" avatar={{ appearance: "monogram", color: "accent", name: "Atlas" }}>
+        <p className="text-[15px]">Here are four venues that fit 12 people. Click any photo to zoom in.</p>
+        <ImageGallery images={photos} max={3} onReference={(img) => setAsked(img.alt ?? "image")} />
+      </Message>
+      {asked ? <p className="text-sm text-kui-fg-muted">Referenced in the composer: “{asked}”</p> : null}
+    </div>
+  );
+}
+```
+
+## API
+
+### <ImageGallery />
+
+Responsive grid for 1–N images (generated images, screenshots, product photos) with a shared lightbox.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `images` **(required)** | `ImageItem[]` | — |  |
+| `max` | `number` | `4` | Max tiles before a "+N" overflow tile. Default 4. |
+| `onReference` | `((image: ImageItem, index: number) => void)` | — |  |
+| `className` | `string` | — |  |
+
+---
+
+# Lightbox
+
+> Category: Images · Package: `kestro-ui`
+
+Full-screen image viewer: zoom with wheel, pinch, double-click or buttons, drag to pan, arrow keys to browse, captions and download. ImagePreview opens it from a single thumbnail.
+
+## Import
+
+```tsx
+import { Lightbox, ImagePreview } from "kestro-ui";
+```
+
+## Example: lightbox
+
+```tsx
+import { useState } from "react";
+import { Button, ImagePreview, Lightbox } from "kestro-ui";
+import { Maximize2 } from "lucide-react";
+
+const images = [
+  { src: "images/coast.svg", alt: "Generated: cliffs above the Atlantic", caption: "Generated in 4.2s · 1024×768" },
+  { src: "images/night.svg", alt: "Generated: city skyline at night", caption: "Variation 2 · warmer windows" },
+];
+
+export default function Example() {
+  const [open, setOpen] = useState(false);
+  const [index, setIndex] = useState(0);
+
+  return (
+    <div className="grid w-full max-w-xl gap-4 sm:grid-cols-2">
+      {/* Single image: click to open, wheel / pinch / double-click to zoom */}
+      <ImagePreview image={images[0]} aspect="4/3" />
+
+      {/* Or control the lightbox yourself */}
+      <div className="flex flex-col items-start justify-center gap-2">
+        <p className="text-sm text-kui-fg-muted">Keyboard: ← → to browse, + − 0 to zoom, Esc to close.</p>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            setIndex(0);
+            setOpen(true);
+          }}
+        >
+          <Maximize2 /> Open both images
+        </Button>
+      </div>
+      <Lightbox images={images} index={index} onIndexChange={setIndex} open={open} onOpenChange={setOpen} />
+    </div>
+  );
+}
+```
+
+## API
+
+### <Lightbox />
+
+Full-screen image viewer with zoom (wheel, pinch, double-click, buttons), pan and keyboard navigation.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `images` **(required)** | `ImageItem[]` | — |  |
+| `index` **(required)** | `number` | — | Index of the image to show. |
+| `open` **(required)** | `false \| true` | — |  |
+| `onOpenChange` **(required)** | `(open: boolean) => void` | — |  |
+| `onIndexChange` | `((index: number) => void)` | — |  |
+| `onReference` | `((image: ImageItem, index: number) => void)` | — | Adds an "Ask about this image" action — e.g. to reference it in the chat composer. |
+| `referenceLabel` | `string` | `"Ask about this image"` |  |
+| `download` | `false \| true` | `true` | Show a download button. Default true. |
+
+### <ImagePreview />
+
+A single image with loading state that opens a zoomable lightbox.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `image` **(required)** | `ImageItem` | — |  |
+| `zoomable` | `false \| true` | `true` | Click opens a lightbox. Default true. |
+| `onReference` | `((image: ImageItem, index: number) => void)` | — |  |
+| `aspect` | `string` | — | CSS aspect ratio, e.g. "16/9". Uses the image's own when omitted. |
+| `className` | `string` | — |  |
+
+---
+
+# VoicePanel
+
+> Category: Voice · Package: `kestro-ui`
+
+A full voice-call surface with animated orb, status, transcript and call controls. Includes VoiceOrb and VoiceWave.
+
+## Import
+
+```tsx
+import { VoicePanel, VoiceOrb, VoiceWave } from "kestro-ui";
+```
+
+## Example: voice-panel
+
+```tsx
+import { useEffect, useState } from "react";
+import { Button, VoiceOrb, VoicePanel, VoiceWave, type VoiceState } from "kestro-ui";
+import { Phone } from "lucide-react";
+
+const script: { state: VoiceState; ms: number; text?: string }[] = [
+  { state: "connecting", ms: 1400 },
+  { state: "speaking", ms: 3800, text: "Hi Sam, it's Ava from Northwind Dental — calling to confirm your cleaning tomorrow at 10 AM." },
+  { state: "listening", ms: 3000, text: "Could we move it to the afternoon instead?" },
+  { state: "thinking", ms: 1400 },
+  { state: "speaking", ms: 3800, text: "Of course. I have 2:30 or 4:15 open — which works better for you?" },
+];
+
+export default function Example() {
+  const [inCall, setInCall] = useState(true);
+  const [step, setStep] = useState(0);
+  const [muted, setMuted] = useState(false);
+  const [level, setLevel] = useState(0);
+  const [elapsed, setElapsed] = useState(0);
+  const { state, ms, text } = script[step];
+
+  useEffect(() => {
+    if (!inCall) return;
+    const id = setTimeout(() => setStep((s) => (s + 1 < script.length ? s + 1 : 2)), ms);
+    return () => clearTimeout(id);
+  }, [inCall, step, ms]);
+
+  useEffect(() => {
+    if (!inCall) return;
+    const id = setInterval(() => setElapsed((e) => e + 1), 1000);
+    return () => clearInterval(id);
+  }, [inCall]);
+
+  useEffect(() => {
+    const audible = state === "speaking" || (state === "listening" && !muted);
+    if (!inCall || !audible) {
+      setLevel(0);
+      return;
+    }
+    let raf = 0;
+    const loop = (now: number) => {
+      const t = now / 1000;
+      setLevel(0.25 + Math.abs(Math.sin(t * 5.2)) * 0.5 + Math.sin(t * 1.7) * 0.15);
+      raf = requestAnimationFrame(loop);
+    };
+    raf = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(raf);
+  }, [inCall, state, muted]);
+
+  const start = () => {
+    setStep(0);
+    setElapsed(0);
+    setInCall(true);
+  };
+
+  return (
+    <div className="flex w-full max-w-xl flex-col items-center gap-6">
+      <div className="w-full rounded-kui border border-kui-border bg-kui-surface">
+        {inCall ? (
+          <VoicePanel
+            name="Ava · Northwind Dental"
+            state={state}
+            level={level}
+            transcript={text}
+            elapsed={state === "connecting" ? undefined : elapsed}
+            muted={muted}
+            onToggleMute={() => setMuted((m) => !m)}
+            onEnd={() => setInCall(false)}
+          />
+        ) : (
+          <div className="flex flex-col items-center gap-4 py-16 text-sm text-kui-fg-muted">
+            Call ended · {Math.floor(elapsed / 60)}:{String(elapsed % 60).padStart(2, "0")}
+            <Button variant="accent" onClick={start}>
+              <Phone /> Call again
+            </Button>
+          </div>
+        )}
+      </div>
+
+      <div className="flex items-center gap-5">
+        {(["idle", "connecting", "listening", "thinking", "speaking"] as const).map((s) => (
+          <VoiceOrb key={s} state={s} level={0.6} size={44} />
+        ))}
+        <VoiceWave />
+        <VoiceWave bars={7} active={false} />
+      </div>
+    </div>
+  );
+}
+```
+
+## API
+
+### <VoicePanel />
+
+A complete voice-call surface: orb, status, transcript and call controls.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `state` **(required)** | `"idle" \| "thinking" \| "connecting" \| "listening" \| "speaking"` | — |  |
+| `level` | `number` | — |  |
+| `name` | `ReactNode` | — | Agent name shown above the status. |
+| `transcript` | `ReactNode` | — | Live transcript line (what the user or agent is saying). |
+| `muted` | `false \| true` | — |  |
+| `onToggleMute` | `(() => void)` | — |  |
+| `onEnd` | `(() => void)` | — |  |
+| `elapsed` | `number` | — | Call duration in seconds. |
+| `className` | `string` | — |  |
+
+### <VoiceOrb />
+
+Animated orb that visualizes a voice agent's state.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `state` | `"idle" \| "thinking" \| "connecting" \| "listening" \| "speaking"` | `"idle"` |  |
+| `level` | `number` | `0` | Live audio amplitude 0–1 (mic level while listening, output level while speaking). |
+| `size` | `number` | `168` | Diameter in px. |
+| `className` | `string` | — |  |
+
+### <VoiceWave />
+
+Small animated equalizer bars — use for "speaking" indicators.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `bars` | `number` | `5` |  |
+| `active` | `false \| true` | `true` |  |
+| `className` | `string` | — |  |
+
+---
+
+# VoiceDial
+
+> Category: Voice · Package: `kestro-ui`
+
+Instrument-style dial for voice agents: ticked bezel, level disc and speaking ripples.
+
+## Import
+
+```tsx
+import { VoiceDial } from "kestro-ui";
+```
+
+## Example: voice-dial
+
+```tsx
+import { useEffect, useState } from "react";
+import { VoiceDial, type VoiceState } from "kestro-ui";
+
+const states: VoiceState[] = ["idle", "listening", "thinking", "speaking"];
+
+export default function Example() {
+  const [level, setLevel] = useState(0.4);
+
+  useEffect(() => {
+    const id = setInterval(() => setLevel(0.25 + Math.random() * 0.7), 140);
+    return () => clearInterval(id);
+  }, []);
+
+  return (
+    <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
+      {states.map((s) => (
+        <div key={s} className="flex flex-col items-center gap-3">
+          <VoiceDial state={s} level={level} size={120} />
+          <span className="font-mono text-xs text-kui-fg-subtle uppercase">{s}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+```
+
+## API
+
+### <VoiceDial />
+
+Instrument-style dial for a voice agent: ticked bezel, level disc and speaking ripples.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `state` | `"idle" \| "thinking" \| "connecting" \| "listening" \| "speaking"` | `"idle"` |  |
+| `level` | `number` | `0` | Live audio amplitude 0–1 (mic level while listening, output level while speaking). |
+| `size` | `number` | `168` | Diameter in px. |
+| `className` | `string` | — |  |
+
+---
+
+# AgentCore
+
+> Category: HUD · Package: `kestro-ui`
+
+Arc-reactor style presence for an AI agent. Reacts to state, live loudness and a real audio spectrum from the microphone or TTS output.
+
+## Import
+
+```tsx
+import { AgentCore } from "kestro-ui";
+```
+
+## Example: agent-core
+
+```tsx
+import { useEffect, useState } from "react";
+import { AgentCore, Button, HudBackground, useAudioAnalyser, useMicrophone, type CoreState } from "kestro-ui";
+import { Mic, MicOff } from "lucide-react";
+
+const states: CoreState[] = ["idle", "listening", "thinking", "speaking", "working", "error", "offline"];
+
+export default function Example() {
+  const [state, setState] = useState<CoreState>("speaking");
+  const [simLevel, setSimLevel] = useState(0);
+  const mic = useMicrophone();
+  const { level: micLevel, spectrum } = useAudioAnalyser(mic.stream);
+
+  useEffect(() => {
+    if (mic.active || (state !== "speaking" && state !== "listening")) return;
+    let raf = 0;
+    const loop = (now: number) => {
+      const t = now / 1000;
+      setSimLevel(0.35 + Math.abs(Math.sin(t * 4.3)) * 0.4 + Math.sin(t * 1.3) * 0.15);
+      raf = requestAnimationFrame(loop);
+    };
+    raf = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(raf);
+  }, [state, mic.active]);
+
+  const current = mic.active ? "listening" : state;
+
+  return (
+    <div
+      data-kui-theme="dark"
+      className="relative flex w-full max-w-2xl flex-col items-center gap-6 overflow-hidden rounded-kui border border-kui-border bg-kui-bg px-6 py-10 text-kui-fg"
+    >
+      <HudBackground />
+      <AgentCore
+        state={current}
+        level={mic.active ? micLevel : simLevel}
+        spectrum={mic.active ? spectrum : undefined}
+        size={280}
+        label="Nova"
+        sublabel={mic.active ? "Mic live" : current}
+      />
+      <div className="relative flex flex-wrap justify-center gap-1.5">
+        {states.map((s) => (
+          <Button
+            key={s}
+            size="xs"
+            variant={current === s ? "accent" : "outline"}
+            disabled={mic.active}
+            onClick={() => setState(s)}
+            className="capitalize"
+          >
+            {s}
+          </Button>
+        ))}
+      </div>
+      <div className="relative flex flex-col items-center gap-2">
+        <Button variant={mic.active ? "danger" : "secondary"} onClick={mic.active ? mic.stop : mic.start}>
+          {mic.active ? <MicOff /> : <Mic />}
+          {mic.active ? "Stop microphone" : "Use microphone"}
+        </Button>
+        {mic.error ? <p className="text-xs text-kui-danger">{mic.error}</p> : null}
+      </div>
+    </div>
+  );
+}
+```
+
+## API
+
+### <AgentCore />
+
+Arc-reactor style "presence" for an AI agent — reacts to state and audio.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `state` | `"idle" \| "thinking" \| "working" \| "error" \| "offline" \| "listening" \| "speaking"` | `"idle"` |  |
+| `level` | `number` | `0` | Live loudness 0–1. |
+| `spectrum` | `number[]` | — | Optional frequency bins 0–1 (from useAudioAnalyser). Synthesized from `level` when omitted. |
+| `size` | `number` | `300` | Diameter in px. Default 300. |
+| `label` | `ReactNode` | — | Center content (e.g. agent name). |
+| `sublabel` | `ReactNode` | — |  |
+| `className` | `string` | — |  |
+
+---
+
+# AttitudeIndicator
+
+> Category: HUD · Package: `kestro-ui`
+
+An aviation attitude indicator as agent presence: the horizon steadies when idle, rolls while thinking and responds to audio. The bezel pointer shows any 0–100 value.
+
+## Import
+
+```tsx
+import { AttitudeIndicator } from "kestro-ui";
+```
+
+## Example: attitude-indicator
+
+```tsx
+import { useEffect, useState } from "react";
+import { AttitudeIndicator, Button, type CoreState } from "kestro-ui";
+
+const states: { state: CoreState; label: string; value: number }[] = [
+  { state: "idle", label: "Standing by", value: 10 },
+  { state: "thinking", label: "Planning", value: 45 },
+  { state: "speaking", label: "Speaking", value: 70 },
+  { state: "error", label: "Tool failed", value: 45 },
+];
+
+export default function Example() {
+  const [i, setI] = useState(1);
+  const [level, setLevel] = useState(0);
+  const { state, label, value } = states[i];
+
+  // Fake audio level while speaking
+  useEffect(() => {
+    if (state !== "speaking") return;
+    const id = setInterval(() => setLevel(0.3 + Math.random() * 0.6), 120);
+    return () => clearInterval(id);
+  }, [state]);
+
+  return (
+    <div className="flex flex-col items-center gap-5">
+      <AttitudeIndicator state={state} level={level} value={value} label={label} sublabel="Concierge / A-01" size={360} />
+      <div className="flex flex-wrap justify-center gap-2">
+        {states.map((s, j) => (
+          <Button key={s.state} size="sm" variant={i === j ? "primary" : "outline"} onClick={() => setI(j)}>
+            {s.state}
+          </Button>
+        ))}
+      </div>
+    </div>
+  );
+}
+```
+
+## API
+
+### <AttitudeIndicator />
+
+An aviation attitude indicator re-imagined as an agent's presence:
+the horizon steadies when idle, rolls gently while thinking, and responds
+to audio while listening or speaking. The bezel pointer shows `value`.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `state` | `"idle" \| "thinking" \| "working" \| "error" \| "offline" \| "listening" \| "speaking"` | `"idle"` |  |
+| `value` | `number` | — | Bezel pointer 0–100 (e.g. confidence, progress, context used). |
+| `level` | `number` | `0` | Live loudness 0–1 — tilts the horizon while listening/speaking. |
+| `label` | `ReactNode` | — | Large label drawn in the sky (e.g. "Awaiting approval"). |
+| `sublabel` | `ReactNode` | — | Small caption under the label (e.g. "Executor / K-03"). |
+| `caption` | `ReactNode` | — | Third line, e.g. "Observe → Propose → Confirm". |
+| `tone` | `"accent" \| "success" \| "warning" \| "danger" \| "info" \| "muted"` | `"warning"` | Instrument markings color. Default "warning" (ochre). |
+| `size` | `number` | `420` |  |
+| `className` | `string` | — |  |
+
+---
+
+# HudPanel
+
+> Category: HUD · Package: `kestro-ui`
+
+Sci-fi framed panel with corner brackets, scanlines and glow, plus an ambient HudBackground grid.
+
+## Import
+
+```tsx
+import { HudPanel, HudBackground } from "kestro-ui";
+```
+
+## Example: hud-panel
+
+```tsx
+import { Badge, HudBackground, HudPanel, Sparkline } from "kestro-ui";
+
+const telemetry = [
+  { label: "Uplink", value: "Stable", tone: "text-kui-success" },
+  { label: "Latency", value: "38 ms", tone: "text-kui-fg" },
+  { label: "Active tasks", value: "7", tone: "text-kui-fg" },
+  { label: "Anomalies", value: "1", tone: "text-kui-warning" },
+];
+
+export default function Example() {
+  return (
+    <div data-kui-theme="dark" className="relative flex w-full max-w-2xl justify-center overflow-hidden rounded-kui bg-kui-bg p-10 text-kui-fg">
+      <HudBackground />
+      <HudPanel
+        className="w-full max-w-sm"
+        title="Systems overview"
+        code="SYS-01"
+        status={
+          <Badge tone="success" dot pulse>
+            Nominal
+          </Badge>
+        }
+        scanlines
+        glow
+      >
+        <dl className="divide-y divide-kui-accent/10 font-mono text-xs">
+          {telemetry.map((row) => (
+            <div key={row.label} className="flex justify-between py-2">
+              <dt className="tracking-wider text-kui-fg-subtle uppercase">{row.label}</dt>
+              <dd className={row.tone}>{row.value}</dd>
+            </div>
+          ))}
+        </dl>
+        <div className="mt-3 flex items-center justify-between gap-4">
+          <span className="font-mono text-[10px] tracking-[0.18em] text-kui-fg-subtle uppercase">Throughput · 1h</span>
+          <Sparkline data={[12, 18, 15, 22, 28, 24, 31, 27, 35, 33, 41]} width={140} live />
+        </div>
+      </HudPanel>
+    </div>
+  );
+}
+```
+
+## API
+
+### <HudPanel />
+
+Sci-fi framed panel with corner brackets — the building block of HUD layouts.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `title` | `ReactNode` | — |  |
+| `code` | `ReactNode` | — | Small code shown on the right of the header, e.g. "SYS-01". |
+| `status` | `ReactNode` | — | Right-side header slot (status, actions). |
+| `scanlines` | `false \| true` | — | Subtle CRT scanlines + moving scan bar. |
+| `glow` | `false \| true` | — | Accent glow around the border. |
+| `bodyClassName` | `string` | — |  |
+
+Also accepts the native HTML attributes of its root element.
+
+### <HudBackground />
+
+Ambient grid + glow + optional sweeping scan line. Place inside a `relative` container.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `scan` | `false \| true` | `true` |  |
+| `className` | `string` | — |  |
+
+---
+
+# RadialGauge
+
+> Category: HUD · Package: `kestro-ui`
+
+Animated 270° gauge for telemetry like confidence, CPU or context window.
+
+## Import
+
+```tsx
+import { RadialGauge } from "kestro-ui";
+```
+
+## Example: radial-gauge
+
+```tsx
+import { useEffect, useState } from "react";
+import { RadialGauge } from "kestro-ui";
+
+const jitter = (v: number, spread: number, min: number, max: number) =>
+  Math.min(max, Math.max(min, v + (Math.random() - 0.5) * spread));
+
+export default function Example() {
+  const [cpu, setCpu] = useState(42);
+  const [confidence, setConfidence] = useState(0.91);
+  const [context, setContext] = useState(64_000);
+  const [load, setLoad] = useState(58);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setCpu((v) => jitter(v, 30, 5, 98));
+      setConfidence((v) => jitter(v, 0.12, 0.55, 0.99));
+      setContext((v) => jitter(v, 30_000, 10_000, 195_000));
+      setLoad((v) => jitter(v, 40, 10, 99));
+    }, 1500);
+    return () => clearInterval(id);
+  }, []);
+
+  return (
+    <div className="flex w-full max-w-2xl flex-wrap justify-center gap-8">
+      <RadialGauge label="CPU" value={cpu} unit="%" />
+      <RadialGauge label="Confidence" value={confidence} max={1} tone="info" format={(v) => v.toFixed(2)} />
+      <RadialGauge label="Context" value={context} max={200_000} tone="warning" format={(v) => `${Math.round(v / 1000)}k`} />
+      <RadialGauge label="Queue load" value={load} unit="%" tone="auto" />
+    </div>
+  );
+}
+```
+
+## API
+
+### <RadialGauge />
+
+270° arc gauge for telemetry: CPU, confidence, context window, latency…
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `value` **(required)** | `number` | — |  |
+| `max` | `number` | `100` |  |
+| `label` | `ReactNode` | — |  |
+| `unit` | `string` | — |  |
+| `size` | `number` | `132` |  |
+| `tone` | `"accent" \| "success" \| "warning" \| "danger" \| "info" \| "auto"` | `"accent"` | Fixed tone, or thresholds chosen automatically when "auto". |
+| `format` | `((value: number) => ReactNode)` | — | Format the center value. |
+| `className` | `string` | — |  |
+
+---
+
+# HudStat
+
+> Category: HUD · Package: `kestro-ui`
+
+Telemetry readout with big mono value, delta and live sparkline.
+
+## Import
+
+```tsx
+import { HudStat, Sparkline } from "kestro-ui";
+```
+
+## Example: hud-stat
+
+```tsx
+import { useEffect, useState } from "react";
+import { HudStat, Sparkline } from "kestro-ui";
+import { Activity, Clock, Users, Zap } from "lucide-react";
+
+const seed = (base: number) => Array.from({ length: 20 }, () => base * (0.85 + Math.random() * 0.3));
+const push = (data: number[], base: number) => [...data.slice(1), base * (0.85 + Math.random() * 0.3)];
+const last = (data: number[]) => data[data.length - 1];
+
+export default function Example() {
+  const [requests, setRequests] = useState(() => seed(1240));
+  const [latency, setLatency] = useState(() => seed(320));
+  const [sessions, setSessions] = useState(() => seed(86));
+  const [tokens, setTokens] = useState(() => seed(48));
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setRequests((d) => push(d, 1240));
+      setLatency((d) => push(d, 320));
+      setSessions((d) => push(d, 86));
+      setTokens((d) => push(d, 48));
+    }, 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  const delta = (d: number[]) => ((last(d) - d[0]) / d[0]) * 100;
+
+  return (
+    <div className="w-full max-w-2xl space-y-6">
+      <div className="grid gap-x-8 gap-y-6 rounded-kui border border-kui-border bg-kui-surface p-5 sm:grid-cols-2">
+        <HudStat label="Requests / min" icon={<Activity />} value={Math.round(last(requests)).toLocaleString()} delta={delta(requests)} data={requests} />
+        <HudStat label="p95 latency" icon={<Clock />} value={Math.round(last(latency))} unit="ms" delta={delta(latency)} invertDelta data={latency} />
+        <HudStat label="Live sessions" icon={<Users />} value={Math.round(last(sessions))} delta={delta(sessions)} data={sessions} />
+        <HudStat label="Tokens / sec" icon={<Zap />} value={last(tokens).toFixed(1)} unit="k" delta={delta(tokens)} data={tokens} />
+      </div>
+      <div className="flex items-center gap-4 text-xs text-kui-fg-muted">
+        Standalone sparklines
+        <Sparkline data={requests} />
+        <Sparkline data={latency} tone="warning" fill={false} />
+        <Sparkline data={sessions} tone="success" live />
+      </div>
+    </div>
+  );
+}
+```
+
+## API
+
+### <HudStat />
+
+Telemetry readout: label, big mono value, delta and sparkline.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `label` **(required)** | `ReactNode` | — |  |
+| `value` **(required)** | `ReactNode` | — |  |
+| `unit` | `ReactNode` | — |  |
+| `delta` | `number` | — | Percentage change; positive renders as success. |
+| `invertDelta` | `false \| true` | — | Invert delta colors (e.g. latency: lower is better). |
+| `data` | `number[]` | — |  |
+| `icon` | `ReactNode` | — |  |
+| `className` | `string` | — |  |
+
+### <Sparkline />
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `data` **(required)** | `number[]` | — |  |
+| `width` | `number` | `120` |  |
+| `height` | `number` | `32` |  |
+| `tone` | `"accent" \| "success" \| "warning" \| "danger" \| "info"` | `"accent"` |  |
+| `fill` | `false \| true` | `true` |  |
+| `live` | `false \| true` | `false` | Pulse the last point. |
+| `className` | `string` | — |  |
+
+---
+
+# TelemetryChart
+
+> Category: HUD · Package: `kestro-ui`
+
+Big readout plus a gridded line chart for latency, throughput, success rate or cost.
+
+## Import
+
+```tsx
+import { TelemetryChart } from "kestro-ui";
+```
+
+## Example: telemetry-chart
+
+```tsx
+import { useEffect, useState } from "react";
+import { TelemetryChart } from "kestro-ui";
+
+const seed = (base: number, jitter: number) => Array.from({ length: 24 }, (_, i) => base + Math.sin(i / 2) * jitter);
+
+export default function Example() {
+  const [latency, setLatency] = useState(() => seed(820, 60));
+  const [cost, setCost] = useState(() => seed(0.42, 0.05));
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setLatency((d) => [...d.slice(1), Math.max(600, Math.min(1100, d[d.length - 1] + (Math.random() - 0.5) * 120))]);
+      setCost((d) => [...d.slice(1), Math.max(0.3, Math.min(0.6, d[d.length - 1] + (Math.random() - 0.5) * 0.06))]);
+    }, 900);
+    return () => clearInterval(id);
+  }, []);
+
+  return (
+    <div className="w-full max-w-lg space-y-6 rounded-kui border border-kui-border bg-kui-surface p-5">
+      <TelemetryChart
+        label="Latency"
+        value={Math.round(latency[latency.length - 1])}
+        unit="ms"
+        data={latency}
+        min={400}
+        max={1200}
+        xLabels={["-20m", "-15m", "-10m", "-5m", "now"]}
+      />
+      <TelemetryChart
+        label="Cost / run"
+        value={`$${cost[cost.length - 1].toFixed(2)}`}
+        data={cost}
+        min={0.2}
+        max={0.7}
+        formatY={(v) => `$${v.toFixed(2)}`}
+        tone="info"
+      />
+    </div>
+  );
+}
+```
+
+## API
+
+### <TelemetryChart />
+
+Readout + gridded line chart for latency, throughput, success rate, cost…
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `label` **(required)** | `ReactNode` | — |  |
+| `value` | `ReactNode` | — | Big readout; defaults to the last data point. |
+| `unit` | `ReactNode` | — |  |
+| `data` **(required)** | `number[]` | — |  |
+| `xLabels` | `string[]` | — | X-axis labels (shown at even intervals). |
+| `yTicks` | `number` | `4` | Y-axis tick count. Default 4. |
+| `min` | `number` | — |  |
+| `max` | `number` | — |  |
+| `formatY` | `((v: number) => string)` | `(v) => (Math.abs(v) >= 1000 ? v.toLocaleString() : String(Math.round(v * 10) / 10))` | Format y-axis labels. |
+| `tone` | `"accent" \| "success" \| "warning" \| "danger" \| "info" \| "muted"` | `"warning"` |  |
+| `height` | `number` | `96` |  |
+| `className` | `string` | — |  |
+
+---
+
+# Waveform
+
+> Category: HUD · Package: `kestro-ui`
+
+Audio bars from live levels or synthesized from loudness.
+
+## Import
+
+```tsx
+import { Waveform } from "kestro-ui";
+```
+
+## Example: waveform
+
+```tsx
+import { useState } from "react";
+import { Waveform } from "kestro-ui";
+
+export default function Example() {
+  const [level, setLevel] = useState(0.6);
+
+  return (
+    <div className="w-full max-w-xl space-y-6">
+      <div className="space-y-3 rounded-kui border border-kui-border bg-kui-surface p-5">
+        <Waveform level={level} />
+        <label className="flex items-center gap-3 text-xs text-kui-fg-muted">
+          Level
+          <input
+            type="range"
+            min={0}
+            max={1}
+            step={0.01}
+            value={level}
+            onChange={(e) => setLevel(Number(e.target.value))}
+            className="flex-1 accent-[var(--kui-accent)]"
+          />
+          <span className="w-8 text-right font-mono tabular-nums">{level.toFixed(2)}</span>
+        </label>
+      </div>
+      <div className="grid gap-6 sm:grid-cols-2">
+        <div className="space-y-2">
+          <p className="text-xs text-kui-fg-subtle">Bottom-aligned · success tone</p>
+          <Waveform level={0.8} mirror={false} bars={32} height={40} tone="success" />
+        </div>
+        <div className="space-y-2">
+          <p className="text-xs text-kui-fg-subtle">Inactive (muted)</p>
+          <Waveform active={false} bars={32} height={40} />
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+## API
+
+### <Waveform />
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `levels` | `number[]` | — | Bins 0–1. When omitted, bars are synthesized from `level`. |
+| `level` | `number` | `0.5` |  |
+| `bars` | `number` | `48` |  |
+| `height` | `number` | `48` |  |
+| `active` | `false \| true` | `true` |  |
+| `mirror` | `false \| true` | `true` | Mirror bars around the vertical center. |
+| `tone` | `"accent" \| "success" \| "warning" \| "danger" \| "info"` | `"accent"` |  |
+| `className` | `string` | — |  |
+
+---
+
+# CommandConsole
+
+> Category: HUD · Package: `kestro-ui`
+
+Terminal-style command line with history, typed streaming output and line kinds.
+
+## Import
+
+```tsx
+import { CommandConsole } from "kestro-ui";
+```
+
+## Example: command-console
+
+```tsx
+import { useEffect, useRef, useState } from "react";
+import { CommandConsole, type ConsoleLine, type ConsoleLineKind } from "kestro-ui";
+
+const now = () => new Date().toLocaleTimeString([], { hour12: false });
+
+const responses: Record<string, { kind: ConsoleLineKind; text: string }> = {
+  help: { kind: "output", text: "Available commands: status, scan, help, clear" },
+  status: { kind: "success", text: "All systems nominal. Power 98% · 3 agents online · 0 alerts in the last hour." },
+  scan: { kind: "warning", text: "Perimeter scan complete. 14 devices found — 1 unrecognized device on the guest network." },
+};
+
+export default function Example() {
+  const [lines, setLines] = useState<ConsoleLine[]>([
+    { id: "boot", kind: "system", text: "NOVA online. Type “help” to see what I can do.", time: now() },
+  ]);
+  const nextId = useRef(0);
+  const timers = useRef<number[]>([]);
+
+  useEffect(() => () => timers.current.forEach(clearTimeout), []);
+
+  const run = (command: string) => {
+    const key = command.toLowerCase();
+    if (key === "clear") {
+      setLines([]);
+      return;
+    }
+    const reply = responses[key] ?? {
+      kind: "error" as const,
+      text: `Unknown command “${command}”. Try “help”.`,
+    };
+    const id = String(nextId.current++);
+    setLines((prev) => [
+      ...prev,
+      { id: `${id}-in`, kind: "input", text: command, time: now() },
+      { id, ...reply, time: now(), streaming: true },
+    ]);
+    const timer = window.setTimeout(() => {
+      setLines((prev) => prev.map((l) => (l.id === id ? { ...l, streaming: false } : l)));
+    }, 400 + reply.text.length * 10);
+    timers.current.push(timer);
+  };
+
+  return <CommandConsole className="w-full max-w-xl" title="Nova · shell" lines={lines} onCommand={run} />;
+}
+```
+
+## API
+
+### <CommandConsole />
+
+Terminal-style command line for operating an agent by text commands.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `lines` **(required)** | `ConsoleLine[]` | — |  |
+| `onCommand` | `((command: string) => void)` | — |  |
+| `prompt` | `string` | `"›"` |  |
+| `placeholder` | `string` | `"Type a command…"` |  |
+| `title` | `ReactNode` | `"Command"` |  |
+| `height` | `string \| number` | `280` | Height of the scroll area. Default 280. |
+| `disabled` | `false \| true` | — |  |
+| `className` | `string` | — |  |
+
+---
+
+# EventLog
+
+> Category: HUD · Package: `kestro-ui`
+
+Structured event stream (event name + key=value fields) for agent runs and audit trails.
+
+## Import
+
+```tsx
+import { EventLog } from "kestro-ui";
+```
+
+## Example: event-log
+
+```tsx
+import { useEffect, useState } from "react";
+import { Button, EventLog, type LogEvent } from "kestro-ui";
+
+const script: Omit<LogEvent, "id" | "time">[] = [
+  { event: "run.started", fields: { agent: "support-02", ticket: 88213 } },
+  { event: "orders.lookup complete", fields: { order: "#4821", status: "delivered" } },
+  { event: "policy.check complete", fields: { refundable: true, window_days: 30 } },
+  { event: "approval.requested", tone: "warning", fields: { action: "refund", amount: "$249.00" } },
+];
+
+const stamp = () => new Date().toLocaleTimeString([], { hour12: false });
+
+export default function Example() {
+  const [events, setEvents] = useState<LogEvent[]>([]);
+
+  useEffect(() => {
+    if (events.length >= script.length) return;
+    const id = setTimeout(() => {
+      setEvents((list) => [
+        ...list.map((e) => ({ ...e, streaming: false })),
+        { ...script[list.length], id: String(list.length), time: stamp(), streaming: true },
+      ]);
+    }, 900);
+    return () => clearTimeout(id);
+  }, [events]);
+
+  return (
+    <div className="w-full max-w-lg space-y-3">
+      <div className="rounded-kui border border-kui-border bg-kui-surface px-4 py-1">
+        <EventLog events={events} footer={events.length === script.length ? "Awaiting operator input" : undefined} />
+      </div>
+      <Button variant="outline" size="sm" onClick={() => setEvents([])}>
+        Replay
+      </Button>
+    </div>
+  );
+}
+```
+
+## API
+
+### <EventLog />
+
+Structured event stream (`event` + `key=value` fields) for agent runs and audits.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `events` **(required)** | `LogEvent[]` | — |  |
+| `footer` | `ReactNode` | — | Footer prompt, e.g. "Awaiting operator input". |
+| `className` | `string` | — |  |
+
+---
+
+# BootSequence
+
+> Category: HUD · Package: `kestro-ui`
+
+Animated startup checklist for 'agent waking up' moments.
+
+## Import
+
+```tsx
+import { BootSequence } from "kestro-ui";
+```
+
+## Example: boot-sequence
+
+```tsx
+import { useState } from "react";
+import { BootSequence, Button } from "kestro-ui";
+import { RotateCcw } from "lucide-react";
+
+const steps = [
+  "Loading voice profile",
+  "Connecting to calendar and inbox",
+  "Syncing smart-home devices (12)",
+  "Restoring memory from last session",
+  "Calibrating wake word",
+  "Running safety checks",
+];
+
+export default function Example() {
+  const [run, setRun] = useState(0);
+  const [online, setOnline] = useState(false);
+
+  const replay = () => {
+    setOnline(false);
+    setRun((r) => r + 1);
+  };
+
+  return (
+    <div className="flex w-full max-w-md flex-col gap-5 rounded-kui border border-kui-border bg-kui-surface p-6">
+      <BootSequence key={run} steps={steps} title="Waking up Nova" onComplete={() => setOnline(true)} />
+      <div className="flex min-h-8 items-center justify-between gap-3">
+        <p className="text-sm text-kui-fg-muted">
+          {online ? <span className="text-kui-success">Good morning. All systems are online.</span> : "Booting…"}
+        </p>
+        <Button size="sm" variant="outline" onClick={replay}>
+          <RotateCcw /> Replay
+        </Button>
+      </div>
+    </div>
+  );
+}
+```
+
+## API
+
+### <BootSequence />
+
+Animated startup checklist — great for agent "wake up" moments and onboarding.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `steps` **(required)** | `string[]` | — |  |
+| `interval` | `number` | `320` | ms between steps. Default 320. |
+| `title` | `ReactNode` | `"Initializing agent"` |  |
+| `onComplete` | `(() => void)` | — |  |
+| `className` | `string` | — |  |
+
+---
+
+# DataTicker
+
+> Category: HUD · Package: `kestro-ui`
+
+Continuously scrolling status strip.
+
+## Import
+
+```tsx
+import { DataTicker } from "kestro-ui";
+```
+
+## Example: data-ticker
+
+```tsx
+import { DataTicker } from "kestro-ui";
+
+const markets = [
+  { symbol: "BTC", price: "98,412", change: 2.4 },
+  { symbol: "ETH", price: "3,862", change: -1.1 },
+  { symbol: "NVDA", price: "1,204.50", change: 3.8 },
+  { symbol: "AAPL", price: "241.12", change: 0.6 },
+  { symbol: "EUR/USD", price: "1.0872", change: -0.2 },
+  { symbol: "GOLD", price: "2,718", change: 0.9 },
+];
+
+const system = [
+  "Uplink stable · 38 ms",
+  "Scout finished competitor scan",
+  "3 agents online",
+  "Backup completed 04:00",
+  <span className="text-kui-warning">1 anomaly flagged in billing</span>,
+  "Next calendar sync in 5 min",
+];
+
+export default function Example() {
+  return (
+    <div className="w-full max-w-2xl space-y-4">
+      <DataTicker
+        items={markets.map((m) => (
+          <>
+            <span className="text-kui-fg">{m.symbol}</span>
+            <span>{m.price}</span>
+            <span className={m.change >= 0 ? "text-kui-success" : "text-kui-danger"}>
+              {m.change >= 0 ? "▲" : "▼"} {Math.abs(m.change).toFixed(1)}%
+            </span>
+          </>
+        ))}
+      />
+      <DataTicker items={system} className="text-kui-accent/90" />
+    </div>
+  );
+}
+```
+
+## API
+
+### <DataTicker />
+
+Continuously scrolling status strip (markets, system events, agent activity).
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `items` **(required)** | `ReactNode[]` | — |  |
+| `className` | `string` | — |  |
+
+---
+
+# ChatWidget
+
+> Category: Embed · Package: `kestro-ui`
+
+Floating launcher + chat panel to put an agent on any website.
+
+## Import
+
+```tsx
+import { ChatWidget } from "kestro-ui";
+```
+
+## Example: chat-widget
+
+```tsx
+import { useEffect, useRef, useState } from "react";
+import { AgentChat, ChatWidget, type ChatMessage, type ChatStatus } from "kestro-ui";
+import { Package, RotateCcw, Ruler } from "lucide-react";
+
+function reply(text: string) {
+  const q = text.toLowerCase();
+  if (q.includes("order")) return "Your order **#4821** shipped yesterday with UPS and should arrive **Thursday**. Want the tracking link?";
+  if (q.includes("return")) return "Returns are free within **30 days**. I can start a return for you now — which item is it?";
+  if (q.includes("size")) return "Our Trail Runner 2 fits true to size. If you're between sizes, go **half a size up**.";
+  return "Happy to help! I can track orders, start returns, or help you find the right size.";
+}
+
+export default function Example() {
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [status, setStatus] = useState<ChatStatus>("ready");
+  const timer = useRef<number | undefined>(undefined);
+
+  useEffect(() => () => window.clearTimeout(timer.current), []);
+
+  const send = (text: string) => {
+    const id = String(Date.now());
+    setMessages((m) => [...m, { id: `${id}-u`, role: "user", content: text }]);
+    setStatus("submitted");
+    timer.current = window.setTimeout(() => {
+      setMessages((m) => [...m, { id, role: "assistant", content: reply(text) }]);
+      setStatus("ready");
+    }, 900);
+  };
+
+  return (
+    <div className="relative h-[560px] w-full max-w-2xl overflow-hidden rounded-kui border border-kui-border bg-kui-surface">
+      <header className="flex items-center gap-6 border-b border-kui-border px-6 py-4 text-sm">
+        <span className="font-semibold text-kui-fg">Trailhead</span>
+        <nav className="flex gap-4 text-kui-fg-muted">
+          <span>Shoes</span>
+          <span>Apparel</span>
+          <span>Sale</span>
+        </nav>
+      </header>
+      <div className="space-y-3 px-6 py-10">
+        <h1 className="text-3xl font-semibold tracking-tight text-kui-fg">Built for the long way round.</h1>
+        <p className="max-w-sm text-kui-fg-muted">Lightweight trail gear, tested on 4,000 miles of switchbacks.</p>
+        <div className="grid grid-cols-3 gap-3 pt-6">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-28 rounded-kui bg-kui-surface-3" />
+          ))}
+        </div>
+      </div>
+
+      <ChatWidget contained width={340} height={430} title="Trailhead Support" subtitle="AI assistant · replies instantly" greeting="Need help with an order or sizing?">
+        <AgentChat
+          compact
+          messages={messages}
+          status={status}
+          onSend={send}
+          allowAttachments={false}
+          agent={{ name: "Trailhead Support", description: "Ask about orders, returns and sizing." }}
+          suggestions={[
+            { label: "Where's my order?", icon: <Package /> },
+            { label: "Start a return", icon: <RotateCcw /> },
+            { label: "Size advice", icon: <Ruler /> },
+          ]}
+        />
+      </ChatWidget>
+    </div>
+  );
+}
+```
+
+## API
+
+### <ChatWidget />
+
+Floating launcher + chat panel for embedding an agent on any website.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `title` | `ReactNode` | `"Assistant"` |  |
+| `subtitle` | `ReactNode` | `"Typically replies instantly"` |  |
+| `avatar` | `AgentAvatarProps` | — |  |
+| `open` | `false \| true` | — |  |
+| `defaultOpen` | `false \| true` | `false` |  |
+| `onOpenChange` | `((open: boolean) => void)` | — |  |
+| `position` | `"bottom-right" \| "bottom-left"` | `"bottom-right"` |  |
+| `greeting` | `ReactNode` | — | Teaser bubble shown next to the launcher while closed. |
+| `launcherIcon` | `ReactNode` | — |  |
+| `contained` | `false \| true` | `false` | Render inline (position: absolute within parent) instead of fixed to the viewport. |
+| `width` | `number` | `400` |  |
+| `height` | `number` | `640` |  |
+| `children` **(required)** | `ReactNode` | — | Panel body — typically <AgentChat compact /> |
+| `className` | `string` | — |  |
+
+---
+
+# Button
+
+> Category: Primitives · Package: `kestro-ui`
+
+Buttons and icon buttons with variants, sizes and loading state.
+
+## Import
+
+```tsx
+import { Button, IconButton } from "kestro-ui";
+```
+
+## Example: button
+
+```tsx
+import { Button, IconButton } from "kestro-ui";
+import { Copy, Mail, Plus, Send, Sparkles, Trash2 } from "lucide-react";
+
+export default function Example() {
+  return (
+    <div className="w-full max-w-xl space-y-5">
+      <div className="flex flex-wrap items-center gap-2">
+        <Button>Primary</Button>
+        <Button variant="accent">
+          <Sparkles /> Ask agent
+        </Button>
+        <Button variant="secondary">Secondary</Button>
+        <Button variant="outline">Outline</Button>
+        <Button variant="ghost">Ghost</Button>
+        <Button variant="danger">
+          <Trash2 /> Delete
+        </Button>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <Button size="xs">Extra small</Button>
+        <Button size="sm">Small</Button>
+        <Button size="md">Medium</Button>
+        <Button size="lg">
+          <Send /> Large
+        </Button>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <Button variant="accent" loading>
+          Booking…
+        </Button>
+        <Button variant="outline" disabled>
+          <Mail /> Disabled
+        </Button>
+        <IconButton label="Copy" size="xs">
+          <Copy />
+        </IconButton>
+        <IconButton label="New chat" variant="outline">
+          <Plus />
+        </IconButton>
+        <IconButton label="Delete conversation" size="md" variant="secondary">
+          <Trash2 />
+        </IconButton>
+      </div>
+    </div>
+  );
+}
+```
+
+## API
+
+### <Button />
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `variant` | `"accent" \| "danger" \| "primary" \| "secondary" \| "outline" \| "ghost"` | `"primary"` |  |
+| `size` | `"xs" \| "sm" \| "md" \| "lg" \| "icon" \| "icon-sm" \| "icon-xs"` | `"md"` |  |
+| `loading` | `false \| true` | — |  |
+
+Also accepts the native HTML attributes of its root element.
+
+### <IconButton />
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `label` **(required)** | `string` | — |  |
+| `size` | `"xs" \| "sm" \| "md"` | `"sm"` |  |
+| `tooltip` | `false \| true` | `true` |  |
+| `variant` | `"accent" \| "danger" \| "primary" \| "secondary" \| "outline" \| "ghost"` | `"ghost"` |  |
+| `loading` | `false \| true` | — |  |
+
+Also accepts the native HTML attributes of its root element.
+
+---
+
+# Switch
+
+> Category: Primitives · Package: `kestro-ui`
+
+Switch and SegmentedControl — the toggles used by settings, permissions and task forms.
+
+## Import
+
+```tsx
+import { Switch, SegmentedControl } from "kestro-ui";
+```
+
+## Example: controls
+
+```tsx
+import { useState } from "react";
+import { SegmentedControl, Switch } from "kestro-ui";
+import { Bot, Hand, Zap } from "lucide-react";
+
+export default function Example() {
+  const [mode, setMode] = useState("ask");
+  const [voice, setVoice] = useState(true);
+  const [memory, setMemory] = useState(false);
+
+  return (
+    <div className="w-full max-w-sm space-y-5 rounded-kui border border-kui-border bg-kui-surface p-5">
+      <div className="space-y-2">
+        <p className="text-[13px] font-medium">Autonomy</p>
+        <SegmentedControl
+          block
+          aria-label="Autonomy"
+          value={mode}
+          onValueChange={setMode}
+          options={[
+            { value: "manual", label: "Manual", icon: <Hand /> },
+            { value: "ask", label: "Ask first", icon: <Bot /> },
+            { value: "auto", label: "Auto", icon: <Zap /> },
+          ]}
+        />
+      </div>
+      <label className="flex items-center justify-between">
+        <span className="text-[13px]">Voice replies</span>
+        <Switch checked={voice} onCheckedChange={setVoice} aria-label="Voice replies" />
+      </label>
+      <label className="flex items-center justify-between">
+        <span className="text-[13px]">Remember past conversations</span>
+        <Switch checked={memory} onCheckedChange={setMemory} aria-label="Remember past conversations" />
+      </label>
+    </div>
+  );
+}
+```
+
+## API
+
+### <Switch />
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `checked` | `false \| true` | — |  |
+| `defaultChecked` | `false \| true` | `false` |  |
+| `onCheckedChange` | `((checked: boolean) => void)` | — |  |
+| `size` | `"sm" \| "md"` | `"md"` |  |
+
+Also accepts the native HTML attributes of its root element.
+
+### <SegmentedControl />
+
+A compact single-choice toggle group with a sliding indicator.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `options` **(required)** | `SegmentOption<T>[]` | — |  |
+| `value` | `T` | — |  |
+| `defaultValue` | `T` | — |  |
+| `onValueChange` | `((value: T) => void)` | — |  |
+| `size` | `"sm" \| "md"` | `"md"` |  |
+| `block` | `false \| true` | — | Stretch to the container width. |
+| `aria-label` | `string` | — |  |
+| `className` | `string` | — |  |
+
+---
+
+# Badge
+
+> Category: Primitives · Package: `kestro-ui`
+
+Badges, status dots, spinner, shimmer text, keyboard keys and tooltips.
+
+## Import
+
+```tsx
+import { Badge, StatusDot, Spinner, ShimmerText, Kbd, Tooltip } from "kestro-ui";
+```
+
+## Example: badge
+
+```tsx
+import { Badge, Button, Kbd, ShimmerText, Spinner, StatusDot, Tooltip } from "kestro-ui";
+import { Check, Info } from "lucide-react";
+
+export default function Example() {
+  return (
+    <div className="w-full max-w-xl space-y-5">
+      <div className="flex flex-wrap items-center gap-2">
+        <Badge>Neutral</Badge>
+        <Badge tone="accent">New</Badge>
+        <Badge tone="success">
+          <Check /> Delivered
+        </Badge>
+        <Badge tone="warning" dot>
+          Awaiting approval
+        </Badge>
+        <Badge tone="danger">Payment failed</Badge>
+        <Badge tone="info" dot pulse>
+          Live
+        </Badge>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-5 text-sm text-kui-fg-muted">
+        <span className="flex items-center gap-2">
+          <StatusDot pulse /> Online
+        </span>
+        <span className="flex items-center gap-2">
+          <StatusDot tone="warning" /> Away
+        </span>
+        <span className="flex items-center gap-2">
+          <Spinner /> Loading
+        </span>
+        <ShimmerText>Searching 48 hotels…</ShimmerText>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-4 text-sm text-kui-fg-muted">
+        <span className="flex items-center gap-1">
+          <Kbd>⌘</Kbd>
+          <Kbd>K</Kbd>
+          <span className="ml-1">to open the command menu</span>
+        </span>
+        <Tooltip content="Prices include taxes and fees">
+          <Button variant="ghost" size="xs">
+            <Info /> Hover me
+          </Button>
+        </Tooltip>
+      </div>
+    </div>
+  );
+}
+```
+
+## API
+
+### <Badge />
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `tone` | `"neutral" \| "accent" \| "success" \| "warning" \| "danger" \| "info"` | `"neutral"` |  |
+| `dot` | `false \| true` | — |  |
+| `pulse` | `false \| true` | — |  |
+
+Also accepts the native HTML attributes of its root element.
+
+### <StatusDot />
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `tone` | `"neutral" \| "accent" \| "success" \| "warning" \| "danger" \| "info"` | `"success"` |  |
+| `pulse` | `false \| true` | — |  |
+| `className` | `string` | — |  |
+
+### <Spinner />
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `className` | `string` | — |  |
+
+### <ShimmerText />
+
+Animated gradient text for live "Thinking…" / "Searching…" labels.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `children` **(required)** | `ReactNode` | — |  |
+| `active` | `false \| true` | `true` |  |
+| `className` | `string` | — |  |
+
+### <Kbd />
+
+No props.
+
+Also accepts the native HTML attributes of its root element.
+
+### <Tooltip />
+
+Lightweight CSS-only tooltip (hover & focus).
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `content` **(required)** | `ReactNode` | — |  |
+| `children` **(required)** | `ReactNode` | — |  |
+| `side` | `"top" \| "bottom"` | `"top"` |  |
+| `className` | `string` | — |  |
+
+---
+
+# Other exports
+
+### <Card />
+
+No props.
+
+Also accepts the native HTML attributes of its root element.
+
+### <Collapse />
+
+Height-animated container (CSS grid trick, no measuring).
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `open` **(required)** | `false \| true` | — |  |
+| `children` **(required)** | `ReactNode` | — |  |
+| `className` | `string` | — |  |
+
+### <StreamingCaret />
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `className` | `string` | — |  |
+
+### <SourceIcon />
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `source` **(required)** | `Source` | — |  |
+| `className` | `string` | — |  |
+
+### <MessageParts />
+
+Renders every part of a message: text, reasoning, tools, approvals, sources, files.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `message` **(required)** | `ChatMessage` | — |  |
+| `streaming` | `false \| true` | `false` | The message is currently being streamed. |
+| `renderTool` | `((part: ToolPart, ctx: { name: string; status: ToolStatus; }) => ReactNode)` | — | Return a node to custom-render a tool (generative UI); return undefined for the default card. |
+| `renderData` | `((part: DataPart) => ReactNode)` | — | Render custom `data-*` parts. |
+| `onToolApproval` | `((decision: { id: string; approved: boolean; part: ToolPart; }) => void)` | — |  |
+| `toolTitles` | `Record<string, string>` | — | Friendly titles per tool name, e.g. { web_search: "Searching the web" } |
+| `renderCode` | `((code: string, language: string, streaming: boolean) => ReactNode)` | — |  |
+| `onImageReference` | `((image: ImageItem) => void)` | — | Adds "Ask about this image" to the lightbox of image attachments. |

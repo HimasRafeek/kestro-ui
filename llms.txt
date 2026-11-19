@@ -1,0 +1,131 @@
+# Kestro UI
+
+> Beautiful React + Tailwind CSS components for AI agents: chat, reasoning, tool calls, approvals, plans, voice and Jarvis-style HUDs.
+
+Install: `npm i kestro-ui`. With Tailwind CSS v4 add `@import "tailwindcss"; @import "kestro-ui/theme.css";` to your CSS. Without Tailwind: `import "kestro-ui/styles.css"`. Dark mode: add the `dark` class to an ancestor. All components are named exports of `kestro-ui`.
+
+Fastest path: `<AgentChat messages={messages} status={status} onSend={(text) => …} />` renders a complete agent chat. Messages are `{ id, role, content }` or `{ id, role, parts }` where parts follow the Vercel AI SDK UIMessage format (text, reasoning, tool-<name>, source-url, file, data-<name>).
+
+## Guides
+
+- [Introduction](https://himasrafeek.github.io/kestro-ui/guides/introduction.md)
+- [Installation](https://himasrafeek.github.io/kestro-ui/guides/installation.md)
+- [Connect your agent](https://himasrafeek.github.io/kestro-ui/guides/backends.md)
+- [Theming](https://himasrafeek.github.io/kestro-ui/guides/theming.md)
+- [Using with AI assistants](https://himasrafeek.github.io/kestro-ui/guides/ai.md)
+
+## Chat
+
+- [AgentChat](https://himasrafeek.github.io/kestro-ui/components/agent-chat.md): A complete, batteries-included agent chat: thread, messages, reasoning, tools, approvals, sources, empty state, follow-ups and the prompt input. One component, works with any backend.
+- [Message](https://himasrafeek.github.io/kestro-ui/components/message.md): A single chat message for user, assistant or system roles, with avatar, name, timestamp and hover actions (copy, feedback, regenerate).
+- [Thread](https://himasrafeek.github.io/kestro-ui/components/thread.md): Scrollable message list that sticks to the bottom while content streams in, with a floating scroll-to-bottom button.
+- [Markdown](https://himasrafeek.github.io/kestro-ui/components/markdown.md): Zero-dependency, safe Markdown renderer for LLM output: tables, task lists, code, citations. StreamingMarkdown adds a smooth, frame-paced reveal for bursty token streams.
+- [CodeBlock](https://himasrafeek.github.io/kestro-ui/components/code-block.md): Syntax-highlighted code with copy button, filename, line numbers and a streaming caret. Built-in tiny highlighter, no dependencies.
+- [TypingIndicator](https://himasrafeek.github.io/kestro-ui/components/typing-indicator.md): Animated three-dot indicator for when the agent is preparing a response.
+
+## Input
+
+- [PromptInput](https://himasrafeek.github.io/kestro-ui/components/prompt-input.md): Auto-growing composer with attachments (button, drag & drop, paste), stop button while streaming, voice button and toolbar slots.
+- [ModelSelector](https://himasrafeek.github.io/kestro-ui/components/model-selector.md): Keyboard-accessible dropdown for choosing a model, agent, persona or mode.
+- [Suggestions](https://himasrafeek.github.io/kestro-ui/components/suggestions.md): Starter prompts and follow-ups as compact chips or descriptive cards.
+- [EmptyState](https://himasrafeek.github.io/kestro-ui/components/empty-state.md): Welcome screen shown before the first message.
+- [Attachment](https://himasrafeek.github.io/kestro-ui/components/attachment.md): File chips with type-aware icons, image previews, upload progress and errors.
+
+## Agent transparency
+
+- [Reasoning](https://himasrafeek.github.io/kestro-ui/components/reasoning.md): Collapsible thinking block with live shimmer, last-line preview and automatic duration.
+- [ToolCall](https://himasrafeek.github.io/kestro-ui/components/tool-call.md): Shows a tool invocation with arguments, result, status and duration. Pass children to render custom results (generative UI).
+- [ToolCallRow](https://himasrafeek.github.io/kestro-ui/components/tool-call-row.md): Compact, single-line tool status for dense lists and dashboards, with progress, duration and retry.
+- [Sources](https://himasrafeek.github.io/kestro-ui/components/sources.md): Citations: collapsible source list, source cards, chips and inline numbered citations with hover previews.
+
+## Human in the loop
+
+- [ToolApproval](https://himasrafeek.github.io/kestro-ui/components/tool-approval.md): Ask the user before the agent acts: payments, emails, bookings, deletions, shell commands. Supports details, previews, risk levels and 'remember' choice.
+- [AgentQuestion](https://himasrafeek.github.io/kestro-ui/components/agent-question.md): The agent asks the user a structured question: single or multiple choice, with optional free text.
+- [HandoffBanner](https://himasrafeek.github.io/kestro-ui/components/handoff-banner.md): Escalate a conversation from the AI to a human specialist.
+
+## Usage & cost
+
+- [TokenUsage](https://himasrafeek.github.io/kestro-ui/components/token-usage.md): Token breakdown — input, cached, reasoning, output — with per-kind cost from your pricing. TokenCounter is the inline version.
+- [ContextWindow](https://himasrafeek.github.io/kestro-ui/components/context-window.md): What's filling the model's context — system prompt, tools, files, conversation — as a bar or a 100-cell grid, with a warning before it runs out.
+- [ModelUsageTable](https://himasrafeek.github.io/kestro-ui/components/model-usage.md): Usage per model: requests, input and output tokens, latency, share of spend and cost, with totals.
+- [UsageChart](https://himasrafeek.github.io/kestro-ui/components/usage-chart.md): Stacked bars of tokens or spend over time, split by model or agent, with hover readouts.
+- [StatTile](https://himasrafeek.github.io/kestro-ui/components/stat-tile.md): Dashboard KPI tile: label, big value, trend and sparkline.
+- [Metric chips](https://himasrafeek.github.io/kestro-ui/components/metric-chips.md): Tiny inline building blocks: cost, latency, duration, speed, requests, trends, context, mini bars, model and agent chips, and a one-line message footer.
+
+## Time
+
+- [RunTimer](https://himasrafeek.github.io/kestro-ui/components/run-timer.md): Live elapsed timer for a run, with an estimate of time left and an optional timeout ring.
+- [LatencyBreakdown](https://himasrafeek.github.io/kestro-ui/components/latency-breakdown.md): Where the time went in one response: queue, first token, tools and generation, plus tokens per second.
+
+## Agents & models
+
+- [AgentCard](https://himasrafeek.github.io/kestro-ui/components/agent-card.md): Agent profile: identity, live status, model, tools and key stats, with actions.
+- [AgentPicker](https://himasrafeek.github.io/kestro-ui/components/agent-picker.md): Searchable, keyboard-friendly list for choosing which agent handles something.
+- [ModelCard](https://himasrafeek.github.io/kestro-ui/components/model-card.md): Model spec card: context size, price per 1M tokens, speed, quality and capabilities.
+- [ModelCompare](https://himasrafeek.github.io/kestro-ui/components/model-compare.md): Side-by-side model table that highlights the best value in each column.
+
+## Tasks
+
+- [TaskCreator](https://himasrafeek.github.io/kestro-ui/components/task-creator.md): Hand an agent a job: what to do, which agent, when it runs (now, scheduled or repeating), what it may do without asking, and a spend limit.
+- [TaskBoard](https://himasrafeek.github.io/kestro-ui/components/task-board.md): Kanban board of agent tasks — Queued, Running, Needs you, Done — with drag and drop and live progress.
+- [TaskList](https://himasrafeek.github.io/kestro-ui/components/task-list.md): Dense table of agent tasks with status, agent, progress, schedule and row actions.
+
+## Workflows
+
+- [TaskPlan](https://himasrafeek.github.io/kestro-ui/components/task-plan.md): Vertical timeline of an agent's plan with live step states and rich step content (e.g. approvals).
+- [RunCard](https://himasrafeek.github.io/kestro-ui/components/run-card.md): One agent run at a glance: title, run id, status chip and a step timeline that can hold tool calls and approvals.
+- [AgentHeader](https://himasrafeek.github.io/kestro-ui/components/agent-header.md): Agent identity with live state badge and actions.
+- [UsageMeter](https://himasrafeek.github.io/kestro-ui/components/usage-meter.md): Token, credit or context-window usage as a card, bar or compact ring.
+- [SegmentedMeter](https://himasrafeek.github.io/kestro-ui/components/segmented-meter.md): Block-style meter for context windows, quotas and budgets.
+- [ActivityFeed](https://himasrafeek.github.io/kestro-ui/components/activity-feed.md): Chronological log of what the agent did.
+- [Artifact](https://himasrafeek.github.io/kestro-ui/components/artifact.md): Panel for generated documents, code, itineraries or reports with tabs, copy and download.
+- [ConversationList](https://himasrafeek.github.io/kestro-ui/components/conversation-list.md): Sidebar of threads grouped by date, with search, new chat, running and unread states.
+
+## Multi-agent
+
+- [AgentGraph](https://himasrafeek.github.io/kestro-ui/components/agent-graph.md): Animated tree of agents: who delegated to whom, who is working, and where work is flowing. Lays itself out and scales to fit. Click any agent for a popover with its activity, model, token usage and steps.
+- [AgentHub](https://himasrafeek.github.io/kestro-ui/components/agent-hub.md): Hub-and-spoke view of an orchestrator reaching out to the agents it coordinates, with swaying connections and live work packets. Click any agent for a popover with its activity, model, token usage and steps.
+- [TraceTree](https://himasrafeek.github.io/kestro-ui/components/trace-tree.md): Nested trace of agent, LLM, tool and retrieval spans with a live waterfall timeline. Running spans grow in real time.
+- [AgentAvatar](https://himasrafeek.github.io/kestro-ui/components/agent-avatar.md): Avatar with live status (online, working, waiting, error, offline) and gradient agent tile.
+- [AgentRoster](https://himasrafeek.github.io/kestro-ui/components/agent-roster.md): A team of agents with roles, states and what each one is doing right now.
+- [AgentHandoff](https://himasrafeek.github.io/kestro-ui/components/agent-handoff.md): Inline divider showing control passing from one agent to another.
+
+## Images
+
+- [ImageGallery](https://himasrafeek.github.io/kestro-ui/components/image-gallery.md): Grid for one or many images in a message, with a shared lightbox and an optional 'Ask about this image' action that references the image in the composer.
+- [Lightbox](https://himasrafeek.github.io/kestro-ui/components/lightbox.md): Full-screen image viewer: zoom with wheel, pinch, double-click or buttons, drag to pan, arrow keys to browse, captions and download. ImagePreview opens it from a single thumbnail.
+
+## Voice
+
+- [VoicePanel](https://himasrafeek.github.io/kestro-ui/components/voice-panel.md): A full voice-call surface with animated orb, status, transcript and call controls. Includes VoiceOrb and VoiceWave.
+- [VoiceDial](https://himasrafeek.github.io/kestro-ui/components/voice-dial.md): Instrument-style dial for voice agents: ticked bezel, level disc and speaking ripples.
+
+## HUD
+
+- [AgentCore](https://himasrafeek.github.io/kestro-ui/components/agent-core.md): Arc-reactor style presence for an AI agent. Reacts to state, live loudness and a real audio spectrum from the microphone or TTS output.
+- [AttitudeIndicator](https://himasrafeek.github.io/kestro-ui/components/attitude-indicator.md): An aviation attitude indicator as agent presence: the horizon steadies when idle, rolls while thinking and responds to audio. The bezel pointer shows any 0–100 value.
+- [HudPanel](https://himasrafeek.github.io/kestro-ui/components/hud-panel.md): Sci-fi framed panel with corner brackets, scanlines and glow, plus an ambient HudBackground grid.
+- [RadialGauge](https://himasrafeek.github.io/kestro-ui/components/radial-gauge.md): Animated 270° gauge for telemetry like confidence, CPU or context window.
+- [HudStat](https://himasrafeek.github.io/kestro-ui/components/hud-stat.md): Telemetry readout with big mono value, delta and live sparkline.
+- [TelemetryChart](https://himasrafeek.github.io/kestro-ui/components/telemetry-chart.md): Big readout plus a gridded line chart for latency, throughput, success rate or cost.
+- [Waveform](https://himasrafeek.github.io/kestro-ui/components/waveform.md): Audio bars from live levels or synthesized from loudness.
+- [CommandConsole](https://himasrafeek.github.io/kestro-ui/components/command-console.md): Terminal-style command line with history, typed streaming output and line kinds.
+- [EventLog](https://himasrafeek.github.io/kestro-ui/components/event-log.md): Structured event stream (event name + key=value fields) for agent runs and audit trails.
+- [BootSequence](https://himasrafeek.github.io/kestro-ui/components/boot-sequence.md): Animated startup checklist for 'agent waking up' moments.
+- [DataTicker](https://himasrafeek.github.io/kestro-ui/components/data-ticker.md): Continuously scrolling status strip.
+
+## Embed
+
+- [ChatWidget](https://himasrafeek.github.io/kestro-ui/components/chat-widget.md): Floating launcher + chat panel to put an agent on any website.
+
+## Primitives
+
+- [Button](https://himasrafeek.github.io/kestro-ui/components/button.md): Buttons and icon buttons with variants, sizes and loading state.
+- [Switch](https://himasrafeek.github.io/kestro-ui/components/controls.md): Switch and SegmentedControl — the toggles used by settings, permissions and task forms.
+- [Badge](https://himasrafeek.github.io/kestro-ui/components/badge.md): Badges, status dots, spinner, shimmer text, keyboard keys and tooltips.
+
+## Optional
+
+- [Full documentation in one file](https://himasrafeek.github.io/kestro-ui/llms-full.txt)
+- [Source code](https://github.com/HimasRafeek/kestro-ui)
