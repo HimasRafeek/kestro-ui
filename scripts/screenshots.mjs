@@ -27,6 +27,7 @@ const allShots = [
   { name: "hero", hash: "#/", size: "1440,900", wait: 9000 },
   { name: "team", hash: "#/examples/team", size: "1440,900", wait: 15000 },
   { name: "deck", hash: "#/examples/deck", size: "1440,900", wait: 9000 },
+  { name: "usage", hash: "#/examples/usage", size: "1440,1400", wait: 4000 },
   { name: "chat", hash: "#/examples/chat?autoplay=Plan%20a%20weekend%20trip%20to%20Lisbon%20next%20Friday", size: "1440,900", wait: 30000 },
   { name: "research", hash: "#/examples/chat?autoplay=Research%20AI%20agent%20adoption", size: "1440,900", wait: 30000 },
   { name: "jarvis", hash: "#/examples/jarvis?noboot=1&autoplay=status", size: "1440,900", wait: 9000, dark: true },

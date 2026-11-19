@@ -44,6 +44,27 @@ Fastest path: `<AgentChat messages={messages} status={status} onSend={(text) => 
 - [AgentQuestion](https://himasrafeek.github.io/kestro-ui/components/agent-question.md): The agent asks the user a structured question: single or multiple choice, with optional free text.
 - [HandoffBanner](https://himasrafeek.github.io/kestro-ui/components/handoff-banner.md): Escalate a conversation from the AI to a human specialist.
 
+## Usage & cost
+
+- [TokenUsage](https://himasrafeek.github.io/kestro-ui/components/token-usage.md): Token breakdown — input, cached, reasoning, output — with per-kind cost from your pricing. TokenCounter is the inline version.
+- [ContextWindow](https://himasrafeek.github.io/kestro-ui/components/context-window.md): What's filling the model's context — system prompt, tools, files, conversation — as a bar or a 100-cell grid, with a warning before it runs out.
+- [ModelUsageTable](https://himasrafeek.github.io/kestro-ui/components/model-usage.md): Usage per model: requests, input and output tokens, latency, share of spend and cost, with totals.
+- [UsageChart](https://himasrafeek.github.io/kestro-ui/components/usage-chart.md): Stacked bars of tokens or spend over time, split by model or agent, with hover readouts.
+- [StatTile](https://himasrafeek.github.io/kestro-ui/components/stat-tile.md): Dashboard KPI tile: label, big value, trend and sparkline.
+- [Metric chips](https://himasrafeek.github.io/kestro-ui/components/metric-chips.md): Tiny inline building blocks: cost, latency, duration, speed, requests, trends, context, mini bars, model and agent chips, and a one-line message footer.
+
+## Time
+
+- [RunTimer](https://himasrafeek.github.io/kestro-ui/components/run-timer.md): Live elapsed timer for a run, with an estimate of time left and an optional timeout ring.
+- [LatencyBreakdown](https://himasrafeek.github.io/kestro-ui/components/latency-breakdown.md): Where the time went in one response: queue, first token, tools and generation, plus tokens per second.
+
+## Agents & models
+
+- [AgentCard](https://himasrafeek.github.io/kestro-ui/components/agent-card.md): Agent profile: identity, live status, model, tools and key stats, with actions.
+- [AgentPicker](https://himasrafeek.github.io/kestro-ui/components/agent-picker.md): Searchable, keyboard-friendly list for choosing which agent handles something.
+- [ModelCard](https://himasrafeek.github.io/kestro-ui/components/model-card.md): Model spec card: context size, price per 1M tokens, speed, quality and capabilities.
+- [ModelCompare](https://himasrafeek.github.io/kestro-ui/components/model-compare.md): Side-by-side model table that highlights the best value in each column.
+
 ## Tasks
 
 - [TaskCreator](https://himasrafeek.github.io/kestro-ui/components/task-creator.md): Hand an agent a job: what to do, which agent, when it runs (now, scheduled or repeating), what it may do without asking, and a spend limit.
@@ -63,8 +84,8 @@ Fastest path: `<AgentChat messages={messages} status={status} onSend={(text) => 
 
 ## Multi-agent
 
-- [AgentGraph](https://himasrafeek.github.io/kestro-ui/components/agent-graph.md): Animated tree of agents: who delegated to whom, who is working, and where work is flowing. Lays itself out and scales to fit.
-- [AgentHub](https://himasrafeek.github.io/kestro-ui/components/agent-hub.md): Hub-and-spoke view of an orchestrator reaching out to the agents it coordinates, with swaying connections and live work packets.
+- [AgentGraph](https://himasrafeek.github.io/kestro-ui/components/agent-graph.md): Animated tree of agents: who delegated to whom, who is working, and where work is flowing. Lays itself out and scales to fit. Click any agent for a popover with its activity, model, token usage and steps.
+- [AgentHub](https://himasrafeek.github.io/kestro-ui/components/agent-hub.md): Hub-and-spoke view of an orchestrator reaching out to the agents it coordinates, with swaying connections and live work packets. Click any agent for a popover with its activity, model, token usage and steps.
 - [TraceTree](https://himasrafeek.github.io/kestro-ui/components/trace-tree.md): Nested trace of agent, LLM, tool and retrieval spans with a live waterfall timeline. Running spans grow in real time.
 - [AgentAvatar](https://himasrafeek.github.io/kestro-ui/components/agent-avatar.md): Avatar with live status (online, working, waiting, error, offline) and gradient agent tile.
 - [AgentRoster](https://himasrafeek.github.io/kestro-ui/components/agent-roster.md): A team of agents with roles, states and what each one is doing right now.

@@ -1,9 +1,12 @@
 import * as React from "react";
-import { ArrowLeftRight, Brain, Check, ChevronRight, CircleAlert, Database, Pause, ShieldCheck, Waypoints, Wrench, Circle } from "lucide-react";
+import { createPortal } from "react-dom";
+import { ArrowLeftRight, Brain, Check, ChevronRight, CircleAlert, Database, Pause, ShieldCheck, Waypoints, Wrench, Circle, X } from "lucide-react";
 import { cn } from "../lib/cn";
-import { formatDuration } from "../lib/hooks";
+import { formatDuration, formatNumber } from "../lib/hooks";
 import { AgentAvatar } from "./agent-avatar";
-import { ShimmerText } from "./primitives";
+import { Badge, ShimmerText, Spinner, type Tone } from "./primitives";
+import { ModelBadge } from "./directory";
+import { formatCost } from "./metrics";
 
 /* ========================================================================== */
 /*                                 AgentGraph                                 */
@@ -23,6 +26,24 @@ export interface AgentNode {
   /** Small trailing detail, e.g. "3 tools · 4.2s". */
   meta?: React.ReactNode;
   icon?: React.ReactNode;
+  /** Model this agent runs on — shown on the card and in the details popover. */
+  model?: string;
+  provider?: string;
+  /** Token usage so far. */
+  usage?: { input: number; output: number; cost?: number };
+  /** Seconds spent so far. */
+  elapsed?: number;
+  /** Recent steps, shown in the details popover. */
+  steps?: AgentStep[];
+  /** Extra content for the details popover. */
+  details?: React.ReactNode;
+}
+
+export interface AgentStep {
+  id: string;
+  title: React.ReactNode;
+  status: "pending" | "running" | "waiting" | "done" | "error";
+  detail?: React.ReactNode;
 }
 
 export interface AgentLink {
@@ -46,6 +67,10 @@ export interface AgentGraphProps {
   siblingGap?: number;
   selectedId?: string;
   onSelect?: (id: string) => void;
+  /** Open a details popover when a node is clicked. Default true. */
+  showDetails?: boolean;
+  /** Replace the popover content. */
+  renderDetails?: (node: AgentNode) => React.ReactNode;
   className?: string;
 }
 
@@ -128,20 +153,218 @@ function Packets({ path, color, reverse }: { path: string; color: string; revers
   );
 }
 
+const nodeStateTone: Record<AgentNodeState, Tone> = {
+  idle: "neutral",
+  queued: "neutral",
+  working: "accent",
+  waiting: "warning",
+  done: "success",
+  error: "danger",
+};
+
+function StepIcon({ status }: { status: AgentStep["status"] }) {
+  if (status === "done") return <Check className="size-3.5 text-kui-success" strokeWidth={2.5} />;
+  if (status === "running") return <Spinner className="size-3.5 text-kui-accent" />;
+  if (status === "waiting") return <Pause className="size-3 fill-current text-kui-warning" />;
+  if (status === "error") return <CircleAlert className="size-3.5 text-kui-danger" />;
+  return <Circle className="size-3 text-kui-fg-subtle" />;
+}
+
+/** One-line "model · tokens · cost" summary for a node card. */
+function nodeMetaLine(n: Pick<AgentNode, "model" | "usage">) {
+  if (!n.model && !n.usage) return null;
+  const parts: string[] = [];
+  if (n.model) parts.push(n.model);
+  if (n.usage) parts.push(`${formatNumber(n.usage.input + n.usage.output)} tok`);
+  if (n.usage?.cost !== undefined) parts.push(formatCost(n.usage.cost));
+  return parts.join(" · ");
+}
+
+export interface AgentDetailsProps {
+  node: Omit<AgentNode, "parentId"> & { parentId?: string };
+  onClose?: () => void;
+  className?: string;
+}
+
+/** What one agent is doing: status, current activity, model, token usage, time and recent steps. */
+export function AgentDetails({ node: n, onClose, className }: AgentDetailsProps) {
+  const st = n.state ?? "idle";
+  const total = n.usage ? n.usage.input + n.usage.output : 0;
+  const empty = !n.activity && !n.model && !n.usage && !n.steps?.length && !n.details;
+  return (
+    <div className={cn("w-full overflow-hidden rounded-kui border border-kui-border-strong bg-kui-surface text-left shadow-kui-lg", className)}>
+      <div className="flex items-start gap-3 border-b border-kui-border p-3.5">
+        <AgentAvatar size="md" appearance="monogram" name={n.name} icon={n.icon} state={avatarState[st]} />
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-[15px] font-semibold text-kui-fg">{n.name}</p>
+          {n.role ? <p className="truncate text-xs text-kui-fg-subtle">{n.role}</p> : null}
+          <Badge tone={nodeStateTone[st]} dot pulse={st === "working"} className="mt-1.5">
+            {nodeStateLabel[st]}
+          </Badge>
+        </div>
+        {onClose ? (
+          <button
+            type="button"
+            aria-label="Close"
+            onClick={onClose}
+            className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-md text-kui-fg-subtle hover:bg-kui-surface-2 hover:text-kui-fg"
+          >
+            <X className="size-4" />
+          </button>
+        ) : null}
+      </div>
+      <div className="space-y-3.5 p-3.5">
+        {n.activity ? (
+          <div>
+            <p className="mb-1 text-[11px] font-medium tracking-wide text-kui-fg-subtle uppercase">Now</p>
+            <p className="text-[13.5px] text-kui-fg">{st === "working" ? <ShimmerText>{n.activity}</ShimmerText> : n.activity}</p>
+          </div>
+        ) : null}
+        {n.model || n.elapsed !== undefined ? (
+          <div className="flex flex-wrap items-center gap-2">
+            {n.model ? <ModelBadge name={n.model} provider={n.provider} /> : null}
+            {n.elapsed !== undefined ? <span className="font-mono text-xs text-kui-fg-muted tabular-nums">{formatDuration(n.elapsed)} running</span> : null}
+          </div>
+        ) : null}
+        {n.usage ? (
+          <div>
+            <div className="mb-1.5 flex items-baseline justify-between">
+              <p className="text-[11px] font-medium tracking-wide text-kui-fg-subtle uppercase">Tokens</p>
+              <p className="font-mono text-xs text-kui-fg tabular-nums">
+                {total.toLocaleString()}
+                {n.usage.cost !== undefined ? <span className="text-kui-fg-subtle"> · {formatCost(n.usage.cost)}</span> : null}
+              </p>
+            </div>
+            <div className="flex h-1.5 overflow-hidden rounded-full bg-kui-surface-3">
+              <span className="h-full bg-kui-info transition-[width] duration-700 ease-kui-out" style={{ width: `${total ? (n.usage.input / total) * 100 : 0}%` }} />
+              <span className="h-full bg-kui-accent transition-[width] duration-700 ease-kui-out" style={{ width: `${total ? (n.usage.output / total) * 100 : 0}%` }} />
+            </div>
+            <div className="mt-1 flex justify-between font-mono text-[11px] text-kui-fg-subtle tabular-nums">
+              <span>in {formatNumber(n.usage.input)}</span>
+              <span>out {formatNumber(n.usage.output)}</span>
+            </div>
+          </div>
+        ) : null}
+        {n.steps?.length ? (
+          <div>
+            <p className="mb-1.5 text-[11px] font-medium tracking-wide text-kui-fg-subtle uppercase">Steps</p>
+            <ol className="space-y-1.5">
+              {n.steps.map((step) => (
+                <li key={step.id} className="flex items-start gap-2 text-[13px] animate-kui-reveal">
+                  <span className="mt-0.5 flex size-4 shrink-0 items-center justify-center">
+                    <StepIcon status={step.status} />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className={cn("block", step.status === "pending" ? "text-kui-fg-subtle" : "text-kui-fg")}>{step.title}</span>
+                    {step.detail ? <span className="block truncate font-mono text-[11px] text-kui-fg-subtle">{step.detail}</span> : null}
+                  </span>
+                </li>
+              ))}
+            </ol>
+          </div>
+        ) : null}
+        {n.details}
+        {empty ? <p className="text-[13px] text-kui-fg-subtle">{nodeStateLabel[st]}</p> : null}
+      </div>
+    </div>
+  );
+}
+
+const POP_W = 300;
+const GAP = 10;
+type Rect = { x: number; y: number; w: number; h: number };
+
+/** Place a popover beside an anchor (viewport pixels): right, left, below or above — whichever fits. */
+function popoverPos(a: Rect, popH: number) {
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const clampTop = (t: number) => Math.max(8, Math.min(vh - popH - 8, t));
+  const clampLeft = (l: number) => Math.max(8, Math.min(vw - POP_W - 8, l));
+  if (a.x + a.w + GAP + POP_W <= vw - 8) return { left: a.x + a.w + GAP, top: clampTop(a.y) };
+  if (a.x - GAP - POP_W >= 8) return { left: a.x - GAP - POP_W, top: clampTop(a.y) };
+  if (a.y + a.h + GAP + popH <= vh - 8) return { left: clampLeft(a.x), top: a.y + a.h + GAP };
+  return { left: clampLeft(a.x), top: Math.max(8, a.y - GAP - popH) };
+}
+
+function DetailsPopover({
+  node,
+  getAnchor,
+  onClose,
+  render,
+}: {
+  node: AgentNode;
+  /** Anchor rect in viewport coordinates (re-read on scroll/resize). */
+  getAnchor: () => Rect | null;
+  onClose: () => void;
+  render?: (n: AgentNode) => React.ReactNode;
+}) {
+  const ref = React.useRef<HTMLDivElement>(null);
+  const [, force] = React.useReducer((x: number) => x + 1, 0);
+  const [popH, setPopH] = React.useState(320);
+  React.useLayoutEffect(() => {
+    if (ref.current) setPopH(ref.current.offsetHeight);
+  });
+  React.useEffect(() => {
+    window.addEventListener("scroll", force, true);
+    window.addEventListener("resize", force);
+    return () => {
+      window.removeEventListener("scroll", force, true);
+      window.removeEventListener("resize", force);
+    };
+  }, []);
+  const close = React.useRef(onClose);
+  close.current = onClose;
+  React.useEffect(() => {
+    // Clicks on graph nodes toggle/switch the popover themselves, so ignore them here.
+    const onPointer = (e: PointerEvent) => {
+      const t = e.target as Element;
+      if (ref.current?.contains(t) || t.closest?.("[data-kui-agent-node]")) return;
+      close.current();
+    };
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && close.current();
+    document.addEventListener("pointerdown", onPointer);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", onPointer);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, []);
+  const anchor = getAnchor();
+  if (!anchor || typeof document === "undefined") return null;
+  const pos = popoverPos(anchor, popH);
+  return createPortal(
+    <div
+      ref={ref}
+      role="dialog"
+      aria-label={`${node.name} details`}
+      className="fixed z-[90] animate-kui-pop"
+      style={{ left: pos.left, top: pos.top, width: Math.min(POP_W, window.innerWidth - 16) }}
+    >
+      {render ? render(node) : <AgentDetails node={node} onClose={onClose} />}
+    </div>,
+    document.body,
+  );
+}
+
 /** Animated tree of agents: who delegated to whom, who's working, and where work is flowing. */
 export function AgentGraph({
   nodes,
   links = [],
   direction = "right",
   nodeWidth = 216,
-  nodeHeight = 66,
+  nodeHeight: nodeHeightProp,
   levelGap = 64,
   siblingGap = 16,
   selectedId,
   onSelect,
+  showDetails = true,
+  renderDetails,
   className,
 }: AgentGraphProps) {
   const horizontal = direction === "right";
+  const hasMeta = nodes.some((n) => n.model || n.usage);
+  const nodeHeight = nodeHeightProp ?? (hasMeta ? 84 : 66);
+  const [openId, setOpenId] = React.useState<string | null>(null);
   const { depth, slot, levels, slots } = React.useMemo(() => layoutTree(nodes), [nodes]);
   const wrapRef = React.useRef<HTMLDivElement>(null);
   const [avail, setAvail] = React.useState<number | null>(null);
@@ -176,7 +399,7 @@ export function AgentGraph({
   const byId = new Map(nodes.map((n) => [n.id, n]));
 
   return (
-    <div ref={wrapRef} className={cn("w-full", className)}>
+    <div ref={wrapRef} className={cn("relative w-full", className)}>
       <div style={{ height: height * scale }}>
         <div className="relative origin-top-left" style={{ width, height, transform: `scale(${scale})` }}>
           <svg width={width} height={height} className="absolute inset-0 overflow-visible" aria-hidden>
@@ -219,13 +442,18 @@ export function AgentGraph({
               <button
                 key={n.id}
                 type="button"
-                onClick={() => onSelect?.(n.id)}
+                data-kui-agent-node=""
+                onClick={() => {
+                  onSelect?.(n.id);
+                  if (showDetails) setOpenId((o) => (o === n.id ? null : n.id));
+                }}
+                aria-expanded={showDetails ? openId === n.id : undefined}
                 className={cn(
                   "absolute flex cursor-pointer flex-col justify-center gap-1 overflow-hidden rounded-kui border bg-kui-surface px-3 text-left shadow-kui animate-kui-pop",
                   "transition-[border-color,background-color,box-shadow,opacity] duration-500 ease-kui-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kui-accent/40",
                   nodeStateStyle[st],
                   st === "queued" && "opacity-70",
-                  selected && "ring-2 ring-kui-fg/15",
+                  (selected || openId === n.id) && "ring-2 ring-kui-fg/15",
                 )}
                 style={{ left: p.x, top: p.y, width: nodeWidth, height: nodeHeight, animationDelay: `${(depth.get(n.id) ?? 0) * 90}ms` }}
               >
@@ -240,6 +468,7 @@ export function AgentGraph({
                 <span className="block truncate pl-[34px] text-xs text-kui-fg-subtle">
                   {st === "working" && n.activity ? <ShimmerText>{n.activity}</ShimmerText> : (n.activity ?? n.meta ?? nodeStateLabel[st])}
                 </span>
+                {nodeMetaLine(n) ? <span className="block truncate pl-[34px] font-mono text-[10.5px] text-kui-fg-subtle tabular-nums">{nodeMetaLine(n)}</span> : null}
                 {st === "working" ? (
                   <span className="absolute inset-x-0 bottom-0 h-[2px] overflow-hidden bg-kui-accent/10">
                     <span className="block h-full w-1/3 animate-kui-indeterminate bg-kui-accent" />
@@ -250,6 +479,19 @@ export function AgentGraph({
           })}
         </div>
       </div>
+      {openId && byId.get(openId) ? (
+        <DetailsPopover
+          node={byId.get(openId)!}
+          getAnchor={() => {
+            const box = wrapRef.current?.getBoundingClientRect();
+            if (!box) return null;
+            const p = pos(openId);
+            return { x: box.left + p.x * scale, y: box.top + p.y * scale, w: nodeWidth * scale, h: nodeHeight * scale };
+          }}
+          onClose={() => setOpenId(null)}
+          render={renderDetails}
+        />
+      ) : null}
     </div>
   );
 }
@@ -438,6 +680,9 @@ export interface AgentHubProps {
   sway?: boolean;
   selectedId?: string;
   onSelect?: (id: string) => void;
+  /** Open a details popover when an agent is clicked. Default true. */
+  showDetails?: boolean;
+  renderDetails?: (node: AgentNode) => React.ReactNode;
   className?: string;
 }
 
@@ -454,7 +699,8 @@ function tentacle(cx: number, cy: number, tx: number, ty: number, bend: number) 
 }
 
 /** Hub-and-spoke ("octopus") view: an orchestrator reaching out to the agents it coordinates. */
-export function AgentHub({ hub, agents, size = 560, sway = true, selectedId, onSelect, className }: AgentHubProps) {
+export function AgentHub({ hub, agents, size = 560, sway = true, selectedId, onSelect, showDetails = true, renderDetails, className }: AgentHubProps) {
+  const [openId, setOpenId] = React.useState<string | null>(null);
   const wrapRef = React.useRef<HTMLDivElement>(null);
   const [avail, setAvail] = React.useState<number | null>(null);
   React.useEffect(() => {
@@ -469,7 +715,7 @@ export function AgentHub({ hub, agents, size = 560, sway = true, selectedId, onS
   const hubR = 54;
   const orbit = size / 2 - 64;
   const nodeW = 150;
-  const nodeH = 52;
+  const nodeH = agents.some((a) => a.model || a.usage) ? 64 : 52;
 
   const card = (n: Omit<AgentNode, "parentId">, x: number, y: number, isHub = false, i = 0) => {
     const st = n.state ?? "idle";
@@ -477,14 +723,19 @@ export function AgentHub({ hub, agents, size = 560, sway = true, selectedId, onS
       <button
         key={n.id}
         type="button"
-        onClick={() => onSelect?.(n.id)}
+        data-kui-agent-node=""
+        onClick={() => {
+          onSelect?.(n.id);
+          if (showDetails) setOpenId((o) => (o === n.id ? null : n.id));
+        }}
+        aria-expanded={showDetails ? openId === n.id : undefined}
         className={cn(
           "absolute flex cursor-pointer items-center gap-2 overflow-hidden border bg-kui-surface text-left shadow-kui animate-kui-pop",
           "transition-[border-color,background-color,opacity] duration-500 ease-kui-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kui-accent/40",
           isHub ? "flex-col justify-center gap-1 rounded-full text-center" : "rounded-kui px-2.5",
           nodeStateStyle[st],
           st === "queued" && "opacity-70",
-          selectedId === n.id && "ring-2 ring-kui-fg/15",
+          (selectedId === n.id || openId === n.id) && "ring-2 ring-kui-fg/15",
         )}
         style={
           isHub
@@ -498,6 +749,7 @@ export function AgentHub({ hub, agents, size = 560, sway = true, selectedId, onS
           <span className="block truncate text-[11px] text-kui-fg-subtle">
             {st === "working" && n.activity ? <ShimmerText>{n.activity}</ShimmerText> : (n.activity ?? n.role ?? nodeStateLabel[st])}
           </span>
+          {!isHub && nodeMetaLine(n) ? <span className="block truncate font-mono text-[10px] text-kui-fg-subtle tabular-nums">{nodeMetaLine(n)}</span> : null}
         </span>
         {st === "working" && !isHub ? (
           <span className="absolute inset-x-0 bottom-0 h-[2px] overflow-hidden bg-kui-accent/10">
@@ -509,7 +761,7 @@ export function AgentHub({ hub, agents, size = 560, sway = true, selectedId, onS
   };
 
   return (
-    <div ref={wrapRef} className={cn("w-full", className)}>
+    <div ref={wrapRef} className={cn("relative w-full", className)}>
       <div className="mx-auto" style={{ width: size * scale, height: size * scale }}>
         <div className="relative origin-top-left" style={{ width: size, height: size, transform: `scale(${scale})` }}>
           <svg width={size} height={size} className="absolute inset-0 overflow-visible" aria-hidden>
@@ -544,6 +796,32 @@ export function AgentHub({ hub, agents, size = 560, sway = true, selectedId, onS
           {card(hub, c, c, true)}
         </div>
       </div>
+      {openId ? hubPopover() : null}
     </div>
   );
+
+  // A plain function (not a component) so the popover isn't remounted on every render.
+  function hubPopover() {
+    const node = [hub, ...agents].find((a) => a.id === openId);
+    if (!node) return null;
+    const i = agents.findIndex((a) => a.id === openId);
+    let rect: Rect = { x: c - hubR, y: c - hubR, w: hubR * 2, h: hubR * 2 };
+    if (i >= 0) {
+      const ang = (i / agents.length) * Math.PI * 2 - Math.PI / 2;
+      rect = { x: c + Math.cos(ang) * orbit - nodeW / 2, y: c + Math.sin(ang) * orbit - nodeH / 2, w: nodeW, h: nodeH };
+    }
+    return (
+      <DetailsPopover
+        node={node}
+        getAnchor={() => {
+          const box = wrapRef.current?.getBoundingClientRect();
+          if (!box) return null;
+          const offset = (box.width - size * scale) / 2; // the hub is centered in the wrapper
+          return { x: box.left + offset + rect.x * scale, y: box.top + rect.y * scale, w: rect.w * scale, h: rect.h * scale };
+        }}
+        onClose={() => setOpenId(null)}
+        render={renderDetails}
+      />
+    );
+  }
 }

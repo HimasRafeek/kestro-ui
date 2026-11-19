@@ -12,6 +12,7 @@ import { VoiceWidgetDemo } from "./demos/voice-widget-demo";
 import { JarvisDemo } from "./demos/jarvis-demo";
 import { TeamDemo } from "./demos/team-demo";
 import { FlightDeckDemo } from "./demos/flight-deck-demo";
+import { UsageDemo } from "./demos/usage-demo";
 import { Gallery } from "./demos/gallery";
 import { Banner } from "./site/banner";
 
@@ -19,6 +20,7 @@ const demos: Record<string, { title: string; el: React.ReactNode }> = {
   chat: { title: "Agent Chat", el: <ChatDemo /> },
   team: { title: "Agent team", el: <TeamDemo /> },
   deck: { title: "Flight deck", el: <FlightDeckDemo /> },
+  usage: { title: "Usage dashboard", el: <UsageDemo /> },
   jarvis: { title: "Voice console", el: <JarvisDemo /> },
   run: { title: "Agent Run", el: <RunDemo /> },
   voice: { title: "Voice & Widget", el: <VoiceWidgetDemo /> },

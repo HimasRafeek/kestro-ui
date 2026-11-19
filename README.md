@@ -30,16 +30,18 @@ Agents do more than chat. They reason, call tools, ask before acting, cite sourc
   </tr>
   <tr>
     <td width="50%"><img src=".github/assets/deck.png" alt="Flight deck HUD with attitude indicator, telemetry and event log" /><br /><sub><b>Flight deck</b>: attitude indicator, telemetry and an event log</sub></td>
-    <td width="50%"><img src=".github/assets/run.png" alt="Agent run with plan, approval and usage" /><br /><sub><b>Agent run</b>: a background workflow that stops to ask</sub></td>
+    <td width="50%"><img src=".github/assets/usage.png" alt="Usage dashboard with spend by model, context window and per-model table" /><br /><sub><b>Usage dashboard</b>: tokens, spend and latency per model and agent</sub></td>
   </tr>
 </table>
 
 ## Features
 
-- **One component or seventy.** `<AgentChat />` renders a complete agent chat. Every piece inside it is exported, so you can compose your own layout.
+- **One component or a hundred.** `<AgentChat />` renders a complete agent chat. Every piece inside it is exported, so you can compose your own layout.
 - **Any backend.** Messages use a `parts` format compatible with the Vercel AI SDK `useChat()`, and plain `{ role, content }` objects work too.
 - **Human in the loop.** Approvals for payments, emails, bookings and deletions, structured questions, plans with live progress, and hand-off to a person.
-- **Multi-agent views.** `AgentGraph` (tree), `AgentHub` (hub-and-spoke) and `TraceTree` (nested LLM/tool spans with a live timeline).
+- **Multi-agent views.** `AgentGraph` (tree), `AgentHub` (hub-and-spoke) and `TraceTree` (nested LLM/tool spans with a live timeline). Click any agent for its activity, model, token usage and steps.
+- **Usage, cost and time.** Token breakdowns, context windows, per-model usage tables, spend charts, run timers, latency breakdowns and tiny inline chips for every metric.
+- **Tasks.** A task creator (schedule, permissions, budget), a drag-and-drop task board and a task list.
 - **Voice and instruments.** `VoicePanel`, `AttitudeIndicator`, gauges, telemetry charts, an event log and a command console. All of them react to real microphone input.
 - **Smooth streaming.** `StreamingMarkdown` paces bursty token streams into an even reveal. Motion respects `prefers-reduced-motion`.
 - **No heavy dependencies.** Markdown, syntax highlighting and citations are built in, and nothing uses `dangerouslySetInnerHTML`.
@@ -102,12 +104,18 @@ See [Connect your agent](https://himasrafeek.github.io/kestro-ui/#/docs/backends
 | Input | `PromptInput` `ModelSelector` `Suggestions` `EmptyState` `Attachment` |
 | Transparency | `Reasoning` `ToolCall` `ToolCallRow` `Sources` `SourceChip` `InlineCitation` |
 | Human in the loop | `ToolApproval` `AgentQuestion` `HandoffBanner` |
+| Tasks | `TaskCreator` `TaskBoard` `TaskCard` `TaskList` |
+| Usage & cost | `TokenUsage` `ContextWindow` `ModelUsageTable` `UsageChart` `StatTile` `TokenCounter` |
+| Time | `RunTimer` `LatencyBreakdown` `TimeAgo` |
+| Agents & models | `AgentCard` `AgentPicker` `ModelCard` `ModelCompare` `ModelBadge` |
+| Tiny chips | `CostTag` `LatencyTag` `DurationTag` `TokensPerSecond` `RequestCount` `TrendTag` `ContextPill` `MiniBar` `AgentChip` `CapabilityTags` `MessageMeta` |
 | Workflows | `RunCard` `TaskPlan` `AgentHeader` `UsageMeter` `SegmentedMeter` `ActivityFeed` `Artifact` `ConversationList` |
-| Multi-agent | `AgentGraph` `AgentHub` `TraceTree` `AgentAvatar` `AgentRoster` `AgentHandoff` |
+| Multi-agent | `AgentGraph` `AgentHub` `AgentDetails` `TraceTree` `AgentAvatar` `AgentRoster` `AgentHandoff` |
+| Images | `ImageGallery` `ImagePreview` `Lightbox` |
 | Voice | `VoicePanel` `VoiceOrb` `VoiceDial` `VoiceWave` `useMicrophone` `useAudioAnalyser` |
 | HUD | `AttitudeIndicator` `AgentCore` `HudPanel` `RadialGauge` `TelemetryChart` `HudStat` `Sparkline` `Waveform` `EventLog` `CommandConsole` `BootSequence` `DataTicker` |
 | Embed | `ChatWidget` |
-| Primitives | `Button` `IconButton` `Badge` `StatusDot` `Spinner` `Tooltip` `Kbd` `Card` `ShimmerText` `Collapse` |
+| Primitives | `Button` `IconButton` `Badge` `StatusDot` `Spinner` `Tooltip` `Kbd` `Card` `ShimmerText` `Collapse` `Switch` `SegmentedControl` |
 
 Every component has a live example, its source and a full props table in the [documentation](https://himasrafeek.github.io/kestro-ui/).
 

@@ -39,3 +39,7 @@ export * from "./components/instruments";
 export * from "./components/media";
 export * from "./components/controls";
 export * from "./components/tasks";
+export * from "./components/metrics";
+export * from "./components/timing";
+export * from "./components/directory";
+export * from "./components/atoms";

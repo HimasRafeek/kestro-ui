@@ -1798,6 +1798,914 @@ Banner for escalating a conversation from AI to a human (support use-cases).
 
 ---
 
+# TokenUsage
+
+> Category: Usage & cost · Package: `kestro-ui`
+
+Token breakdown — input, cached, reasoning, output — with per-kind cost from your pricing. TokenCounter is the inline version.
+
+## Import
+
+```tsx
+import { TokenUsage, TokenCounter } from "kestro-ui";
+```
+
+## Example: token-usage
+
+```tsx
+import { TokenCounter, TokenUsage } from "kestro-ui";
+
+export default function Example() {
+  return (
+    <div className="w-full max-w-md space-y-4">
+      <TokenUsage
+        title="This conversation"
+        caption="Sonata Large · 14 turns"
+        input={48_200}
+        cached={31_000}
+        reasoning={6_400}
+        output={9_850}
+        pricing={{ input: 3, output: 15, cached: 0.3 }}
+      />
+      <p className="flex flex-wrap items-center gap-2 text-sm text-kui-fg-muted">
+        Inline, under a message: <TokenCounter tokens={1_217} cost={0.0042} detail="812 in · 405 out" />
+      </p>
+    </div>
+  );
+}
+```
+
+## API
+
+### <TokenUsage />
+
+Token breakdown (input, cached, reasoning, output) with per-kind cost.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `input` **(required)** | `number` | — |  |
+| `output` **(required)** | `number` | — |  |
+| `cached` | `number` | `0` | Input tokens served from cache. |
+| `reasoning` | `number` | `0` | Hidden reasoning / thinking tokens. |
+| `pricing` | `TokenPricing` | — | Pricing per 1M tokens — used to compute cost when `cost` is omitted. |
+| `cost` | `number` | — | Total cost override. |
+| `currency` | `string` | `"$"` |  |
+| `title` | `ReactNode` | `"Token usage"` |  |
+| `caption` | `ReactNode` | — | Small caption, e.g. the model name or period. |
+| `className` | `string` | — |  |
+
+### <TokenCounter />
+
+Inline "1.2k tok · $0.004" chip for messages, tool calls and runs.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `tokens` **(required)** | `number` | — |  |
+| `cost` | `number` | — |  |
+| `currency` | `string` | `"$"` |  |
+| `detail` | `string` | — | Optional detail shown on hover, e.g. "812 in · 405 out". |
+| `className` | `string` | — |  |
+
+---
+
+# ContextWindow
+
+> Category: Usage & cost · Package: `kestro-ui`
+
+What's filling the model's context — system prompt, tools, files, conversation — as a bar or a 100-cell grid, with a warning before it runs out.
+
+## Import
+
+```tsx
+import { ContextWindow } from "kestro-ui";
+```
+
+## Example: context-window
+
+```tsx
+import { useEffect, useState } from "react";
+import { ContextWindow } from "kestro-ui";
+
+export default function Example() {
+  const [history, setHistory] = useState(62_000);
+
+  // The conversation grows until it nears the limit, then resets
+  useEffect(() => {
+    const id = setInterval(() => setHistory((h) => (h > 150_000 ? 62_000 : h + 9_000)), 1200);
+    return () => clearInterval(id);
+  }, []);
+
+  const segments = [
+    { id: "system", label: "System prompt", tokens: 3_200 },
+    { id: "tools", label: "Tool definitions", tokens: 11_400 },
+    { id: "files", label: "Attached files", tokens: 18_600 },
+    { id: "history", label: "Conversation", tokens: history },
+  ];
+
+  return (
+    <div className="grid w-full max-w-2xl gap-4 sm:grid-cols-2">
+      <ContextWindow segments={segments} limit={200_000} />
+      <ContextWindow segments={segments} limit={200_000} variant="grid" title="Same, as a grid" />
+    </div>
+  );
+}
+```
+
+## API
+
+### <ContextWindow />
+
+What's filling the model's context window — system prompt, history, tools, files — and how much is left.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `segments` **(required)** | `ContextSegment[]` | — |  |
+| `limit` **(required)** | `number` | — | Model context size in tokens. |
+| `title` | `ReactNode` | `"Context window"` |  |
+| `variant` | `"bar" \| "grid"` | `"bar"` | "bar" (default) or "grid" (100 cells, one per 1%). |
+| `warnAt` | `number` | `0.8` | Usage ratio (0–1) from which to warn. Default 0.8. |
+| `warning` | `((free: number) => ReactNode)` | `(free) => `Only ${formatNumber(free)} tokens left — older messages will be summarized soon.`` | Warning text; receives the free token count. |
+| `className` | `string` | — |  |
+
+---
+
+# ModelUsageTable
+
+> Category: Usage & cost · Package: `kestro-ui`
+
+Usage per model: requests, input and output tokens, latency, share of spend and cost, with totals.
+
+## Import
+
+```tsx
+import { ModelUsageTable } from "kestro-ui";
+```
+
+## Example: model-usage
+
+```tsx
+import { ModelUsageTable } from "kestro-ui";
+
+export default function Example() {
+  return (
+    <ModelUsageTable
+      className="max-w-3xl"
+      period="Last 30 days"
+      rows={[
+        { id: "large", name: "Sonata Large", provider: "Sonata", requests: 8_412, inputTokens: 41_200_000, outputTokens: 6_300_000, cost: 218.1, latency: 1840, delta: 12 },
+        { id: "fast", name: "Sonata Fast", provider: "Sonata", requests: 31_906, inputTokens: 52_800_000, outputTokens: 9_100_000, cost: 61.4, latency: 620, delta: -4 },
+        { id: "vision", name: "Lumen Vision", provider: "Lumen", requests: 2_244, inputTokens: 9_700_000, outputTokens: 1_200_000, cost: 34.9, latency: 2310, delta: 31 },
+        { id: "embed", name: "Orbit Embed", provider: "Orbit", requests: 120_480, inputTokens: 88_000_000, outputTokens: 0, cost: 8.8, latency: 90 },
+      ]}
+    />
+  );
+}
+```
+
+## API
+
+### <ModelUsageTable />
+
+Usage per model: requests, tokens, cost, share of spend and latency, with a totals row.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `rows` **(required)** | `ModelUsageRow[]` | — |  |
+| `currency` | `string` | `"$"` |  |
+| `period` | `ReactNode` | — | Period caption, e.g. "Last 30 days". |
+| `onSelect` | `((id: string) => void)` | — |  |
+| `className` | `string` | — |  |
+
+---
+
+# UsageChart
+
+> Category: Usage & cost · Package: `kestro-ui`
+
+Stacked bars of tokens or spend over time, split by model or agent, with hover readouts.
+
+## Import
+
+```tsx
+import { UsageChart } from "kestro-ui";
+```
+
+## Example: usage-chart
+
+```tsx
+import { UsageChart } from "kestro-ui";
+
+const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const data = days.map((label, i) => ({
+  label,
+  values: {
+    large: [4.1, 5.3, 4.8, 6.2, 7.4, 2.1, 1.8][i],
+    fast: [1.2, 1.6, 1.4, 1.9, 2.3, 0.8, 0.6][i],
+    vision: [0.4, 0.9, 0.5, 1.1, 0.7, 0.2, 0.1][i],
+  },
+}));
+
+export default function Example() {
+  return (
+    <UsageChart
+      className="max-w-2xl"
+      title="Spend this week"
+      data={data}
+      format={(v) => `$${v.toFixed(2)}`}
+      series={[
+        { id: "large", label: "Sonata Large" },
+        { id: "fast", label: "Sonata Fast" },
+        { id: "vision", label: "Lumen Vision" },
+      ]}
+    />
+  );
+}
+```
+
+## API
+
+### <UsageChart />
+
+Stacked bar chart of usage over time — tokens or spend per day, split by model or agent.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `data` **(required)** | `UsagePoint[]` | — |  |
+| `series` **(required)** | `UsageSeries[]` | — |  |
+| `title` | `ReactNode` | — |  |
+| `format` | `((v: number) => string)` | `formatNumber` | Format values (axis + tooltip). Default compact number. |
+| `height` | `number` | `180` |  |
+| `className` | `string` | — |  |
+
+---
+
+# StatTile
+
+> Category: Usage & cost · Package: `kestro-ui`
+
+Dashboard KPI tile: label, big value, trend and sparkline.
+
+## Import
+
+```tsx
+import { StatTile } from "kestro-ui";
+```
+
+## Example: stat-tile
+
+```tsx
+import { StatTile } from "kestro-ui";
+import { CircleCheck, Clock, Coins, MessagesSquare } from "lucide-react";
+
+export default function Example() {
+  return (
+    <div className="grid w-full max-w-3xl gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <StatTile label="Conversations" icon={<MessagesSquare />} value="12,480" delta={8.2} trend={[30, 34, 31, 38, 42, 40, 47]} />
+      <StatTile label="Resolved by agent" icon={<CircleCheck />} value="71%" delta={3.1} trend={[61, 63, 64, 66, 68, 70, 71]} />
+      <StatTile label="Median response" icon={<Clock />} value="1.8s" delta={-12} invertDelta trend={[2.4, 2.2, 2.3, 2.0, 1.9, 1.9, 1.8]} />
+      <StatTile label="Spend" icon={<Coins />} value="$323" delta={14} invertDelta trend={[38, 41, 44, 40, 48, 52, 60]} caption="Last 7 days" />
+    </div>
+  );
+}
+```
+
+## API
+
+### <StatTile />
+
+Dashboard KPI tile: label, big value, change and a sparkline.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `label` **(required)** | `ReactNode` | — |  |
+| `value` **(required)** | `ReactNode` | — |  |
+| `delta` | `number` | — | Percent change vs. previous period. |
+| `invertDelta` | `false \| true` | — |  |
+| `trend` | `number[]` | — | Sparkline data. |
+| `icon` | `ReactNode` | — |  |
+| `caption` | `ReactNode` | — |  |
+| `className` | `string` | — |  |
+
+---
+
+# Metric chips
+
+> Category: Usage & cost · Package: `kestro-ui`
+
+Tiny inline building blocks: cost, latency, duration, speed, requests, trends, context, mini bars, model and agent chips, and a one-line message footer.
+
+## Import
+
+```tsx
+import { CostTag, LatencyTag, DurationTag, TokensPerSecond, RequestCount, TrendTag, ContextPill, MiniBar, AgentChip, CapabilityTags, MessageMeta, TimeAgo } from "kestro-ui";
+```
+
+## Example: metric-chips
+
+```tsx
+import {
+  AgentChip,
+  CapabilityTags,
+  ContextPill,
+  CostTag,
+  DurationTag,
+  LatencyTag,
+  MessageMeta,
+  MiniBar,
+  ModelBadge,
+  RequestCount,
+  TimeAgo,
+  TokenCounter,
+  TokensPerSecond,
+  TrendTag,
+} from "kestro-ui";
+
+function Row({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-wrap items-center gap-2 border-b border-kui-border py-3 last:border-0">
+      <span className="w-24 shrink-0 text-xs text-kui-fg-subtle">{label}</span>
+      {children}
+    </div>
+  );
+}
+
+export default function Example() {
+  return (
+    <div className="w-full max-w-2xl rounded-kui border border-kui-border bg-kui-surface px-4">
+      <Row label="Tokens & cost">
+        <TokenCounter tokens={1_217} cost={0.0042} />
+        <CostTag value={0.042} />
+        <RequestCount value={1_204} />
+      </Row>
+      <Row label="Time">
+        <LatencyTag ms={420} />
+        <LatencyTag ms={1_900} label="TTFT" />
+        <LatencyTag ms={4_800} />
+        <DurationTag seconds={38} />
+        <TokensPerSecond value={62} />
+        <span className="text-xs text-kui-fg-muted">
+          Updated <TimeAgo date={Date.now() - 3 * 60_000} />
+        </span>
+      </Row>
+      <Row label="Trends">
+        <TrendTag value={12.5} />
+        <TrendTag value={-3.2} />
+        <TrendTag value={18} invert />
+        <TrendTag value={-22} invert />
+      </Row>
+      <Row label="Meters">
+        <ContextPill used={62_000} limit={200_000} />
+        <ContextPill used={182_000} limit={200_000} />
+        <MiniBar value={64} />
+        <MiniBar value={91} tone="danger" width={48} />
+      </Row>
+      <Row label="Models">
+        <ModelBadge name="Sonata Large" provider="Sonata" context={200_000} />
+        <ModelBadge name="Lumen Vision" provider="Lumen" />
+        <CapabilityTags capabilities={["tools", "vision", "reasoning", "json"]} />
+      </Row>
+      <Row label="Agents">
+        <AgentChip name="Atlas" state="working" />
+        <AgentChip name="Ledger" state="waiting" />
+        <AgentChip name="Scout" state="online" />
+      </Row>
+      <Row label="Message footer">
+        <MessageMeta model="Sonata Large" provider="Sonata" tokens={1_217} cost={0.0042} duration={3.4} speed={58} />
+      </Row>
+    </div>
+  );
+}
+```
+
+## API
+
+### <CostTag />
+
+"$0.042"
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `value` **(required)** | `number` | — |  |
+| `currency` | `string` | `"$"` |  |
+| `className` | `string` | — |  |
+
+### <LatencyTag />
+
+"842ms" — green, ochre or red by threshold.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `ms` **(required)** | `number` | — |  |
+| `thresholds` | `[number, number]` | `[800, 2500]` | [good, slow] thresholds in ms. Default [800, 2500]. |
+| `label` | `string` | — |  |
+| `className` | `string` | — |  |
+
+### <DurationTag />
+
+"4.2s" with a clock.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `seconds` **(required)** | `number` | — |  |
+| `className` | `string` | — |  |
+
+### <TokensPerSecond />
+
+"48 tok/s"
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `value` **(required)** | `number` | — |  |
+| `className` | `string` | — |  |
+
+### <RequestCount />
+
+"1,204 req"
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `value` **(required)** | `number` | — |  |
+| `label` | `string` | `"req"` |  |
+| `className` | `string` | — |  |
+
+### <TrendTag />
+
+"▲ 12.5%" — green when it's good news.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `value` **(required)** | `number` | — | Percent change, e.g. 12.5 or -3. |
+| `invert` | `false \| true` | — | For metrics where lower is better (cost, latency). |
+| `className` | `string` | — |  |
+
+### <ContextPill />
+
+Mini ring + percent, e.g. context used.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `used` **(required)** | `number` | — |  |
+| `limit` **(required)** | `number` | — |  |
+| `label` | `string` | `"ctx"` |  |
+| `className` | `string` | — |  |
+
+### <MiniBar />
+
+Thin inline percentage bar.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `value` **(required)** | `number` | — |  |
+| `max` | `number` | `100` |  |
+| `tone` | `"accent" \| "success" \| "warning" \| "danger" \| "info" \| "muted"` | `"accent"` |  |
+| `width` | `number` | `64` |  |
+| `className` | `string` | — |  |
+
+### <AgentChip />
+
+Mini avatar + name + status dot.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `name` **(required)** | `string` | — |  |
+| `state` | `"idle" \| "online" \| "thinking" \| "working" \| "waiting" \| "error" \| "offline"` | — |  |
+| `avatar` | `string` | — |  |
+| `className` | `string` | — |  |
+
+### <CapabilityTags />
+
+Icon-only capability row with tooltips (vision, tools, reasoning…).
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `capabilities` **(required)** | `ModelCapability[]` | — |  |
+| `className` | `string` | — |  |
+
+### <MessageMeta />
+
+One-line footer for an answer or run: model · tokens · cost · time · speed.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `model` | `string` | — |  |
+| `provider` | `string` | — |  |
+| `tokens` | `number` | — |  |
+| `cost` | `number` | — |  |
+| `duration` | `number` | — | Seconds. |
+| `speed` | `number` | — | Tokens per second. |
+| `currency` | `string` | — |  |
+| `className` | `string` | — |  |
+
+### <TimeAgo />
+
+Relative time ("3 min ago") that updates itself; hover shows the exact time.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `date` **(required)** | `string \| number \| Date` | — |  |
+| `locale` | `string` | — |  |
+| `className` | `string` | — |  |
+
+---
+
+# RunTimer
+
+> Category: Time · Package: `kestro-ui`
+
+Live elapsed timer for a run, with an estimate of time left and an optional timeout ring.
+
+## Import
+
+```tsx
+import { RunTimer } from "kestro-ui";
+```
+
+## Example: run-timer
+
+```tsx
+import { useEffect, useState } from "react";
+import { RunTimer } from "kestro-ui";
+
+export default function Example() {
+  const [startedAt] = useState(() => Date.now() - 83_000);
+  const [progress, setProgress] = useState(40);
+
+  useEffect(() => {
+    const id = setInterval(() => setProgress((p) => (p >= 95 ? 40 : p + 1)), 800);
+    return () => clearInterval(id);
+  }, []);
+
+  return (
+    <div className="grid w-full max-w-2xl gap-6 rounded-kui border border-kui-border bg-kui-surface p-5 sm:grid-cols-3">
+      <RunTimer startedAt={startedAt} progress={progress} label="Research run" />
+      <RunTimer startedAt={startedAt} timeout={120_000} label="Timeout 2 min" />
+      <RunTimer elapsed={754_000} running={false} label="Finished in" />
+    </div>
+  );
+}
+```
+
+## API
+
+### <RunTimer />
+
+Live elapsed timer for an agent run, with an estimate of time left and an optional timeout ring.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `startedAt` | `number` | — | When the run started (ms since epoch). The timer ticks while `running`. |
+| `elapsed` | `number` | — | Or pass a fixed elapsed time in ms (e.g. for finished runs). |
+| `running` | `false \| true` | `true` |  |
+| `progress` | `number` | — | Progress 0–100 — used to estimate the time remaining. |
+| `timeout` | `number` | — | Max run time in ms; shows a ring and warns as it gets close. |
+| `label` | `ReactNode` | `"Elapsed"` |  |
+| `size` | `"sm" \| "md"` | `"md"` |  |
+| `className` | `string` | — |  |
+
+---
+
+# LatencyBreakdown
+
+> Category: Time · Package: `kestro-ui`
+
+Where the time went in one response: queue, first token, tools and generation, plus tokens per second.
+
+## Import
+
+```tsx
+import { LatencyBreakdown } from "kestro-ui";
+```
+
+## Example: latency-breakdown
+
+```tsx
+import { LatencyBreakdown } from "kestro-ui";
+
+export default function Example() {
+  return (
+    <div className="grid w-full max-w-2xl gap-4 sm:grid-cols-2">
+      <LatencyBreakdown
+        title="Fast answer"
+        outputTokens={420}
+        segments={[
+          { id: "queue", label: "Queue", ms: 40 },
+          { id: "ttft", label: "First token", ms: 310 },
+          { id: "generation", label: "Generation", ms: 3_900 },
+        ]}
+      />
+      <LatencyBreakdown
+        title="Answer with tools"
+        outputTokens={980}
+        segments={[
+          { id: "queue", label: "Queue", ms: 60 },
+          { id: "ttft", label: "First token", ms: 540 },
+          { id: "tools", label: "Tools (3)", ms: 4_200, tone: "warning" },
+          { id: "generation", label: "Generation", ms: 6_100 },
+        ]}
+      />
+    </div>
+  );
+}
+```
+
+## API
+
+### <LatencyBreakdown />
+
+Where the time went in one response: queue, time to first token, generation, tools.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `segments` **(required)** | `LatencySegment[]` | — |  |
+| `outputTokens` | `number` | — | Output tokens, to show tokens per second for the generation phase. |
+| `generationId` | `string` | `"generation"` | Which segment is generation (for tokens/sec). Default "generation". |
+| `title` | `ReactNode` | `"Response time"` |  |
+| `className` | `string` | — |  |
+
+---
+
+# AgentCard
+
+> Category: Agents & models · Package: `kestro-ui`
+
+Agent profile: identity, live status, model, tools and key stats, with actions.
+
+## Import
+
+```tsx
+import { AgentCard } from "kestro-ui";
+```
+
+## Example: agent-card
+
+```tsx
+import { useState } from "react";
+import { AgentCard, Button, type AgentProfile } from "kestro-ui";
+
+const agents: AgentProfile[] = [
+  {
+    id: "atlas",
+    name: "Atlas",
+    role: "Travel concierge",
+    description: "Finds flights and hotels, watches prices and books with your approval.",
+    state: "online",
+    model: "Sonata Large",
+    tools: ["search_flights", "search_hotels", "book", "calendar"],
+    stats: [
+      { label: "Tasks", value: "1,204" },
+      { label: "Success", value: "97%" },
+      { label: "Avg time", value: "38s" },
+    ],
+  },
+  {
+    id: "ledger",
+    name: "Ledger",
+    role: "Finance assistant",
+    description: "Reconciles payouts, chases invoices and flags anything unusual.",
+    state: "working",
+    model: "Sonata Fast",
+    tools: ["stripe", "sheets", "email", "bank_feed", "slack"],
+    stats: [
+      { label: "Tasks", value: "486" },
+      { label: "Success", value: "99%" },
+      { label: "Saved", value: "$12k" },
+    ],
+  },
+];
+
+export default function Example() {
+  const [selected, setSelected] = useState("atlas");
+  return (
+    <div className="grid w-full max-w-2xl gap-4 sm:grid-cols-2">
+      {agents.map((a) => (
+        <AgentCard
+          key={a.id}
+          agent={a}
+          selected={selected === a.id}
+          onSelect={setSelected}
+          actions={
+            <>
+              <Button size="xs" variant="outline">Settings</Button>
+              <Button size="xs" variant="ghost">Run history</Button>
+            </>
+          }
+        />
+      ))}
+    </div>
+  );
+}
+```
+
+## API
+
+### <AgentCard />
+
+Profile card for an agent: identity, status, model, tools and key stats.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `agent` **(required)** | `AgentProfile` | — |  |
+| `selected` | `false \| true` | — |  |
+| `onSelect` | `((id: string) => void)` | — |  |
+| `actions` | `ReactNode` | — | Footer actions (buttons). |
+| `maxTools` | `number` | `4` | Max tool chips before "+N". Default 4. |
+| `className` | `string` | — |  |
+
+---
+
+# AgentPicker
+
+> Category: Agents & models · Package: `kestro-ui`
+
+Searchable, keyboard-friendly list for choosing which agent handles something.
+
+## Import
+
+```tsx
+import { AgentPicker } from "kestro-ui";
+```
+
+## Example: agent-picker
+
+```tsx
+import { useState } from "react";
+import { AgentPicker } from "kestro-ui";
+
+export default function Example() {
+  const [agent, setAgent] = useState("support");
+  return (
+    <div className="w-full max-w-md space-y-2">
+      <AgentPicker
+        value={agent}
+        onValueChange={setAgent}
+        agents={[
+          { id: "support", name: "Support", role: "Customer care", description: "Refunds, orders and returns", state: "online", model: "Sonata Fast" },
+          { id: "atlas", name: "Atlas", role: "Travel", description: "Flights, hotels, itineraries", state: "working", model: "Sonata Large" },
+          { id: "ledger", name: "Ledger", role: "Finance", description: "Invoices and reconciliation", state: "idle", model: "Sonata Fast" },
+          { id: "scout", name: "Scout", role: "Research", description: "Market and competitor research", state: "online", model: "Sonata Large", tools: ["web_search"] },
+          { id: "lumen", name: "Lumen", role: "Design", description: "Reads screenshots and mockups", state: "offline", model: "Lumen Vision" },
+        ]}
+      />
+      <p className="text-sm text-kui-fg-muted">Assigned to: {agent}</p>
+    </div>
+  );
+}
+```
+
+## API
+
+### <AgentPicker />
+
+Searchable list for choosing which agent handles something.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `agents` **(required)** | `AgentProfile[]` | — |  |
+| `value` | `string` | — |  |
+| `defaultValue` | `string` | — |  |
+| `onValueChange` | `((id: string) => void)` | — |  |
+| `placeholder` | `string` | `"Search agents…"` |  |
+| `maxHeight` | `number` | `320` | Max list height before scrolling. Default 320. |
+| `className` | `string` | — |  |
+
+---
+
+# ModelCard
+
+> Category: Agents & models · Package: `kestro-ui`
+
+Model spec card: context size, price per 1M tokens, speed, quality and capabilities.
+
+## Import
+
+```tsx
+import { ModelCard, ModelBadge } from "kestro-ui";
+```
+
+## Example: model-card
+
+```tsx
+import { useState } from "react";
+import { ModelCard, type ModelInfo } from "kestro-ui";
+
+const models: ModelInfo[] = [
+  {
+    id: "large",
+    name: "Sonata Large",
+    provider: "Sonata",
+    description: "Best for complex, multi-step work with many tools.",
+    context: 200_000,
+    pricing: { input: 3, output: 15 },
+    speed: 62,
+    quality: 5,
+    capabilities: ["tools", "vision", "reasoning", "json"],
+    badge: "Default",
+  },
+  {
+    id: "fast",
+    name: "Sonata Fast",
+    provider: "Sonata",
+    description: "Quick, low-cost answers for everyday requests.",
+    context: 128_000,
+    pricing: { input: 0.25, output: 1.25 },
+    speed: 180,
+    quality: 3,
+    capabilities: ["tools", "json", "fast"],
+  },
+];
+
+export default function Example() {
+  const [selected, setSelected] = useState("large");
+  return (
+    <div className="grid w-full max-w-2xl gap-4 sm:grid-cols-2">
+      {models.map((m) => (
+        <ModelCard key={m.id} model={m} selected={selected === m.id} onSelect={setSelected} />
+      ))}
+    </div>
+  );
+}
+```
+
+## API
+
+### <ModelCard />
+
+Spec card for a model: context, pricing, speed, quality and capabilities.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `model` **(required)** | `ModelInfo` | — |  |
+| `selected` | `false \| true` | — |  |
+| `onSelect` | `((id: string) => void)` | — |  |
+| `currency` | `string` | `"$"` |  |
+| `className` | `string` | — |  |
+
+### <ModelBadge />
+
+Inline model chip: provider tile, name and optional context size.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `name` **(required)** | `string` | — |  |
+| `provider` | `string` | — |  |
+| `context` | `number` | — |  |
+| `className` | `string` | — |  |
+
+---
+
+# ModelCompare
+
+> Category: Agents & models · Package: `kestro-ui`
+
+Side-by-side model table that highlights the best value in each column.
+
+## Import
+
+```tsx
+import { ModelCompare } from "kestro-ui";
+```
+
+## Example: model-compare
+
+```tsx
+import { useState } from "react";
+import { ModelCompare } from "kestro-ui";
+
+export default function Example() {
+  const [selected, setSelected] = useState("large");
+  return (
+    <ModelCompare
+      className="max-w-3xl"
+      selectedId={selected}
+      onSelect={setSelected}
+      models={[
+        { id: "large", name: "Sonata Large", provider: "Sonata", context: 200_000, pricing: { input: 3, output: 15 }, speed: 62, quality: 5, capabilities: ["tools", "vision", "reasoning"], badge: "Default" },
+        { id: "fast", name: "Sonata Fast", provider: "Sonata", context: 128_000, pricing: { input: 0.25, output: 1.25 }, speed: 180, quality: 3, capabilities: ["tools"] },
+        { id: "vision", name: "Lumen Vision", provider: "Lumen", context: 64_000, pricing: { input: 1.5, output: 6 }, speed: 95, quality: 4, capabilities: ["tools", "vision"] },
+        { id: "mini", name: "Orbit Mini", provider: "Orbit", context: 32_000, pricing: { input: 0.1, output: 0.4 }, speed: 240, quality: 2, capabilities: [] },
+      ]}
+    />
+  );
+}
+```
+
+## API
+
+### <ModelCompare />
+
+Side-by-side model comparison. The best value in each numeric column is highlighted.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `models` **(required)** | `ModelInfo[]` | — |  |
+| `selectedId` | `string` | — |  |
+| `onSelect` | `((id: string) => void)` | — |  |
+| `currency` | `string` | `"$"` |  |
+| `capabilities` | `ModelCapability[]` | `["tools", "vision", "reasoning"]` | Capabilities to show as columns. Default: tools, vision, reasoning. |
+| `className` | `string` | — |  |
+
+---
+
 # TaskCreator
 
 > Category: Tasks · Package: `kestro-ui`
@@ -2650,12 +3558,12 @@ Sidebar with threads grouped by date, search and "New chat".
 
 > Category: Multi-agent · Package: `kestro-ui`
 
-Animated tree of agents: who delegated to whom, who is working, and where work is flowing. Lays itself out and scales to fit.
+Animated tree of agents: who delegated to whom, who is working, and where work is flowing. Lays itself out and scales to fit. Click any agent for a popover with its activity, model, token usage and steps.
 
 ## Import
 
 ```tsx
-import { AgentGraph } from "kestro-ui";
+import { AgentGraph, AgentDetails } from "kestro-ui";
 ```
 
 ## Example: agent-graph
@@ -2665,11 +3573,11 @@ import { useEffect, useState } from "react";
 import { AgentGraph, Button, type AgentNode, type AgentNodeState } from "kestro-ui";
 
 const team = [
-  { id: "lead", name: "Concierge", role: "Lead" },
-  { id: "flights", name: "Flights", role: "Search", parentId: "lead" },
-  { id: "hotels", name: "Hotels", role: "Search", parentId: "lead" },
-  { id: "reviews", name: "Reviews", role: "Read", parentId: "hotels" },
-  { id: "pay", name: "Payments", role: "Checkout", parentId: "lead" },
+  { id: "lead", name: "Concierge", role: "Lead", model: "Sonata Large", provider: "Sonata" },
+  { id: "flights", name: "Flights", role: "Search", parentId: "lead", model: "Sonata Fast", provider: "Sonata" },
+  { id: "hotels", name: "Hotels", role: "Search", parentId: "lead", model: "Sonata Fast", provider: "Sonata" },
+  { id: "reviews", name: "Reviews", role: "Read", parentId: "hotels", model: "Lumen Vision", provider: "Lumen" },
+  { id: "pay", name: "Payments", role: "Checkout", parentId: "lead", model: "Sonata Large", provider: "Sonata" },
 ];
 
 // Which agents are working at each step of the run
@@ -2681,26 +3589,48 @@ const steps: Record<string, AgentNodeState>[] = [
   { lead: "done", flights: "done", hotels: "done", reviews: "done", pay: "done" },
 ];
 
+const activity: Record<string, string> = {
+  lead: "Coordinating 4 agents",
+  flights: "Comparing 14 fares LHR → LIS",
+  hotels: "Shortlisting hotels in Alfama",
+  reviews: "Reading 120 guest reviews",
+  pay: "Approve £412 checkout",
+};
+
 export default function Example() {
   const [step, setStep] = useState(1);
 
   useEffect(() => {
-    const id = setInterval(() => setStep((s) => (s + 1) % steps.length), 2200);
+    const id = setInterval(() => setStep((s) => (s + 1) % steps.length), 2600);
     return () => clearInterval(id);
   }, []);
 
-  const nodes: AgentNode[] = team.map((a) => ({
-    ...a,
-    state: steps[step][a.id],
-    activity: steps[step][a.id] === "waiting" ? "Approve £412 checkout" : undefined,
-  }));
+  const nodes: AgentNode[] = team.map((a, i) => {
+    const state = steps[step][a.id];
+    const work = state === "queued" ? 0 : (step + 1) * (i + 2); // fake, grows as the run goes on
+    return {
+      ...a,
+      state,
+      activity: state === "working" || state === "waiting" ? activity[a.id] : undefined,
+      usage: work ? { input: work * 900, output: work * 210, cost: work * 0.0031 } : undefined,
+      elapsed: work * 1.7,
+      steps: [
+        { id: "1", title: "Read the brief", status: state === "queued" ? "pending" : "done" },
+        { id: "2", title: activity[a.id], status: state === "working" ? "running" : state === "waiting" ? "waiting" : state === "done" ? "done" : "pending" },
+        { id: "3", title: "Report back to Concierge", status: state === "done" ? "done" : "pending" },
+      ],
+    };
+  });
 
   return (
     <div className="w-full max-w-2xl space-y-4">
       <AgentGraph nodes={nodes} />
-      <Button variant="outline" size="sm" onClick={() => setStep((s) => (s + 1) % steps.length)}>
-        Next step ({step + 1}/{steps.length})
-      </Button>
+      <div className="flex items-center gap-3">
+        <Button variant="outline" size="sm" onClick={() => setStep((s) => (s + 1) % steps.length)}>
+          Next step ({step + 1}/{steps.length})
+        </Button>
+        <span className="text-sm text-kui-fg-muted">Click an agent to see what it's doing.</span>
+      </div>
     </div>
   );
 }
@@ -2718,11 +3648,23 @@ Animated tree of agents: who delegated to whom, who's working, and where work is
 | `links` | `AgentLink[]` | `[]` | Extra peer-to-peer links (drawn dashed), in addition to the parent tree. |
 | `direction` | `"down" \| "right"` | `"right"` | Layout direction. Default "right". |
 | `nodeWidth` | `number` | `216` |  |
-| `nodeHeight` | `number` | `66` |  |
+| `nodeHeight` | `number` | — |  |
 | `levelGap` | `number` | `64` | Space between depth levels. |
 | `siblingGap` | `number` | `16` | Space between siblings. |
 | `selectedId` | `string` | — |  |
 | `onSelect` | `((id: string) => void)` | — |  |
+| `showDetails` | `false \| true` | `true` | Open a details popover when a node is clicked. Default true. |
+| `renderDetails` | `((node: AgentNode) => ReactNode)` | — | Replace the popover content. |
+| `className` | `string` | — |  |
+
+### <AgentDetails />
+
+What one agent is doing: status, current activity, model, token usage, time and recent steps.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `node` **(required)** | `Omit<AgentNode, "parentId"> & { parentId?: string \| undefined; }` | — |  |
+| `onClose` | `(() => void)` | — |  |
 | `className` | `string` | — |  |
 
 ---
@@ -2731,12 +3673,12 @@ Animated tree of agents: who delegated to whom, who's working, and where work is
 
 > Category: Multi-agent · Package: `kestro-ui`
 
-Hub-and-spoke view of an orchestrator reaching out to the agents it coordinates, with swaying connections and live work packets.
+Hub-and-spoke view of an orchestrator reaching out to the agents it coordinates, with swaying connections and live work packets. Click any agent for a popover with its activity, model, token usage and steps.
 
 ## Import
 
 ```tsx
-import { AgentHub } from "kestro-ui";
+import { AgentHub, AgentDetails } from "kestro-ui";
 ```
 
 ## Example: agent-hub
@@ -2746,12 +3688,12 @@ import { useEffect, useState } from "react";
 import { AgentHub, type AgentNodeState } from "kestro-ui";
 
 const agents = [
-  { id: "inbox", name: "Inbox", activity: "Triaging 48 emails" },
-  { id: "calendar", name: "Calendar", activity: "Finding a slot" },
-  { id: "docs", name: "Docs", activity: "Summarizing Q3 notes" },
-  { id: "crm", name: "CRM", activity: "Updating 12 contacts" },
-  { id: "billing", name: "Billing", activity: "Matching invoices" },
-  { id: "travel", name: "Travel", activity: "Rebooking a flight" },
+  { id: "inbox", name: "Inbox", activity: "Triaging 48 emails", model: "Sonata Fast" },
+  { id: "calendar", name: "Calendar", activity: "Finding a slot", model: "Sonata Fast" },
+  { id: "docs", name: "Docs", activity: "Summarizing Q3 notes", model: "Sonata Large" },
+  { id: "crm", name: "CRM", activity: "Updating 12 contacts", model: "Orbit Mini" },
+  { id: "billing", name: "Billing", activity: "Matching invoices", model: "Sonata Large" },
+  { id: "travel", name: "Travel", activity: "Rebooking a flight", model: "Sonata Large" },
 ];
 
 const cycle: AgentNodeState[] = ["queued", "working", "working", "done"];
@@ -2765,11 +3707,26 @@ export default function Example() {
   }, []);
 
   return (
-    <AgentHub
-      size={520}
-      hub={{ id: "chief", name: "Chief of staff", state: "working", activity: "Coordinating 6 agents" }}
-      agents={agents.map((a, i) => ({ ...a, state: cycle[(tick + i) % cycle.length] }))}
-    />
+    <div className="w-full max-w-2xl space-y-2">
+      <AgentHub
+        size={540}
+        hub={{ id: "chief", name: "Chief of staff", state: "working", activity: "Coordinating 6 agents", model: "Sonata Large", usage: { input: 18_400 + tick * 600, output: 4_100 + tick * 150, cost: 0.12 + tick * 0.004 } }}
+        agents={agents.map((a, i) => {
+          const state = cycle[(tick + i) % cycle.length];
+          const work = (tick % 20) + i + 1;
+          return {
+            ...a,
+            state,
+            usage: { input: work * 1_200, output: work * 260, cost: work * 0.002 },
+            steps: [
+              { id: "a", title: a.activity, status: state === "working" ? "running" : state === "done" ? "done" : "pending" },
+              { id: "b", title: "Report to Chief of staff", status: state === "done" ? "done" : "pending" },
+            ],
+          };
+        })}
+      />
+      <p className="text-center text-sm text-kui-fg-muted">Click any agent for its model, tokens and steps.</p>
+    </div>
   );
 }
 ```
@@ -2788,6 +3745,18 @@ Hub-and-spoke ("octopus") view: an orchestrator reaching out to the agents it co
 | `sway` | `false \| true` | `true` | Gently sway the tentacles. Default true. |
 | `selectedId` | `string` | — |  |
 | `onSelect` | `((id: string) => void)` | — |  |
+| `showDetails` | `false \| true` | `true` | Open a details popover when an agent is clicked. Default true. |
+| `renderDetails` | `((node: AgentNode) => ReactNode)` | — |  |
+| `className` | `string` | — |  |
+
+### <AgentDetails />
+
+What one agent is doing: status, current activity, model, token usage, time and recent steps.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `node` **(required)** | `Omit<AgentNode, "parentId"> & { parentId?: string \| undefined; }` | — |  |
+| `onClose` | `(() => void)` | — |  |
 | `className` | `string` | — |  |
 
 ---

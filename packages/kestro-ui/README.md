@@ -32,7 +32,7 @@ import { AgentChat } from "kestro-ui";
 </div>;
 ```
 
-Messages are `{ id, role, content }` or `{ id, role, parts }`, compatible with the Vercel AI SDK `useChat()`. Every piece of `AgentChat` is also exported on its own: `Reasoning`, `ToolCall`, `ToolApproval`, `PromptInput`, `TaskPlan`, `AgentGraph`, `TraceTree`, `AttitudeIndicator` and more than 60 others.
+Messages are `{ id, role, content }` or `{ id, role, parts }`, compatible with the Vercel AI SDK `useChat()`. Every piece of `AgentChat` is also exported on its own: `Reasoning`, `ToolCall`, `ToolApproval`, `PromptInput`, `TaskPlan`, `AgentGraph`, `TraceTree`, `AttitudeIndicator` and more than 100 others.
 
 ## For AI coding assistants
 

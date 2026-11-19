@@ -2465,6 +2465,27 @@
       }
     ]
   },
+  "AgentDetails": {
+    "description": "What one agent is doing: status, current activity, model, token usage, time and recent steps.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "node",
+        "type": "Omit<AgentNode, \"parentId\"> & { parentId?: string | undefined; }",
+        "required": true
+      },
+      {
+        "name": "onClose",
+        "type": "(() => void)",
+        "required": false
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
   "AgentGraph": {
     "description": "Animated tree of agents: who delegated to whom, who's working, and where work is flowing.",
     "extendsNative": false,
@@ -2497,8 +2518,7 @@
       {
         "name": "nodeHeight",
         "type": "number",
-        "required": false,
-        "default": "66"
+        "required": false
       },
       {
         "name": "levelGap",
@@ -2523,6 +2543,19 @@
         "name": "onSelect",
         "type": "((id: string) => void)",
         "required": false
+      },
+      {
+        "name": "showDetails",
+        "type": "false | true",
+        "required": false,
+        "default": "true",
+        "description": "Open a details popover when a node is clicked. Default true."
+      },
+      {
+        "name": "renderDetails",
+        "type": "((node: AgentNode) => ReactNode)",
+        "required": false,
+        "description": "Replace the popover content."
       },
       {
         "name": "className",
@@ -2601,6 +2634,18 @@
       {
         "name": "onSelect",
         "type": "((id: string) => void)",
+        "required": false
+      },
+      {
+        "name": "showDetails",
+        "type": "false | true",
+        "required": false,
+        "default": "true",
+        "description": "Open a details popover when an agent is clicked. Default true."
+      },
+      {
+        "name": "renderDetails",
+        "type": "((node: AgentNode) => ReactNode)",
         "required": false
       },
       {
@@ -3268,6 +3313,840 @@
       {
         "name": "onCancel",
         "type": "(() => void)",
+        "required": false
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "TokenUsage": {
+    "description": "Token breakdown (input, cached, reasoning, output) with per-kind cost.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "input",
+        "type": "number",
+        "required": true
+      },
+      {
+        "name": "output",
+        "type": "number",
+        "required": true
+      },
+      {
+        "name": "cached",
+        "type": "number",
+        "required": false,
+        "default": "0",
+        "description": "Input tokens served from cache."
+      },
+      {
+        "name": "reasoning",
+        "type": "number",
+        "required": false,
+        "default": "0",
+        "description": "Hidden reasoning / thinking tokens."
+      },
+      {
+        "name": "pricing",
+        "type": "TokenPricing",
+        "required": false,
+        "description": "Pricing per 1M tokens — used to compute cost when `cost` is omitted."
+      },
+      {
+        "name": "cost",
+        "type": "number",
+        "required": false,
+        "description": "Total cost override."
+      },
+      {
+        "name": "currency",
+        "type": "string",
+        "required": false,
+        "default": "\"$\""
+      },
+      {
+        "name": "title",
+        "type": "ReactNode",
+        "required": false,
+        "default": "\"Token usage\""
+      },
+      {
+        "name": "caption",
+        "type": "ReactNode",
+        "required": false,
+        "description": "Small caption, e.g. the model name or period."
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "ContextWindow": {
+    "description": "What's filling the model's context window — system prompt, history, tools, files — and how much is left.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "segments",
+        "type": "ContextSegment[]",
+        "required": true
+      },
+      {
+        "name": "limit",
+        "type": "number",
+        "required": true,
+        "description": "Model context size in tokens."
+      },
+      {
+        "name": "title",
+        "type": "ReactNode",
+        "required": false,
+        "default": "\"Context window\""
+      },
+      {
+        "name": "variant",
+        "type": "\"bar\" | \"grid\"",
+        "required": false,
+        "default": "\"bar\"",
+        "description": "\"bar\" (default) or \"grid\" (100 cells, one per 1%)."
+      },
+      {
+        "name": "warnAt",
+        "type": "number",
+        "required": false,
+        "default": "0.8",
+        "description": "Usage ratio (0–1) from which to warn. Default 0.8."
+      },
+      {
+        "name": "warning",
+        "type": "((free: number) => ReactNode)",
+        "required": false,
+        "default": "(free) => `Only ${formatNumber(free)} tokens left — older messages will be summarized soon.`",
+        "description": "Warning text; receives the free token count."
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "TokenCounter": {
+    "description": "Inline \"1.2k tok · $0.004\" chip for messages, tool calls and runs.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "tokens",
+        "type": "number",
+        "required": true
+      },
+      {
+        "name": "cost",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "currency",
+        "type": "string",
+        "required": false,
+        "default": "\"$\""
+      },
+      {
+        "name": "detail",
+        "type": "string",
+        "required": false,
+        "description": "Optional detail shown on hover, e.g. \"812 in · 405 out\"."
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "UsageChart": {
+    "description": "Stacked bar chart of usage over time — tokens or spend per day, split by model or agent.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "data",
+        "type": "UsagePoint[]",
+        "required": true
+      },
+      {
+        "name": "series",
+        "type": "UsageSeries[]",
+        "required": true
+      },
+      {
+        "name": "title",
+        "type": "ReactNode",
+        "required": false
+      },
+      {
+        "name": "format",
+        "type": "((v: number) => string)",
+        "required": false,
+        "default": "formatNumber",
+        "description": "Format values (axis + tooltip). Default compact number."
+      },
+      {
+        "name": "height",
+        "type": "number",
+        "required": false,
+        "default": "180"
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "RunTimer": {
+    "description": "Live elapsed timer for an agent run, with an estimate of time left and an optional timeout ring.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "startedAt",
+        "type": "number",
+        "required": false,
+        "description": "When the run started (ms since epoch). The timer ticks while `running`."
+      },
+      {
+        "name": "elapsed",
+        "type": "number",
+        "required": false,
+        "description": "Or pass a fixed elapsed time in ms (e.g. for finished runs)."
+      },
+      {
+        "name": "running",
+        "type": "false | true",
+        "required": false,
+        "default": "true"
+      },
+      {
+        "name": "progress",
+        "type": "number",
+        "required": false,
+        "description": "Progress 0–100 — used to estimate the time remaining."
+      },
+      {
+        "name": "timeout",
+        "type": "number",
+        "required": false,
+        "description": "Max run time in ms; shows a ring and warns as it gets close."
+      },
+      {
+        "name": "label",
+        "type": "ReactNode",
+        "required": false,
+        "default": "\"Elapsed\""
+      },
+      {
+        "name": "size",
+        "type": "\"sm\" | \"md\"",
+        "required": false,
+        "default": "\"md\""
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "LatencyBreakdown": {
+    "description": "Where the time went in one response: queue, time to first token, generation, tools.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "segments",
+        "type": "LatencySegment[]",
+        "required": true
+      },
+      {
+        "name": "outputTokens",
+        "type": "number",
+        "required": false,
+        "description": "Output tokens, to show tokens per second for the generation phase."
+      },
+      {
+        "name": "generationId",
+        "type": "string",
+        "required": false,
+        "default": "\"generation\"",
+        "description": "Which segment is generation (for tokens/sec). Default \"generation\"."
+      },
+      {
+        "name": "title",
+        "type": "ReactNode",
+        "required": false,
+        "default": "\"Response time\""
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "TimeAgo": {
+    "description": "Relative time (\"3 min ago\") that updates itself; hover shows the exact time.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "date",
+        "type": "string | number | Date",
+        "required": true
+      },
+      {
+        "name": "locale",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "AgentCard": {
+    "description": "Profile card for an agent: identity, status, model, tools and key stats.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "agent",
+        "type": "AgentProfile",
+        "required": true
+      },
+      {
+        "name": "selected",
+        "type": "false | true",
+        "required": false
+      },
+      {
+        "name": "onSelect",
+        "type": "((id: string) => void)",
+        "required": false
+      },
+      {
+        "name": "actions",
+        "type": "ReactNode",
+        "required": false,
+        "description": "Footer actions (buttons)."
+      },
+      {
+        "name": "maxTools",
+        "type": "number",
+        "required": false,
+        "default": "4",
+        "description": "Max tool chips before \"+N\". Default 4."
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "AgentPicker": {
+    "description": "Searchable list for choosing which agent handles something.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "agents",
+        "type": "AgentProfile[]",
+        "required": true
+      },
+      {
+        "name": "value",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "defaultValue",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "onValueChange",
+        "type": "((id: string) => void)",
+        "required": false
+      },
+      {
+        "name": "placeholder",
+        "type": "string",
+        "required": false,
+        "default": "\"Search agents…\""
+      },
+      {
+        "name": "maxHeight",
+        "type": "number",
+        "required": false,
+        "default": "320",
+        "description": "Max list height before scrolling. Default 320."
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "ModelBadge": {
+    "description": "Inline model chip: provider tile, name and optional context size.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "provider",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "context",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "ModelCard": {
+    "description": "Spec card for a model: context, pricing, speed, quality and capabilities.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "model",
+        "type": "ModelInfo",
+        "required": true
+      },
+      {
+        "name": "selected",
+        "type": "false | true",
+        "required": false
+      },
+      {
+        "name": "onSelect",
+        "type": "((id: string) => void)",
+        "required": false
+      },
+      {
+        "name": "currency",
+        "type": "string",
+        "required": false,
+        "default": "\"$\""
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "ModelCompare": {
+    "description": "Side-by-side model comparison. The best value in each numeric column is highlighted.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "models",
+        "type": "ModelInfo[]",
+        "required": true
+      },
+      {
+        "name": "selectedId",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "onSelect",
+        "type": "((id: string) => void)",
+        "required": false
+      },
+      {
+        "name": "currency",
+        "type": "string",
+        "required": false,
+        "default": "\"$\""
+      },
+      {
+        "name": "capabilities",
+        "type": "ModelCapability[]",
+        "required": false,
+        "default": "[\"tools\", \"vision\", \"reasoning\"]",
+        "description": "Capabilities to show as columns. Default: tools, vision, reasoning."
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "ModelUsageTable": {
+    "description": "Usage per model: requests, tokens, cost, share of spend and latency, with a totals row.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "rows",
+        "type": "ModelUsageRow[]",
+        "required": true
+      },
+      {
+        "name": "currency",
+        "type": "string",
+        "required": false,
+        "default": "\"$\""
+      },
+      {
+        "name": "period",
+        "type": "ReactNode",
+        "required": false,
+        "description": "Period caption, e.g. \"Last 30 days\"."
+      },
+      {
+        "name": "onSelect",
+        "type": "((id: string) => void)",
+        "required": false
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "CostTag": {
+    "description": "\"$0.042\"",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "value",
+        "type": "number",
+        "required": true
+      },
+      {
+        "name": "currency",
+        "type": "string",
+        "required": false,
+        "default": "\"$\""
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "LatencyTag": {
+    "description": "\"842ms\" — green, ochre or red by threshold.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "ms",
+        "type": "number",
+        "required": true
+      },
+      {
+        "name": "thresholds",
+        "type": "[number, number]",
+        "required": false,
+        "default": "[800, 2500]",
+        "description": "[good, slow] thresholds in ms. Default [800, 2500]."
+      },
+      {
+        "name": "label",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "DurationTag": {
+    "description": "\"4.2s\" with a clock.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "seconds",
+        "type": "number",
+        "required": true
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "TokensPerSecond": {
+    "description": "\"48 tok/s\"",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "value",
+        "type": "number",
+        "required": true
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "RequestCount": {
+    "description": "\"1,204 req\"",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "value",
+        "type": "number",
+        "required": true
+      },
+      {
+        "name": "label",
+        "type": "string",
+        "required": false,
+        "default": "\"req\""
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "TrendTag": {
+    "description": "\"▲ 12.5%\" — green when it's good news.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "value",
+        "type": "number",
+        "required": true,
+        "description": "Percent change, e.g. 12.5 or -3."
+      },
+      {
+        "name": "invert",
+        "type": "false | true",
+        "required": false,
+        "description": "For metrics where lower is better (cost, latency)."
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "ContextPill": {
+    "description": "Mini ring + percent, e.g. context used.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "used",
+        "type": "number",
+        "required": true
+      },
+      {
+        "name": "limit",
+        "type": "number",
+        "required": true
+      },
+      {
+        "name": "label",
+        "type": "string",
+        "required": false,
+        "default": "\"ctx\""
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "MiniBar": {
+    "description": "Thin inline percentage bar.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "value",
+        "type": "number",
+        "required": true
+      },
+      {
+        "name": "max",
+        "type": "number",
+        "required": false,
+        "default": "100"
+      },
+      {
+        "name": "tone",
+        "type": "\"accent\" | \"success\" | \"warning\" | \"danger\" | \"info\" | \"muted\"",
+        "required": false,
+        "default": "\"accent\""
+      },
+      {
+        "name": "width",
+        "type": "number",
+        "required": false,
+        "default": "64"
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "AgentChip": {
+    "description": "Mini avatar + name + status dot.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "state",
+        "type": "\"idle\" | \"online\" | \"thinking\" | \"working\" | \"waiting\" | \"error\" | \"offline\"",
+        "required": false
+      },
+      {
+        "name": "avatar",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "CapabilityTags": {
+    "description": "Icon-only capability row with tooltips (vision, tools, reasoning…).",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "capabilities",
+        "type": "ModelCapability[]",
+        "required": true
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "MessageMeta": {
+    "description": "One-line footer for an answer or run: model · tokens · cost · time · speed.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "model",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "provider",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "tokens",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "cost",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "duration",
+        "type": "number",
+        "required": false,
+        "description": "Seconds."
+      },
+      {
+        "name": "speed",
+        "type": "number",
+        "required": false,
+        "description": "Tokens per second."
+      },
+      {
+        "name": "currency",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  "StatTile": {
+    "description": "Dashboard KPI tile: label, big value, change and a sparkline.",
+    "extendsNative": false,
+    "props": [
+      {
+        "name": "label",
+        "type": "ReactNode",
+        "required": true
+      },
+      {
+        "name": "value",
+        "type": "ReactNode",
+        "required": true
+      },
+      {
+        "name": "delta",
+        "type": "number",
+        "required": false,
+        "description": "Percent change vs. previous period."
+      },
+      {
+        "name": "invertDelta",
+        "type": "false | true",
+        "required": false
+      },
+      {
+        "name": "trend",
+        "type": "number[]",
+        "required": false,
+        "description": "Sparkline data."
+      },
+      {
+        "name": "icon",
+        "type": "ReactNode",
+        "required": false
+      },
+      {
+        "name": "caption",
+        "type": "ReactNode",
         "required": false
       },
       {

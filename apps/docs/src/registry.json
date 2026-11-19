@@ -234,6 +234,169 @@
       ]
     },
     {
+      "id": "usage",
+      "title": "Usage & cost",
+      "items": [
+        {
+          "slug": "token-usage",
+          "name": "TokenUsage",
+          "description": "Token breakdown \u2014 input, cached, reasoning, output \u2014 with per-kind cost from your pricing. TokenCounter is the inline version.",
+          "examples": [
+            "token-usage"
+          ],
+          "api": [
+            "TokenUsage",
+            "TokenCounter"
+          ]
+        },
+        {
+          "slug": "context-window",
+          "name": "ContextWindow",
+          "description": "What's filling the model's context \u2014 system prompt, tools, files, conversation \u2014 as a bar or a 100-cell grid, with a warning before it runs out.",
+          "examples": [
+            "context-window"
+          ],
+          "api": [
+            "ContextWindow"
+          ]
+        },
+        {
+          "slug": "model-usage",
+          "name": "ModelUsageTable",
+          "description": "Usage per model: requests, input and output tokens, latency, share of spend and cost, with totals.",
+          "examples": [
+            "model-usage"
+          ],
+          "api": [
+            "ModelUsageTable"
+          ]
+        },
+        {
+          "slug": "usage-chart",
+          "name": "UsageChart",
+          "description": "Stacked bars of tokens or spend over time, split by model or agent, with hover readouts.",
+          "examples": [
+            "usage-chart"
+          ],
+          "api": [
+            "UsageChart"
+          ]
+        },
+        {
+          "slug": "stat-tile",
+          "name": "StatTile",
+          "description": "Dashboard KPI tile: label, big value, trend and sparkline.",
+          "examples": [
+            "stat-tile"
+          ],
+          "api": [
+            "StatTile"
+          ]
+        },
+        {
+          "slug": "metric-chips",
+          "name": "Metric chips",
+          "description": "Tiny inline building blocks: cost, latency, duration, speed, requests, trends, context, mini bars, model and agent chips, and a one-line message footer.",
+          "examples": [
+            "metric-chips"
+          ],
+          "api": [
+            "CostTag",
+            "LatencyTag",
+            "DurationTag",
+            "TokensPerSecond",
+            "RequestCount",
+            "TrendTag",
+            "ContextPill",
+            "MiniBar",
+            "AgentChip",
+            "CapabilityTags",
+            "MessageMeta",
+            "TimeAgo"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "time",
+      "title": "Time",
+      "items": [
+        {
+          "slug": "run-timer",
+          "name": "RunTimer",
+          "description": "Live elapsed timer for a run, with an estimate of time left and an optional timeout ring.",
+          "examples": [
+            "run-timer"
+          ],
+          "api": [
+            "RunTimer"
+          ]
+        },
+        {
+          "slug": "latency-breakdown",
+          "name": "LatencyBreakdown",
+          "description": "Where the time went in one response: queue, first token, tools and generation, plus tokens per second.",
+          "examples": [
+            "latency-breakdown"
+          ],
+          "api": [
+            "LatencyBreakdown"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "directory",
+      "title": "Agents & models",
+      "items": [
+        {
+          "slug": "agent-card",
+          "name": "AgentCard",
+          "description": "Agent profile: identity, live status, model, tools and key stats, with actions.",
+          "examples": [
+            "agent-card"
+          ],
+          "api": [
+            "AgentCard"
+          ]
+        },
+        {
+          "slug": "agent-picker",
+          "name": "AgentPicker",
+          "description": "Searchable, keyboard-friendly list for choosing which agent handles something.",
+          "examples": [
+            "agent-picker"
+          ],
+          "api": [
+            "AgentPicker"
+          ]
+        },
+        {
+          "slug": "model-card",
+          "name": "ModelCard",
+          "description": "Model spec card: context size, price per 1M tokens, speed, quality and capabilities.",
+          "examples": [
+            "model-card"
+          ],
+          "api": [
+            "ModelCard",
+            "ModelBadge"
+          ]
+        },
+        {
+          "slug": "model-compare",
+          "name": "ModelCompare",
+          "description": "Side-by-side model table that highlights the best value in each column.",
+          "examples": [
+            "model-compare"
+          ],
+          "api": [
+            "ModelCompare"
+          ]
+        }
+      ]
+    },
+    {
       "id": "tasks",
       "title": "Tasks",
       "items": [
@@ -375,23 +538,25 @@
         {
           "slug": "agent-graph",
           "name": "AgentGraph",
-          "description": "Animated tree of agents: who delegated to whom, who is working, and where work is flowing. Lays itself out and scales to fit.",
+          "description": "Animated tree of agents: who delegated to whom, who is working, and where work is flowing. Lays itself out and scales to fit. Click any agent for a popover with its activity, model, token usage and steps.",
           "examples": [
             "agent-graph"
           ],
           "api": [
-            "AgentGraph"
+            "AgentGraph",
+            "AgentDetails"
           ]
         },
         {
           "slug": "agent-hub",
           "name": "AgentHub",
-          "description": "Hub-and-spoke view of an orchestrator reaching out to the agents it coordinates, with swaying connections and live work packets.",
+          "description": "Hub-and-spoke view of an orchestrator reaching out to the agents it coordinates, with swaying connections and live work packets. Click any agent for a popover with its activity, model, token usage and steps.",
           "examples": [
             "agent-hub"
           ],
           "api": [
-            "AgentHub"
+            "AgentHub",
+            "AgentDetails"
           ]
         },
         {

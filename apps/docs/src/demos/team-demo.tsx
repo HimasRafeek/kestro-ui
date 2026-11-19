@@ -117,15 +117,31 @@ export function TeamDemo() {
     const base = id === "writer" ? (approvedAt ?? 0) : 0;
     return [...list].reverse().find(([at]) => now >= at + base)?.[1];
   };
-  const nodes: AgentNode[] = agentIds.map((id) => ({
-    id,
-    name: id[0].toUpperCase() + id.slice(1),
-    parentId: id === "planner" ? undefined : "planner",
-    role: roles[id],
-    state: stateOf(id),
-    activity: activityOf(id),
-    meta: stateOf(id) === "done" ? `${spans.filter((s) => s.parentId === id).length} steps` : undefined,
-  }));
+  const models: Record<string, string> = { planner: "Sonata Large", researcher: "Sonata Large", travel: "Sonata Fast", budget: "Sonata Fast", writer: "Sonata Large" };
+  const nodes: AgentNode[] = agentIds.map((id) => {
+    const own = spans.filter((s) => s.parentId === id);
+    const agentSpan = spans.find((s) => s.id === id);
+    const activeMs = agentSpan ? (agentSpan.end ?? now) - agentSpan.start : 0;
+    const k = activeMs / 1000; // tokens grow with time spent working
+    return {
+      id,
+      name: id[0].toUpperCase() + id.slice(1),
+      parentId: id === "planner" ? undefined : "planner",
+      role: roles[id],
+      state: stateOf(id),
+      activity: activityOf(id),
+      model: models[id],
+      provider: "Sonata",
+      elapsed: k,
+      usage: k ? { input: Math.round(k * 1_350), output: Math.round(k * 290), cost: k * (models[id] === "Sonata Large" ? 0.0084 : 0.0009) } : undefined,
+      steps: own.map((s) => ({
+        id: s.id,
+        title: s.name,
+        status: s.status === "error" ? ("error" as const) : s.end === undefined ? (s.kind === "step" ? ("waiting" as const) : ("running" as const)) : ("done" as const),
+        detail: s.meta,
+      })),
+    };
+  });
 
   const feed: ActivityItem[] = [
     { at: 200, title: "Planner started", description: "Team offsite · Lisbon · 12 people · under €9,000" },

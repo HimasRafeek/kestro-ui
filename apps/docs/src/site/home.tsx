@@ -249,6 +249,7 @@ const examples = [
   { to: "/examples/chat", title: "Agent chat", text: "Travel, research, support and code — with tools, sources and approvals." },
   { to: "/examples/team", title: "Agent team", text: "An orchestrator delegating to four agents, as a tree, a hub and a trace." },
   { to: "/examples/deck", title: "Flight deck", text: "Instrument-panel HUD: attitude indicator, telemetry, event log." },
+  { to: "/examples/usage", title: "Usage dashboard", text: "Tokens, spend and latency per model and agent, context and live run timers." },
   { to: "/examples/run", title: "Agent run", text: "A background workflow with a plan, an approval and a generated report." },
   { to: "/examples/jarvis", title: "Voice console", text: "A voice-reactive core, live gauges and a command line." },
   { to: "/examples/voice", title: "Voice & widget", text: "A voice call surface and a support widget on a store page." },

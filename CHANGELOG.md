@@ -15,4 +15,11 @@ First public release.
 - **Voice:** `VoicePanel`, `VoiceOrb`, `VoiceDial`, `VoiceWave`, `useMicrophone`, `useAudioAnalyser`.
 - **HUD:** `AttitudeIndicator`, `AgentCore`, `HudPanel`, `RadialGauge`, `TelemetryChart`, `HudStat`, `Sparkline`, `Waveform`, `EventLog`, `CommandConsole`, `BootSequence`, `DataTicker`.
 - **Embed:** `ChatWidget`.
+- **Tasks:** `TaskCreator`, `TaskBoard`, `TaskCard`, `TaskList`.
+- **Usage & cost:** `TokenUsage`, `ContextWindow`, `ModelUsageTable`, `UsageChart`, `StatTile`, `TokenCounter`.
+- **Time:** `RunTimer`, `LatencyBreakdown`, `TimeAgo`.
+- **Agents & models:** `AgentCard`, `AgentPicker`, `ModelCard`, `ModelCompare`, `ModelBadge`, and `AgentDetails` popovers in `AgentGraph` / `AgentHub`.
+- **Tiny chips:** `CostTag`, `LatencyTag`, `DurationTag`, `TokensPerSecond`, `RequestCount`, `TrendTag`, `ContextPill`, `MiniBar`, `AgentChip`, `CapabilityTags`, `MessageMeta`.
+- **Images:** `ImageGallery`, `ImagePreview`, `Lightbox` (zoom, pan, keyboard), with image references in the composer.
+- **Controls:** `Switch`, `SegmentedControl`.
 - Optional Kestro palette via `data-kui-palette="kestro"`.

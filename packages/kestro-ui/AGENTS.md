@@ -71,6 +71,14 @@ export function Chat() {
 - **Multi-agent:** AgentAvatar, AgentRoster, AgentHandoff
 - **Voice:** VoicePanel, VoiceOrb, VoiceWave + hooks useMicrophone, useAudioAnalyser
 - **HUD:** AgentCore, HudPanel, HudBackground, RadialGauge, HudStat, Sparkline, Waveform, CommandConsole, BootSequence, DataTicker
+- **Tasks:** TaskCreator, TaskBoard, TaskCard, TaskList, TaskStatusBadge
+- **Usage & cost:** TokenUsage, ContextWindow, ModelUsageTable, UsageChart, StatTile, TokenCounter
+- **Time:** RunTimer, LatencyBreakdown, TimeAgo
+- **Agents & models:** AgentCard, AgentPicker, ModelCard, ModelCompare, ModelBadge, AgentDetails (also opens from AgentGraph/AgentHub nodes; pass `model`, `usage`, `steps` on nodes)
+- **Tiny chips:** CostTag, LatencyTag, DurationTag, TokensPerSecond, RequestCount, TrendTag, ContextPill, MiniBar, AgentChip, CapabilityTags, MessageMeta
+- **Images:** ImageGallery, ImagePreview, Lightbox
+- **Multi-agent views:** AgentGraph, AgentHub, TraceTree
+- **Instruments:** AttitudeIndicator, RunCard, TelemetryChart, ToolCallRow, SegmentedMeter, EventLog, VoiceDial
 - **Embed:** ChatWidget
-- **Primitives:** Button, IconButton, Badge, StatusDot, Spinner, Tooltip, Kbd, Card, ShimmerText, Collapse
+- **Primitives:** Button, IconButton, Badge, StatusDot, Spinner, Tooltip, Kbd, Card, ShimmerText, Collapse, Switch, SegmentedControl
 - **Hooks:** useSmoothText, useStickToBottom, useCopyToClipboard, useControllableState, useAutoResizeTextarea, useElapsed, useAnimationClock
